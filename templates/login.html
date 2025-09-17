@@ -1,0 +1,45 @@
+{{define "content"}}
+<div class="content-wrapper" style="max-width: 400px; margin: 0 auto;">
+    <div class="content-header">
+        <h1>Login</h1>
+        <div class="breadcrumb">
+            <a href="/">Home</a> &gt; Login
+        </div>
+    </div>
+    
+    <div class="content-body">
+        {{if .error}}
+        <div class="alert alert-error">
+            {{.error}}
+        </div>
+        {{end}}
+
+        <form method="post" action="/auth/login">
+            <div class="form-group">
+                <label for="username">Username or Email:</label>
+                <input type="text" id="username" name="username" required>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+
+            <div class="form-group">
+                <div class="checkbox-group">
+                    <input type="checkbox" id="remember" name="remember">
+                    <label for="remember">Remember me</label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <button type="submit" class="btn">Login</button>
+            </div>
+        </form>
+
+        <div style="text-align: center; margin-top: 20px;">
+            <p>Don't have an account? <a href="/auth/signup">Sign up here</a></p>
+        </div>
+    </div>
+</div>
+{{end}}

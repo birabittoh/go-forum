@@ -1,0 +1,32 @@
+{{define "content"}}
+<div class="content-wrapper" style="max-width: 600px; margin: 0 auto; text-align: center;">
+    <div class="content-header">
+        <h1>Registration Successful!</h1>
+        <div class="breadcrumb">
+            <a href="/">Home</a> &gt; Registration Success
+        </div>
+    </div>
+    
+    <div class="content-body">
+        <div class="alert alert-success">
+            <h3 style="margin-bottom: 15px;">🎉 Welcome to our community!</h3>
+            <p>{{.message}}</p>
+        </div>
+        
+        <div style="margin: 30px 0; padding: 20px; background: #f8f9fa; border-radius: 8px;">
+            <h4 style="color: #2c3e50; margin-bottom: 15px;">What's Next?</h4>
+            <ol style="text-align: left; max-width: 400px; margin: 0 auto; color: #7f8c8d;">
+                <li style="margin-bottom: 10px;">Check your email for a verification link</li>
+                <li style="margin-bottom: 10px;">Click the link to verify your email address</li>
+                <li style="margin-bottom: 10px;">Log in and start participating in discussions</li>
+                <li>Set up your profile with a photo and signature</li>
+            </ol>
+        </div>
+
+        <div style="margin-top: 30px;">
+            <a href="/auth/login" class="btn">Go to Login</a>
+            <a href="/" class="btn btn-secondary">Browse Forum</a>
+        </div>
+    </div>
+</div>
+{{end}}

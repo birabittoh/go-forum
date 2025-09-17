@@ -1,0 +1,88 @@
+{{define "content"}}
+<div class="content-wrapper">
+    <div class="content-header">
+        <h1>Edit User: {{.targetUser.Username}}</h1>
+        <div class="breadcrumb">
+            <a href="/">Home</a> &gt; 
+            <a href="/admin">Admin Panel</a> &gt; 
+            <a href="/admin/users">User Management</a> &gt; 
+            Edit {{.targetUser.Username}}
+        </div>
+    </div>
+    
+    <div class="content-body">
+        {{if .error}}
+        <div class="alert alert-error">
+            {{.error}}
+        </div>
+        {{end}}
+
+        <div style="display: flex; gap: 30px; margin-bottom: 30px;">
+            <div style="flex: 0 0 200px;">
+                {{if .targetUser.ProfilePicURL}}
+                    <img src="{{.targetUser.ProfilePicURL}}" alt="Avatar" 
+                         style="width: 150px; height: 150px; border-radius: 50%; object-fit: cover;">
+                {{else}}
+                    <div style="width: 150px; height: 150px; background: #ddd; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 48px; color: white;">
+                        {{substr .targetUser.Username 0 1 | upper}}
+                    </div>
+                {{end}}
+            </div>
+            
+            <div style="flex: 1;">
+                <h3>{{.targetUser.Username}}</h3>
+                <p><strong>Email:</strong> {{.targetUser.Email}}</p>
+                <p><strong>Type:</strong> <span class="user-{{.targetUser.UserType.String}}">{{.targetUser.UserType.String | title}}</span></p>
+                <p><strong>Joined:</strong> {{.targetUser.CreatedAt.Format "2006-01-02 15:04"}}</p>
+                <p><strong>Status:</strong> 
+                    {{if .targetUser.IsBanned}}
+                        <span class="user-banned">Banned</span>
+                    {{else if not .targetUser.EmailVerified}}
+                        <span style="color: #f39c12;">Unverified</span>
+                    {{else}}
+                        <span style="color: #27ae60;">Active</span>
+                    {{end}}
+                </p>
+            </div>
+        </div>
+
+        <form method="post" action="/admin/user/{{.targetUser.ID}}/edit">
+            <div class="form-group">
+                <label for="motto">Motto:</label>
+                <input type="text" id="motto" name="motto" maxlength="255" 
+                       value="{{.targetUser.Motto}}" placeholder="User's personal motto">
+            </div>
+
+            <div class="form-group">
+                <label for="profile_pic_url">Profile Picture URL:</label>
+                <input type="url" id="profile_pic_url" name="profile_pic_url" maxlength="500" 
+                       value="{{.targetUser.ProfilePicURL}}" placeholder="https://example.com/avatar.jpg">
+            </div>
+
+            <div class="form-group">
+                <label for="signature">Signature:</label>
+                <textarea id="signature" name="signature" maxlength="500" 
+                          placeholder="User's forum signature (Markdown supported)">{{.targetUser.Signature}}</textarea>
+            </div>
+
+            <div class="form-group">
+                <button type="submit" class="btn btn-success">Save Changes</button>
+                <a href="/admin/users" class="btn btn-secondary">Back to Users</a>
+            </div>
+        </form>
+
+        {{if .targetUser.IsBanned}}
+        <div style="margin-top: 40px; padding: 20px; background: #ffe6e6; border-radius: 8px; border: 1px solid #ffccd5;">
+            <h4 style="color: #721c24; margin-bottom: 15px;">🚫 Ban Information</h4>
+            <p><strong>Reason:</strong> {{.targetUser.BanReason}}</p>
+            <p><strong>Banned At:</strong> {{.targetUser.BannedAt.Format "2006-01-02 15:04"}}</p>
+            {{if .targetUser.BannedUntil}}
+                <p><strong>Banned Until:</strong> {{.targetUser.BannedUntil.Format "2006-01-02 15:04"}}</p>
+            {{else}}
+                <p><strong>Duration:</strong> Permanent</p>
+            {{end}}
+        </div>
+        {{end}}
+    </div>
+</div>
+{{end}}

@@ -1,0 +1,68 @@
+{{define "content"}}
+<div class="content-wrapper">
+    <div class="content-header">
+        <h1>Admin Panel</h1>
+        <div class="breadcrumb">
+            <a href="/">Home</a> &gt; Admin Panel
+        </div>
+    </div>
+    
+    <div class="content-body">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+            
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; border: 1px solid #e9ecef;">
+                <h3 style="color: #2c3e50; margin-bottom: 15px;">👥 User Management</h3>
+                <p style="color: #7f8c8d; margin-bottom: 15px;">Manage users, roles, and permissions</p>
+                <a href="/admin/users" class="btn">View Users</a>
+            </div>
+
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; border: 1px solid #e9ecef;">
+                <h3 style="color: #2c3e50; margin-bottom: 15px;">📁 Section Management</h3>
+                <p style="color: #7f8c8d; margin-bottom: 15px;">Create and organize forum sections</p>
+                <a href="/admin/sections" class="btn">Manage Sections</a>
+            </div>
+
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; border: 1px solid #e9ecef;">
+                <h3 style="color: #2c3e50; margin-bottom: 15px;">📂 Category Management</h3>
+                <p style="color: #7f8c8d; margin-bottom: 15px;">Create and organize forum categories</p>
+                <a href="/admin/categories" class="btn">Manage Categories</a>
+            </div>
+
+            <!--
+            {{if .user.IsAdmin}}
+            <div style="background: #fff3cd; padding: 20px; border-radius: 8px; border: 1px solid #ffeaa7;">
+                <h3 style="color: #856404; margin-bottom: 15px;">⚡ Admin Only</h3>
+                <p style="color: #856404; margin-bottom: 15px;">Advanced administrative functions</p>
+                <div>
+                    <small style="color: #856404;">User promotion/demotion available in User Management</small>
+                </div>
+            </div>
+            {{end}}
+            -->
+
+        </div>
+
+        <div style="margin-top: 40px; padding: 20px; background: #e8f5e8; border-radius: 8px; border: 1px solid #c3e6c3;">
+            <h3 style="color: #155724; margin-bottom: 15px;">📊 Quick Stats</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px;">
+                <div style="text-align: center;">
+                    <div style="font-size: 24px; font-weight: bold; color: #28a745;">--</div>
+                    <div style="color: #155724; font-size: 14px;">Total Users</div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="font-size: 24px; font-weight: bold; color: #28a745;">--</div>
+                    <div style="color: #155724; font-size: 14px;">Total Topics</div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="font-size: 24px; font-weight: bold; color: #28a745;">--</div>
+                    <div style="color: #155724; font-size: 14px;">Total Posts</div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="font-size: 24px; font-weight: bold; color: #28a745;">--</div>
+                    <div style="color: #155724; font-size: 14px;">Categories</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{{end}}

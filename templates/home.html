@@ -1,0 +1,64 @@
+{{define "content"}}
+<div class="content-wrapper">
+    <div class="content-header">
+        <h1>Forum Categories</h1>
+        <div class="breadcrumb">
+            Welcome to our community forum
+        </div>
+    </div>
+    
+    <div class="content-body">
+        {{range .sections}}
+        <div style="margin-bottom: 40px;">
+            <h2 style="color: #2c3e50; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px solid #3498db;">
+                {{.Name}}
+            </h2>
+            {{if .Description}}
+                <p style="color: #7f8c8d; margin-bottom: 20px;">{{.Description}}</p>
+            {{end}}
+            
+            {{if .Categories}}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Category</th>
+                        <th>Description</th>
+                        <th>Topics</th>
+                        <th>Posts</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{range .Categories}}
+                    <tr>
+                        <td>
+                            <a href="/category/{{.ID}}" style="font-weight: bold; color: #3498db; text-decoration: none;">
+                                {{.Name}}
+                            </a>
+                        </td>
+                        <td style="color: #7f8c8d;">{{.Description}}</td>
+                        <td style="text-align: center;">{{len .Topics}}</td>
+                        <td style="text-align: center;">
+                            {{$postCount := 0}}
+                            {{range .Topics}}
+                                {{$postCount = add $postCount (len .Posts)}}
+                            {{end}}
+                            {{$postCount}}
+                        </td>
+                    </tr>
+                    {{end}}
+                </tbody>
+            </table>
+            {{else}}
+            <p style="color: #95a5a6; font-style: italic;">No categories in this section yet.</p>
+            {{end}}
+        </div>
+        {{end}}
+        
+        {{if not .sections}}
+        <div class="alert alert-info">
+            <strong>Welcome!</strong> The forum is being set up. Please check back later or contact an administrator.
+        </div>
+        {{end}}
+    </div>
+</div>
+{{end}}

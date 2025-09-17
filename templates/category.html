@@ -1,0 +1,79 @@
+{{define "content"}}
+<div class="content-wrapper">
+    <div class="content-header">
+        <h1>{{.category.Name}}</h1>
+        <div class="breadcrumb">
+            <a href="/">Home</a> &gt; 
+            {{.category.Section.Name}} &gt; 
+            {{.category.Name}}
+        </div>
+    </div>
+    
+    <div class="content-body">
+        {{if .category.Description}}
+        <p style="color: #7f8c8d; margin-bottom: 20px;">{{.category.Description}}</p>
+        {{end}}
+
+        {{if and .user .user.CanPost}}
+        <div style="margin-bottom: 20px;">
+            <a href="/category/{{.category.ID}}/new-topic" class="btn btn-success">New Topic</a>
+        </div>
+        {{end}}
+
+        {{if .topics}}
+        <table>
+            <thead>
+                <tr>
+                    <th>Topic</th>
+                    <th>Author</th>
+                    <th>Replies</th>
+                    <th>Created</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{range .topics}}
+                <tr>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            {{if .IsPinned}}
+                                <span class="topic-pinned" title="Pinned">📌</span>
+                            {{end}}
+                            {{if .IsLocked}}
+                                <span class="topic-locked" title="Locked">🔒</span>
+                            {{end}}
+                            <a href="/topic/{{.ID}}" style="font-weight: bold; color: #3498db; text-decoration: none;">
+                                {{.Title}}
+                            </a>
+                        </div>
+                    </td>
+                    <td>
+                        <a href="/profile/{{.Author.Username}}">{{.Author.Username}}</a>
+                    </td>
+                    <td style="text-align: center;">{{sub (len .Posts) 1}}</td>
+                    <td>{{.CreatedAt.Format "2006-01-02 15:04"}}</td>
+                    <td>
+                        <div style="display: flex; gap: 5px;">
+                            {{if and $.user ($.user.CanEditTopic .)}}
+                                <a href="/topic/{{.ID}}/edit" class="btn btn-sm btn-secondary">Edit</a>
+                            {{end}}
+                            {{if and $.user ($.user.CanDeleteTopic .)}}
+                                <form method="post" action="/topic/{{.ID}}/delete" style="display: inline;" 
+                                      onsubmit="return confirm('Are you sure you want to delete this topic?')">
+                                    <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                                </form>
+                            {{end}}
+                        </div>
+                    </td>
+                </tr>
+                {{end}}
+            </tbody>
+        </table>
+        {{else}}
+        <div class="alert alert-info">
+            No topics in this category yet. {{if and .user .user.CanPost}}<a href="/category/{{.category.ID}}/new-topic">Create the first one!</a>{{end}}
+        </div>
+        {{end}}
+    </div>
+</div>
+{{end}}

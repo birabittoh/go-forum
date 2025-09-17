@@ -1,0 +1,99 @@
+{{define "content"}}
+<div class="content-wrapper">
+    <div class="content-header">
+        <h1>
+            {{if .topic.IsPinned}}<span class="topic-pinned">📌</span>{{end}}
+            {{if .topic.IsLocked}}<span class="topic-locked">🔒</span>{{end}}
+            {{.topic.Title}}
+        </h1>
+        <div class="breadcrumb">
+            <a href="/">Home</a> &gt; 
+            <a href="/category/{{.topic.Category.ID}}">{{.topic.Category.Name}}</a> &gt; 
+            {{.topic.Title}}
+        </div>
+    </div>
+    
+    <div class="content-body">
+        {{if and .user (canEditTopic .user .topic)}}
+        <div style="margin-bottom: 20px;">
+            <a href="/topic/{{.topic.ID}}/edit" class="btn btn-sm btn-secondary">Edit Topic</a>
+            {{if canDeleteTopic .user .topic}}
+                <form method="post" action="/topic/{{.topic.ID}}/delete" style="display: inline; margin-left: 10px;" 
+                      onsubmit="return confirm('Are you sure you want to delete this topic and all its posts?')">
+                    <button type="submit" class="btn btn-sm btn-danger">Delete Topic</button>
+                </form>
+            {{end}}
+        </div>
+        {{end}}
+
+        {{range .posts}}
+        <div class="post">
+            <div class="post-author">
+                {{if .Author.ProfilePicURL}}
+                    <img src="{{.Author.ProfilePicURL}}" alt="{{.Author.Username}}'s avatar">
+                {{else}}
+                    <div style="width: 64px; height: 64px; background: #ddd; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px;">
+                        {{substr .Author.Username 0 1 | upper}}
+                    </div>
+                {{end}}
+                
+                <div class="username">{{.Author.Username}}</div>
+                <div class="user-type user-{{.Author.UserType.String}}">{{.Author.UserType.String | title}}</div>
+                
+                {{if .Author.Motto}}
+                    <div class="motto">"{{.Author.Motto}}"</div>
+                {{end}}
+                
+                <div style="font-size: 11px; color: #aaa; margin-top: 10px;">
+                    Joined: {{.Author.CreatedAt.Format "Jan 2006"}}
+                </div>
+            </div>
+            
+            <div class="post-content">
+                <div class="post-body">
+                    {{.Content | safeHTML}}
+                </div>
+                
+                {{if .Author.Signature}}
+                <div class="signature">
+                    {{.Author.Signature | safeHTML}}
+                </div>
+                {{end}}
+                
+                <div style="font-size: 12px; color: #999; margin-top: 15px; display: flex; justify-content: space-between; align-items: center;">
+                    <span>Posted: {{.CreatedAt.Format "2006-01-02 15:04"}}</span>
+                    
+                    {{if and $.user (or (canEditPost $.user .) (canDeletePost $.user .))}}
+                    <div class="post-actions">
+                        {{if (canEditPost $.user .)}}
+                            <a href="/post/{{.ID}}/edit" class="btn btn-sm btn-secondary">Edit</a>
+                        {{end}}
+                        {{if (canDeletePost $.user .)}}
+                            <form method="post" action="/post/{{.ID}}/delete" style="display: inline;" 
+                                  onsubmit="return confirm('Are you sure you want to delete this post?')">
+                                <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                            </form>
+                        {{end}}
+                    </div>
+                    {{end}}
+                </div>
+            </div>
+        </div>
+        {{end}}
+
+        {{if and .user .user.CanPost (not .topic.IsLocked)}}
+        <div style="margin-top: 30px; text-align: center;">
+            <a href="/topic/{{.topic.ID}}/new-post" class="btn btn-success">Reply to Topic</a>
+        </div>
+        {{else if .topic.IsLocked}}
+        <div class="alert alert-info" style="margin-top: 30px;">
+            This topic is locked and cannot accept new replies.
+        </div>
+        {{else if not .user}}
+        <div class="alert alert-info" style="margin-top: 30px;">
+            Please <a href="/auth/login">log in</a> to reply to this topic.
+        </div>
+        {{end}}
+    </div>
+</div>
+{{end}}

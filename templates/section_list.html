@@ -1,0 +1,83 @@
+{{define "content"}}
+<div class="content-wrapper">
+    <div class="content-header">
+        <h1>Section Management</h1>
+        <div class="breadcrumb">
+            <a href="/">Home</a> &gt; 
+            <a href="/admin">Admin Panel</a> &gt; 
+            Section Management
+        </div>
+    </div>
+    
+    <div class="content-body">
+        <!-- Create New Section Form -->
+        <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 30px;">
+            <h3 style="margin-bottom: 15px;">Create New Section</h3>
+            <form method="post" action="/admin/sections">
+                <div style="display: grid; grid-template-columns: 2fr 3fr 1fr auto; gap: 15px; align-items: end;">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label for="name">Section Name:</label>
+                        <input type="text" id="name" name="name" required placeholder="e.g., General Discussion">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label for="description">Description:</label>
+                        <input type="text" id="description" name="description" placeholder="Brief description of this section">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label for="order">Order:</label>
+                        <input type="number" id="order" name="order" value="0" min="0">
+                    </div>
+                    <button type="submit" class="btn btn-success">Create</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Existing Sections -->
+        {{if .sections}}
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Description</th>
+                    <th>Order</th>
+                    <th>Categories</th>
+                    <th>Created</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{range .sections}}
+                <tr>
+                    <td><strong>{{.Name}}</strong></td>
+                    <td style="color: #7f8c8d;">{{.Description}}</td>
+                    <td>{{.Order}}</td>
+                    <td style="text-align: center;">{{len .Categories}}</td>
+                    <td>{{.CreatedAt.Format "2006-01-02"}}</td>
+                    <td>
+                        <form method="post" action="/admin/sections/{{.ID}}/delete" style="display: inline;" 
+                              onsubmit="return confirm('Are you sure? This will delete the section and all its categories!')">
+                            <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                {{end}}
+            </tbody>
+        </table>
+        {{else}}
+        <div class="alert alert-info">
+            No sections created yet. Create your first section above.
+        </div>
+        {{end}}
+
+        <div style="margin-top: 30px; padding: 20px; background: #fff3cd; border-radius: 8px; border: 1px solid #ffeaa7;">
+            <h4 style="color: #856404; margin-bottom: 10px;">💡 Tips</h4>
+            <ul style="color: #856404; margin: 0; padding-left: 20px;">
+                <li>Sections are used to group related categories together</li>
+                <li>Use the order field to control how sections appear on the homepage</li>
+                <li>Deleting a section will also delete all categories within it</li>
+                <li>Consider your forum's main topics when creating sections</li>
+            </ul>
+        </div>
+    </div>
+</div>
+{{end}}

@@ -1,0 +1,51 @@
+{{define "content"}}
+<div class="content-wrapper">
+    <div class="content-header">
+        <h1>New Topic</h1>
+        <div class="breadcrumb">
+            <a href="/">Home</a> &gt; 
+            <a href="/category/{{.category.ID}}">{{.category.Name}}</a> &gt; 
+            New Topic
+        </div>
+    </div>
+    
+    <div class="content-body">
+        {{if .error}}
+        <div class="alert alert-error">
+            {{.error}}
+        </div>
+        {{end}}
+
+        <form method="post" action="/category/{{.category.ID}}/new-topic">
+            <div class="form-group">
+                <label for="title">Topic Title:</label>
+                <input type="text" id="title" name="title" required maxlength="255" 
+                       value="{{.title}}" placeholder="Enter a descriptive title for your topic">
+            </div>
+
+            <div class="form-group">
+                <label for="content">Content:</label>
+                <textarea id="content" name="content" required maxlength="{{.maxLength | default 10000}}" 
+                          placeholder="Write your post content here. You can use Markdown formatting.">{{.content}}</textarea>
+                <small style="color: #7f8c8d;">Supports Markdown formatting. Maximum {{.maxLength | default 10000}} characters.</small>
+            </div>
+
+            <div class="form-group">
+                <button type="submit" class="btn btn-success">Create Topic</button>
+                <a href="/category/{{.category.ID}}" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+        
+        <div style="margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 4px;">
+            <h4>Markdown Quick Reference:</h4>
+            <ul style="margin: 10px 0; padding-left: 20px;">
+                <li><code>**bold**</code> → <strong>bold</strong></li>
+                <li><code>*italic*</code> → <em>italic</em></li>
+                <li><code>[link](http://example.com)</code> → <a href="#">link</a></li>
+                <li><code>![image](http://example.com/image.jpg)</code> → image</li>
+                <li><code>`code`</code> → <code>code</code></li>
+            </ul>
+        </div>
+    </div>
+</div>
+{{end}}

@@ -1,0 +1,58 @@
+{{define "content"}}
+<div class="content-wrapper">
+    <div class="content-header">
+        <h1>Edit Profile</h1>
+        <div class="breadcrumb">
+            <a href="/">Home</a> &gt; 
+            <a href="/profile/{{.user.Username}}">{{.user.Username}}'s Profile</a> &gt; 
+            Edit
+        </div>
+    </div>
+    
+    <div class="content-body">
+        {{if .error}}
+        <div class="alert alert-error">
+            {{.error}}
+        </div>
+        {{end}}
+
+        <form method="post" action="/profile/edit">
+            <div class="form-group">
+                <label for="motto">Motto:</label>
+                <input type="text" id="motto" name="motto" maxlength="255" 
+                       value="{{.user.Motto}}" placeholder="Your personal motto or tagline">
+                <small style="color: #7f8c8d;">Maximum 255 characters. This appears under your username in posts.</small>
+            </div>
+
+            <div class="form-group">
+                <label for="profile_pic_url">Profile Picture URL:</label>
+                <input type="url" id="profile_pic_url" name="profile_pic_url" maxlength="500" 
+                       value="{{.user.ProfilePicURL}}" placeholder="https://example.com/your-avatar.jpg">
+                <small style="color: #7f8c8d;">Enter a direct link to your profile picture. Only external URLs are supported.</small>
+            </div>
+
+            <div class="form-group">
+                <label for="signature">Signature:</label>
+                <textarea id="signature" name="signature" maxlength="{{.maxSignatureLength | default 500}}" 
+                          placeholder="Your signature appears at the bottom of all your posts. Markdown supported.">{{.user.Signature}}</textarea>
+                <small style="color: #7f8c8d;">Supports Markdown formatting. Maximum {{.maxSignatureLength | default 500}} characters.</small>
+            </div>
+
+            <div class="form-group">
+                <button type="submit" class="btn btn-success">Save Changes</button>
+                <a href="/profile/{{.user.Username}}" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+        
+        <div style="margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 4px;">
+            <h4>Tips:</h4>
+            <ul style="margin: 10px 0; padding-left: 20px;">
+                <li>Profile pictures should be square (1:1 aspect ratio) for best results</li>
+                <li>Recommended image size: 200x200 pixels or larger</li>
+                <li>Use external image hosting services like Imgur, GitHub, or your own server</li>
+                <li>Your signature supports Markdown: **bold**, *italic*, [links](url), etc.</li>
+            </ul>
+        </div>
+    </div>
+</div>
+{{end}}

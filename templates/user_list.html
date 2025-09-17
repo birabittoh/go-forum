@@ -1,0 +1,172 @@
+{{define "content"}}
+<div class="content-wrapper">
+    <div class="content-header">
+        <h1>User Management</h1>
+        <div class="breadcrumb">
+            <a href="/">Home</a> &gt; 
+            <a href="/admin">Admin Panel</a> &gt; 
+            User Management
+        </div>
+    </div>
+    
+    <div class="content-body">
+        <div style="margin-bottom: 20px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+            <span>Sort by:</span>
+            <a href="/admin/users?sort=username&order={{if and (eq .sortBy "username") (eq .order "asc")}}desc{{else}}asc{{end}}" 
+               class="btn btn-sm {{if eq .sortBy "username"}}btn-secondary{{end}}">
+                Username {{if and (eq .sortBy "username") (eq .order "asc")}}↑{{else if and (eq .sortBy "username") (eq .order "desc")}}↓{{end}}
+            </a>
+            <a href="/admin/users?sort=user_type&order={{if and (eq .sortBy "user_type") (eq .order "asc")}}desc{{else}}asc{{end}}" 
+               class="btn btn-sm {{if eq .sortBy "user_type"}}btn-secondary{{end}}">
+                Type {{if and (eq .sortBy "user_type") (eq .order "asc")}}↑{{else if and (eq .sortBy "user_type") (eq .order "desc")}}↓{{end}}
+            </a>
+            <a href="/admin/users?sort=created_at&order={{if and (eq .sortBy "created_at") (eq .order "asc")}}desc{{else}}asc{{end}}" 
+               class="btn btn-sm {{if eq .sortBy "created_at"}}btn-secondary{{end}}">
+                Joined {{if and (eq .sortBy "created_at") (eq .order "asc")}}↑{{else if and (eq .sortBy "created_at") (eq .order "desc")}}↓{{end}}
+            </a>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Avatar</th>
+                    <th>Username</th>
+                    <th>Email</th>
+                    <th>Type</th>
+                    <th>Status</th>
+                    <th>Joined</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{range .users}}
+                <tr {{if .IsBanned}}style="background-color: #ffe6e6;"{{end}}>
+                    <td>
+                        {{if .ProfilePicURL}}
+                            <img src="{{.ProfilePicURL}}" alt="Avatar" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;">
+                        {{else}}
+                            <div style="width: 32px; height: 32px; background: #ddd; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: bold;">
+                                {{substr .Username 0 1 | upper}}
+                            </div>
+                        {{end}}
+                    </td>
+                    <td>
+                        <a href="/profile/{{.Username}}" {{if .IsBanned}}class="user-banned"{{end}}>{{.Username}}</a>
+                    </td>
+                    <td>{{.Email}}</td>
+                    <td><span class="user-{{.UserType.String}}">{{.UserType.String | title}}</span></td>
+                    <td>
+                        {{if .IsBanned}}
+                            <span style="color: #e74c3c;">🚫 Banned</span>
+                        {{else if not .EmailVerified}}
+                            <span style="color: #f39c12;">⚠️ Unverified</span>
+                        {{else}}
+                            <span style="color: #27ae60;">✅ Active</span>
+                        {{end}}
+                    </td>
+                    <td>{{.CreatedAt.Format "2006-01-02"}}</td>
+                    <td>
+                        <div style="display: flex; gap: 5px; flex-wrap: wrap;">
+                            <a href="/admin/user/{{.ID}}/edit" class="btn btn-sm btn-secondary">Edit</a>
+                            
+                            {{if .IsBanned}}
+                                <form method="post" action="/admin/user/{{.ID}}/unban" style="display: inline;">
+                                    <button type="submit" class="btn btn-sm btn-success">Unban</button>
+                                </form>
+                            {{else}}
+                                <button onclick="showBanModal({{.ID}}, '{{.Username}}')" class="btn btn-sm btn-danger">Ban</button>
+                            {{end}}
+                            
+                            {{if $.user.IsAdmin}}
+                                {{if ne .UserType 3}}
+                                    <button onclick="showPromoteModal({{.ID}}, '{{.Username}}', '{{.UserType.String}}')" class="btn btn-sm">Promote</button>
+                                {{end}}
+                                {{if gt .UserType 1}}
+                                    <form method="post" action="/admin/user/{{.ID}}/demote" style="display: inline;" 
+                                          onsubmit="return confirm('Demote {{.Username}} to regular user?')">
+                                        <button type="submit" class="btn btn-sm btn-secondary">Demote</button>
+                                    </form>
+                                {{end}}
+                            {{end}}
+                        </div>
+                    </td>
+                </tr>
+                {{end}}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Ban Modal -->
+<div id="banModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000;">
+    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 30px; border-radius: 8px; min-width: 400px;">
+        <h3 style="margin-bottom: 20px;">Ban User</h3>
+        <form id="banForm" method="post">
+            <div class="form-group">
+                <label for="reason">Reason:</label>
+                <textarea id="reason" name="reason" placeholder="Enter ban reason..." required></textarea>
+            </div>
+            <div class="form-group">
+                <label for="duration">Duration:</label>
+                <select id="duration" name="duration">
+                    <option value="1">1 Day</option>
+                    <option value="7">1 Week</option>
+                    <option value="30">1 Month</option>
+                    <option value="permanent">Permanent</option>
+                </select>
+            </div>
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button type="button" onclick="hideBanModal()" class="btn btn-secondary">Cancel</button>
+                <button type="submit" class="btn btn-danger">Ban User</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Promote Modal -->
+<div id="promoteModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000;">
+    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 30px; border-radius: 8px; min-width: 400px;">
+        <h3 style="margin-bottom: 20px;">Promote User</h3>
+        <form id="promoteForm" method="post">
+            <div class="form-group">
+                <label for="user_type">New User Type:</label>
+                <select id="user_type" name="user_type">
+                    <option value="user">User</option>
+                    <option value="moderator">Moderator</option>
+                    <option value="admin">Admin</option>
+                </select>
+            </div>
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button type="button" onclick="hidePromoteModal()" class="btn btn-secondary">Cancel</button>
+                <button type="submit" class="btn btn-success">Promote User</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function showBanModal(userId, username) {
+    document.getElementById('banForm').action = '/admin/user/' + userId + '/ban';
+    document.getElementById('banModal').style.display = 'block';
+}
+
+function hideBanModal() {
+    document.getElementById('banModal').style.display = 'none';
+}
+
+function showPromoteModal(userId, username, currentType) {
+    document.getElementById('promoteForm').action = '/admin/user/' + userId + '/promote';
+    document.getElementById('promoteModal').style.display = 'block';
+}
+
+function hidePromoteModal() {
+    document.getElementById('promoteModal').style.display = 'none';
+}
+
+// Close modals when clicking outside
+window.onclick = function(event) {
+    if (event.target.id === 'banModal') hideBanModal();
+    if (event.target.id === 'promoteModal') hidePromoteModal();
+}
+</script>
+{{end}}
