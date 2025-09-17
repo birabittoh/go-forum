@@ -98,11 +98,9 @@ func (s *Service) Register(username, email, password string) (*models.User, erro
 	s.db.Model(&models.User{}).Count(&userCount)
 
 	userType := models.UserTypeUnverified
-	emailVerified := false
 
 	if userCount == 0 {
 		userType = models.UserTypeAdmin
-		emailVerified = true // First user is automatically verified
 	}
 
 	// Create user
@@ -111,8 +109,8 @@ func (s *Service) Register(username, email, password string) (*models.User, erro
 		Email:             email,
 		PasswordHash:      hashedPassword,
 		UserType:          userType,
-		EmailVerified:     emailVerified,
 		VerificationToken: verificationToken,
+		Theme:             "default",
 	}
 
 	if err := s.db.Create(user).Error; err != nil {
@@ -166,11 +164,10 @@ func (s *Service) VerifyEmail(token string) error {
 		return errors.New("invalid verification token")
 	}
 
-	if user.EmailVerified {
+	if user.IsVerified() {
 		return errors.New("email already verified")
 	}
 
-	user.EmailVerified = true
 	user.VerificationToken = ""
 	user.UserType = models.UserTypeUser // Promote to regular user
 

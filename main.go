@@ -156,7 +156,6 @@ func setupRoutes(r *gin.Engine, h *handlers.Handler) {
 	admin := r.Group("/admin")
 	admin.Use(middleware.RequireAuth(), middleware.RequireAdmin())
 	{
-		admin.POST("/user/:id/promote", h.PromoteUser)
-		admin.POST("/user/:id/demote", h.DemoteUser)
+		admin.POST("/user/:id/type", h.ChangeUserType)
 	}
 }

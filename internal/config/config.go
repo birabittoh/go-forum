@@ -3,7 +3,6 @@ package config
 import (
 	"os"
 	"strconv"
-	"time"
 )
 
 type Config struct {
@@ -68,18 +67,4 @@ func getEnvInt(key string, defaultValue int) int {
 	}
 
 	return intValue
-}
-
-func getEnvDuration(key string, defaultValue time.Duration) time.Duration {
-	value := os.Getenv(key)
-	if value == "" {
-		return defaultValue
-	}
-
-	duration, err := time.ParseDuration(value)
-	if err != nil {
-		return defaultValue
-	}
-
-	return duration
 }

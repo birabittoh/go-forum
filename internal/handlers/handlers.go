@@ -65,24 +65,18 @@ func (h *Handler) renderMarkdown(content string) string {
 // Home page
 func (h *Handler) Home(c *gin.Context) {
 	var sections []models.Section
-	if err := h.db.Preload("Categories").Order("\"order\" ASC").Find(&sections).Error; err != nil {
+	if err := h.db.Preload("Categories.Topics.Posts").Order("\"order\" ASC").Find(&sections).Error; err != nil {
 		// Manual render error template
-		data := map[string]interface{}{
-			"title":   "Error",
-			"message": "Failed to load forum sections",
-		}
-		C.Tmpl[C.ErrorPath].Execute(c.Writer, data)
-		c.Status(http.StatusInternalServerError)
+		renderError(c, "Internal server error", http.StatusInternalServerError)
 		return
 	}
 
-	data := map[string]interface{}{
+	data := map[string]any{
 		"title":    "Home",
 		"sections": sections,
 		"user":     h.getCurrentUser(c),
 	}
-	C.Tmpl[C.HomePath].Execute(c.Writer, data)
-	c.Status(http.StatusOK)
+	renderTemplate(c, data, C.HomePath)
 }
 
 // Auth handlers
@@ -92,11 +86,10 @@ func (h *Handler) LoginForm(c *gin.Context) {
 		return
 	}
 
-	data := map[string]interface{}{
+	data := map[string]any{
 		"title": "Login",
 	}
-	C.Tmpl[C.LoginPath].Execute(c.Writer, data)
-	c.Status(http.StatusOK)
+	renderTemplate(c, data, C.LoginPath)
 }
 
 func (h *Handler) Login(c *gin.Context) {
@@ -110,23 +103,21 @@ func (h *Handler) Login(c *gin.Context) {
 	remember := c.PostForm("remember") == "on"
 
 	if username == "" || password == "" {
-		data := map[string]interface{}{
+		data := map[string]any{
 			"title": "Login",
 			"error": "Username and password are required",
 		}
-		C.Tmpl[C.LoginPath].Execute(c.Writer, data)
-		c.Status(http.StatusBadRequest)
+		renderTemplateStatus(c, data, C.LoginPath, http.StatusBadRequest)
 		return
 	}
 
 	_, token, err := h.authService.Login(username, password)
 	if err != nil {
-		data := map[string]interface{}{
+		data := map[string]any{
 			"title": "Login",
 			"error": err.Error(),
 		}
-		C.Tmpl[C.LoginPath].Execute(c.Writer, data)
-		c.Status(http.StatusBadRequest)
+		renderTemplateStatus(c, data, C.LoginPath, http.StatusBadRequest)
 		return
 	}
 
@@ -152,7 +143,7 @@ func (h *Handler) SignupForm(c *gin.Context) {
 		return
 	}
 
-	data := map[string]interface{}{
+	data := map[string]any{
 		"title": "Sign Up",
 	}
 	C.Tmpl["templates/signup.html"].Execute(c.Writer, data)
@@ -172,43 +163,39 @@ func (h *Handler) Signup(c *gin.Context) {
 
 	// Validation
 	if username == "" || email == "" || password == "" {
-		data := map[string]interface{}{
+		data := map[string]any{
 			"title": "Sign Up",
 			"error": "All fields are required",
 		}
-		C.Tmpl[C.SignupPath].Execute(c.Writer, data)
-		c.Status(http.StatusBadRequest)
+		renderTemplateStatus(c, data, C.SignupPath, http.StatusBadRequest)
 		return
 	}
 
 	if password != confirmPassword {
-		data := map[string]interface{}{
+		data := map[string]any{
 			"title": "Sign Up",
 			"error": "Passwords do not match",
 		}
-		C.Tmpl[C.SignupPath].Execute(c.Writer, data)
-		c.Status(http.StatusBadRequest)
+		renderTemplateStatus(c, data, C.SignupPath, http.StatusBadRequest)
 		return
 	}
 
 	if len(password) < 6 {
-		data := map[string]interface{}{
+		data := map[string]any{
 			"title": "Sign Up",
 			"error": "Password must be at least 6 characters long",
 		}
-		C.Tmpl[C.SignupPath].Execute(c.Writer, data)
-		c.Status(http.StatusBadRequest)
+		renderTemplateStatus(c, data, C.SignupPath, http.StatusBadRequest)
 		return
 	}
 
 	user, err := h.authService.Register(username, email, password)
 	if err != nil {
-		data := map[string]interface{}{
+		data := map[string]any{
 			"title": "Sign Up",
 			"error": err.Error(),
 		}
-		C.Tmpl[C.SignupPath].Execute(c.Writer, data)
-		c.Status(http.StatusBadRequest)
+		renderTemplateStatus(c, data, C.SignupPath, http.StatusBadRequest)
 		return
 	}
 
@@ -222,12 +209,11 @@ func (h *Handler) Signup(c *gin.Context) {
 		}
 	}
 
-	data := map[string]interface{}{
+	data := map[string]any{
 		"title":   "Registration Successful",
 		"message": "Please check your email for verification instructions.",
 	}
-	C.Tmpl[C.SignupSuccessPath].Execute(c.Writer, data)
-	c.Status(http.StatusOK)
+	renderTemplate(c, data, C.SignupSuccessPath)
 }
 
 func (h *Handler) Logout(c *gin.Context) {
@@ -240,100 +226,63 @@ func (h *Handler) VerifyEmail(c *gin.Context) {
 
 	err := h.authService.VerifyEmail(token)
 	if err != nil {
-		data := map[string]interface{}{
-			"title":   "Verification Failed",
-			"message": err.Error(),
-		}
-		C.Tmpl[C.ErrorPath].Execute(c.Writer, data)
-		c.Status(http.StatusBadRequest)
+		renderError(c, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	data := map[string]interface{}{
+	data := map[string]any{
 		"title":   "Email Verified",
 		"message": "Your email has been verified successfully. You can now log in.",
 	}
-	C.Tmpl[C.VerificationSuccessPath].Execute(c.Writer, data)
-	c.Status(http.StatusOK)
+	renderTemplate(c, data, C.VerificationSuccessPath)
 }
 
 // Category view
 func (h *Handler) CategoryView(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		data := map[string]interface{}{
-			"title":   "Error",
-			"message": "Invalid category ID",
-		}
-		C.Tmpl[C.ErrorPath].Execute(c.Writer, data)
-		c.Status(http.StatusBadRequest)
+		renderError(c, "Invalid category ID", http.StatusBadRequest)
 		return
 	}
 
 	var category models.Category
 	if err := h.db.Preload("Section").First(&category, id).Error; err != nil {
-		data := map[string]interface{}{
-			"title":   "Error",
-			"message": "Category not found",
-		}
-		C.Tmpl[C.ErrorPath].Execute(c.Writer, data)
-		c.Status(http.StatusNotFound)
+		renderError(c, "Category not found", http.StatusNotFound)
 		return
 	}
 
 	var topics []models.Topic
 	if err := h.db.Preload("Author").Preload("Posts").Where("category_id = ?", id).Order("is_pinned DESC, created_at DESC").Find(&topics).Error; err != nil {
-		data := map[string]interface{}{
-			"title":   "Error",
-			"message": "Failed to load topics",
-		}
-		C.Tmpl[C.ErrorPath].Execute(c.Writer, data)
-		c.Status(http.StatusInternalServerError)
+		renderError(c, "Failed to load topics", http.StatusInternalServerError)
 		return
 	}
 
-	data := map[string]interface{}{
+	data := map[string]any{
 		"title":    category.Name,
 		"category": category,
 		"topics":   topics,
 		"user":     h.getCurrentUser(c),
 	}
-	C.Tmpl[C.CategoryPath].Execute(c.Writer, data)
-	c.Status(http.StatusOK)
+	renderTemplate(c, data, C.CategoryPath)
 }
 
 // Topic view
 func (h *Handler) TopicView(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		data := map[string]interface{}{
-			"title":   "Error",
-			"message": "Invalid topic ID",
-		}
-		C.Tmpl[C.ErrorPath].Execute(c.Writer, data)
-		c.Status(http.StatusBadRequest)
+		renderError(c, "Invalid topic ID", http.StatusBadRequest)
 		return
 	}
 
 	var topic models.Topic
 	if err := h.db.Preload("Category").Preload("Author").First(&topic, id).Error; err != nil {
-		data := map[string]interface{}{
-			"title":   "Error",
-			"message": "Topic not found",
-		}
-		C.Tmpl[C.ErrorPath].Execute(c.Writer, data)
-		c.Status(http.StatusNotFound)
+		renderError(c, "Topic not found", http.StatusNotFound)
 		return
 	}
 
 	var posts []models.Post
 	if err := h.db.Preload("Author").Where("topic_id = ?", id).Order("created_at ASC").Find(&posts).Error; err != nil {
-		data := map[string]interface{}{
-			"title":   "Error",
-			"message": "Failed to load posts",
-		}
-		C.Tmpl[C.ErrorPath].Execute(c.Writer, data)
-		c.Status(http.StatusInternalServerError)
+		renderError(c, "Failed to load posts", http.StatusInternalServerError)
 		return
 	}
 
@@ -343,17 +292,13 @@ func (h *Handler) TopicView(c *gin.Context) {
 		posts[i].Author.Signature = h.renderMarkdown(posts[i].Author.Signature)
 	}
 
-	data := map[string]interface{}{
+	data := map[string]any{
 		"title": topic.Title,
 		"topic": &topic,
 		"posts": posts,
 		"user":  h.getCurrentUser(c),
 	}
-	err = C.Tmpl[C.TopicPath].Execute(c.Writer, data)
-	if err != nil {
-		fmt.Println("Template execution error:", err)
-	}
-	c.Status(http.StatusOK)
+	renderTemplate(c, data, C.TopicPath)
 }
 
 // Profile handlers
@@ -362,22 +307,16 @@ func (h *Handler) ProfileView(c *gin.Context) {
 
 	var user models.User
 	if err := h.db.Where("username = ?", username).First(&user).Error; err != nil {
-		data := map[string]interface{}{
-			"title":   "Error",
-			"message": "User not found",
-		}
-		C.Tmpl[C.ErrorPath].Execute(c.Writer, data)
-		c.Status(http.StatusNotFound)
+		renderError(c, "User not found", http.StatusNotFound)
 		return
 	}
 
-	data := map[string]interface{}{
+	data := map[string]any{
 		"title":       fmt.Sprintf("%s's Profile", user.Username),
 		"profileUser": user,
 		"user":        h.getCurrentUser(c),
 	}
-	C.Tmpl[C.ProfilePath].Execute(c.Writer, data)
-	c.Status(http.StatusOK)
+	renderTemplate(c, data, C.ProfilePath)
 }
 
 func (h *Handler) ProfileEdit(c *gin.Context) {
@@ -387,13 +326,12 @@ func (h *Handler) ProfileEdit(c *gin.Context) {
 		return
 	}
 
-	data := map[string]interface{}{
+	data := map[string]any{
 		"title":              "Edit Profile",
 		"user":               user,
 		"maxSignatureLength": h.config.MaxSignatureLength,
 	}
-	C.Tmpl[C.ProfileEditPath].Execute(c.Writer, data)
-	c.Status(http.StatusOK)
+	renderTemplate(c, data, C.ProfileEditPath)
 }
 
 func (h *Handler) ProfileUpdate(c *gin.Context) {
@@ -409,26 +347,24 @@ func (h *Handler) ProfileUpdate(c *gin.Context) {
 
 	// Validate lengths
 	if len(motto) > 255 {
-		data := map[string]interface{}{
+		data := map[string]any{
 			"title":              "Edit Profile",
 			"user":               user,
 			"error":              "Motto must be less than 255 characters",
 			"maxSignatureLength": h.config.MaxSignatureLength,
 		}
-		C.Tmpl[C.ProfileEditPath].Execute(c.Writer, data)
-		c.Status(http.StatusBadRequest)
+		renderTemplateStatus(c, data, C.ProfileEditPath, http.StatusBadRequest)
 		return
 	}
 
 	if len(signature) > h.config.MaxSignatureLength {
-		data := map[string]interface{}{
+		data := map[string]any{
 			"title":              "Edit Profile",
 			"user":               user,
 			"error":              fmt.Sprintf("Signature must be less than %d characters", h.config.MaxSignatureLength),
 			"maxSignatureLength": h.config.MaxSignatureLength,
 		}
-		C.Tmpl[C.ProfileEditPath].Execute(c.Writer, data)
-		c.Status(http.StatusBadRequest)
+		renderTemplateStatus(c, data, C.ProfileEditPath, http.StatusBadRequest)
 		return
 	}
 
@@ -438,14 +374,13 @@ func (h *Handler) ProfileUpdate(c *gin.Context) {
 	user.Signature = signature
 
 	if err := h.db.Save(user).Error; err != nil {
-		data := map[string]interface{}{
+		data := map[string]any{
 			"title":              "Edit Profile",
 			"user":               user,
 			"error":              "Failed to update profile",
 			"maxSignatureLength": h.config.MaxSignatureLength,
 		}
-		C.Tmpl[C.ProfileEditPath].Execute(c.Writer, data)
-		c.Status(http.StatusInternalServerError)
+		renderTemplateStatus(c, data, C.ProfileEditPath, http.StatusInternalServerError)
 		return
 	}
 
@@ -456,125 +391,82 @@ func (h *Handler) ProfileUpdate(c *gin.Context) {
 func (h *Handler) NewPostForm(c *gin.Context) {
 	user := h.getCurrentUser(c)
 	if user == nil || !user.CanPost() {
-		data := map[string]interface{}{
-			"title":   "Access Denied",
-			"message": "You cannot post at this time",
-		}
-		C.Tmpl[C.ErrorPath].Execute(c.Writer, data)
-		c.Status(http.StatusForbidden)
+		renderError(c, "You cannot post at this time", http.StatusForbidden)
 		return
 	}
 
 	topicID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		data := map[string]interface{}{
-			"title":   "Error",
-			"message": "Invalid topic ID",
-		}
-		C.Tmpl[C.ErrorPath].Execute(c.Writer, data)
-		c.Status(http.StatusBadRequest)
+		renderError(c, "Invalid topic ID", http.StatusBadRequest)
 		return
 	}
 
 	var topic models.Topic
 	if err := h.db.Preload("Category").First(&topic, topicID).Error; err != nil {
-		data := map[string]interface{}{
-			"title":   "Error",
-			"message": "Topic not found",
-		}
-		C.Tmpl[C.ErrorPath].Execute(c.Writer, data)
-		c.Status(http.StatusNotFound)
+		renderError(c, "Topic not found", http.StatusNotFound)
 		return
 	}
 
 	if topic.IsLocked && !user.CanModerate() {
-		data := map[string]interface{}{
-			"title":   "Topic Locked",
-			"message": "This topic is locked and cannot accept new posts",
-		}
-		C.Tmpl[C.ErrorPath].Execute(c.Writer, data)
-		c.Status(http.StatusForbidden)
+		renderError(c, "This topic is locked and cannot accept new posts", http.StatusForbidden)
 		return
 	}
 
-	data := map[string]interface{}{
+	data := map[string]any{
 		"title":     "New Post",
 		"topic":     topic,
 		"user":      user,
 		"maxLength": h.config.MaxPostLength,
 	}
-	C.Tmpl[C.NewPostPath].Execute(c.Writer, data)
-	c.Status(http.StatusOK)
+	renderTemplate(c, data, C.NewPostPath)
 }
 
 func (h *Handler) CreatePost(c *gin.Context) {
 	user := h.getCurrentUser(c)
 	if user == nil || !user.CanPost() {
-		data := map[string]interface{}{
-			"title":   "Access Denied",
-			"message": "You cannot post at this time",
-		}
-		C.Tmpl[C.ErrorPath].Execute(c.Writer, data)
-		c.Status(http.StatusForbidden)
+		renderError(c, "You cannot post at this time", http.StatusForbidden)
 		return
 	}
 
 	topicID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		data := map[string]interface{}{
-			"title":   "Error",
-			"message": "Invalid topic ID",
-		}
-		C.Tmpl[C.ErrorPath].Execute(c.Writer, data)
-		c.Status(http.StatusBadRequest)
+		renderError(c, "Invalid topic ID", http.StatusBadRequest)
 		return
 	}
 
 	var topic models.Topic
 	if err := h.db.First(&topic, topicID).Error; err != nil {
-		data := map[string]interface{}{
-			"title":   "Error",
-			"message": "Topic not found",
-		}
-		C.Tmpl[C.ErrorPath].Execute(c.Writer, data)
-		c.Status(http.StatusNotFound)
+		renderError(c, "Topic not found", http.StatusNotFound)
 		return
 	}
 
 	if topic.IsLocked && !user.CanModerate() {
-		data := map[string]interface{}{
-			"title":   "Topic Locked",
-			"message": "This topic is locked and cannot accept new posts",
-		}
-		C.Tmpl[C.ErrorPath].Execute(c.Writer, data)
-		c.Status(http.StatusForbidden)
+		renderError(c, "This topic is locked and cannot accept new posts", http.StatusForbidden)
 		return
 	}
 
 	content := c.PostForm("content")
 	if len(content) == 0 {
-		data := map[string]interface{}{
+		data := map[string]any{
 			"title":     "New Post",
 			"topic":     topic,
 			"user":      user,
 			"error":     "Post content cannot be empty",
 			"maxLength": h.config.MaxPostLength,
 		}
-		C.Tmpl[C.NewPostPath].Execute(c.Writer, data)
-		c.Status(http.StatusBadRequest)
+		renderTemplateStatus(c, data, C.NewPostPath, http.StatusBadRequest)
 		return
 	}
 
 	if len(content) > h.config.MaxPostLength {
-		data := map[string]interface{}{
+		data := map[string]any{
 			"title":     "New Post",
 			"topic":     topic,
 			"user":      user,
 			"error":     fmt.Sprintf("Post content must be less than %d characters", h.config.MaxPostLength),
 			"maxLength": h.config.MaxPostLength,
 		}
-		C.Tmpl[C.NewPostPath].Execute(c.Writer, data)
-		c.Status(http.StatusBadRequest)
+		renderTemplateStatus(c, data, C.NewPostPath, http.StatusBadRequest)
 		return
 	}
 
@@ -585,15 +477,14 @@ func (h *Handler) CreatePost(c *gin.Context) {
 	}
 
 	if err := h.db.Create(post).Error; err != nil {
-		data := map[string]interface{}{
+		data := map[string]any{
 			"title":     "New Post",
 			"topic":     topic,
 			"user":      user,
 			"error":     "Failed to create post",
 			"maxLength": h.config.MaxPostLength,
 		}
-		C.Tmpl[C.NewPostPath].Execute(c.Writer, data)
-		c.Status(http.StatusInternalServerError)
+		renderTemplateStatus(c, data, C.NewPostPath, http.StatusInternalServerError)
 		return
 	}
 

@@ -109,7 +109,7 @@ func RequireAuth() gin.HandlerFunc {
 
 		// Ensure user is verified
 		u := user.(*models.User)
-		if !u.EmailVerified {
+		if !u.IsVerified() {
 			data := map[string]interface{}{
 				"title":   "Email Verification Required",
 				"message": "Please verify your email address before accessing this feature.",

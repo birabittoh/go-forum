@@ -1,7 +1,9 @@
 package handlers
 
 import (
+	"bytes"
 	C "goforum/internal/constants"
+	"io"
 	"net/http"
 	"strconv"
 	"time"
@@ -11,16 +13,40 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+func renderError(c *gin.Context, message string, status int) error {
+	data := map[string]interface{}{
+		"title":   "Error",
+		"message": message,
+	}
+	c.Status(status)
+	return C.Tmpl[C.ErrorPath].Execute(c.Writer, data)
+}
+
+func renderTemplateStatus(c *gin.Context, data map[string]any, templatePath string, status int) error {
+	buf := new(bytes.Buffer)
+	err := C.Tmpl[templatePath].Execute(buf, data)
+	if err != nil {
+		return renderError(c, err.Error(), http.StatusInternalServerError)
+	}
+
+	_, err = io.Copy(c.Writer, buf)
+	c.Status(status)
+	return err
+}
+
+func renderTemplate(c *gin.Context, data map[string]any, templatePath string) error {
+	return renderTemplateStatus(c, data, templatePath, http.StatusOK)
+}
+
 // Admin panel
 func (h *Handler) AdminPanel(c *gin.Context) {
 	user := h.getCurrentUser(c)
 
-	data := map[string]interface{}{
+	data := map[string]any{
 		"title": "Admin Panel",
 		"user":  user,
 	}
-	C.Tmpl[C.AdminPanelPath].Execute(c.Writer, data)
-	c.Status(http.StatusOK)
+	renderTemplate(c, data, C.AdminPanelPath)
 }
 
 // User management
@@ -47,24 +73,18 @@ func (h *Handler) UserList(c *gin.Context) {
 	}
 
 	if err := query.Find(&users).Error; err != nil {
-		data := map[string]interface{}{
-			"title":   "Error",
-			"message": "Failed to load users",
-		}
-		C.Tmpl[C.ErrorPath].Execute(c.Writer, data)
-		c.Status(http.StatusInternalServerError)
+		renderError(c, "Failed to load users", http.StatusInternalServerError)
 		return
 	}
 
-	data := map[string]interface{}{
+	data := map[string]any{
 		"title":  "User Management",
 		"users":  users,
 		"user":   user,
 		"sortBy": sortBy,
 		"order":  order,
 	}
-	C.Tmpl[C.UserListPath].Execute(c.Writer, data)
-	c.Status(http.StatusOK)
+	renderTemplate(c, data, C.UserListPath)
 }
 
 func (h *Handler) EditUser(c *gin.Context) {
@@ -72,33 +92,22 @@ func (h *Handler) EditUser(c *gin.Context) {
 
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		data := map[string]interface{}{
-			"title":   "Error",
-			"message": "Invalid user ID",
-		}
-		C.Tmpl[C.ErrorPath].Execute(c.Writer, data)
-		c.Status(http.StatusBadRequest)
+		renderError(c, "Invalid user ID", http.StatusBadRequest)
 		return
 	}
 
 	var targetUser models.User
 	if err := h.db.First(&targetUser, id).Error; err != nil {
-		data := map[string]interface{}{
-			"title":   "Error",
-			"message": "User not found",
-		}
-		C.Tmpl[C.ErrorPath].Execute(c.Writer, data)
-		c.Status(http.StatusNotFound)
+		renderError(c, "User not found", http.StatusNotFound)
 		return
 	}
 
-	data := map[string]interface{}{
+	data := map[string]any{
 		"title":      "Edit User",
 		"user":       currentUser,
 		"targetUser": targetUser,
 	}
-	C.Tmpl[C.EditUserPath].Execute(c.Writer, data)
-	c.Status(http.StatusOK)
+	renderTemplate(c, data, C.EditUserPath)
 }
 
 func (h *Handler) UpdateUser(c *gin.Context) {
@@ -106,23 +115,13 @@ func (h *Handler) UpdateUser(c *gin.Context) {
 
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		data := map[string]interface{}{
-			"title":   "Error",
-			"message": "Invalid user ID",
-		}
-		C.Tmpl[C.ErrorPath].Execute(c.Writer, data)
-		c.Status(http.StatusBadRequest)
+		renderError(c, "Invalid user ID", http.StatusBadRequest)
 		return
 	}
 
 	var targetUser models.User
 	if err := h.db.First(&targetUser, id).Error; err != nil {
-		data := map[string]interface{}{
-			"title":   "Error",
-			"message": "User not found",
-		}
-		C.Tmpl[C.ErrorPath].Execute(c.Writer, data)
-		c.Status(http.StatusNotFound)
+		renderError(c, "User not found", http.StatusNotFound)
 		return
 	}
 
@@ -132,14 +131,13 @@ func (h *Handler) UpdateUser(c *gin.Context) {
 	targetUser.Signature = c.PostForm("signature")
 
 	if err := h.db.Save(&targetUser).Error; err != nil {
-		data := map[string]interface{}{
+		data := map[string]any{
 			"title":      "Edit User",
 			"user":       currentUser,
 			"targetUser": targetUser,
 			"error":      "Failed to update user",
 		}
-		C.Tmpl[C.EditUserPath].Execute(c.Writer, data)
-		c.Status(http.StatusInternalServerError)
+		renderTemplate(c, data, C.EditUserPath)
 		return
 	}
 
@@ -149,23 +147,13 @@ func (h *Handler) UpdateUser(c *gin.Context) {
 func (h *Handler) BanUser(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		data := map[string]interface{}{
-			"title":   "Error",
-			"message": "Invalid user ID",
-		}
-		C.Tmpl[C.ErrorPath].Execute(c.Writer, data)
-		c.Status(http.StatusBadRequest)
+		renderError(c, "Invalid user ID", http.StatusBadRequest)
 		return
 	}
 
 	var user models.User
 	if err := h.db.First(&user, id).Error; err != nil {
-		data := map[string]interface{}{
-			"title":   "Error",
-			"message": "User not found",
-		}
-		C.Tmpl[C.ErrorPath].Execute(c.Writer, data)
-		c.Status(http.StatusNotFound)
+		renderError(c, "User not found", http.StatusNotFound)
 		return
 	}
 
@@ -186,12 +174,7 @@ func (h *Handler) BanUser(c *gin.Context) {
 	}
 
 	if err := h.db.Save(&user).Error; err != nil {
-		data := map[string]interface{}{
-			"title":   "Error",
-			"message": "Failed to ban user",
-		}
-		C.Tmpl[C.ErrorPath].Execute(c.Writer, data)
-		c.Status(http.StatusInternalServerError)
+		renderError(c, "Failed to ban user", http.StatusInternalServerError)
 		return
 	}
 
@@ -201,23 +184,13 @@ func (h *Handler) BanUser(c *gin.Context) {
 func (h *Handler) UnbanUser(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		data := map[string]interface{}{
-			"title":   "Error",
-			"message": "Invalid user ID",
-		}
-		C.Tmpl[C.ErrorPath].Execute(c.Writer, data)
-		c.Status(http.StatusBadRequest)
+		renderError(c, "Invalid user ID", http.StatusBadRequest)
 		return
 	}
 
 	var user models.User
 	if err := h.db.First(&user, id).Error; err != nil {
-		data := map[string]interface{}{
-			"title":   "Error",
-			"message": "User not found",
-		}
-		C.Tmpl[C.ErrorPath].Execute(c.Writer, data)
-		c.Status(http.StatusNotFound)
+		renderError(c, "User not found", http.StatusNotFound)
 		return
 	}
 
@@ -227,38 +200,23 @@ func (h *Handler) UnbanUser(c *gin.Context) {
 	user.BannedUntil = nil
 
 	if err := h.db.Save(&user).Error; err != nil {
-		data := map[string]interface{}{
-			"title":   "Error",
-			"message": "Failed to unban user",
-		}
-		C.Tmpl[C.ErrorPath].Execute(c.Writer, data)
-		c.Status(http.StatusInternalServerError)
+		renderError(c, "Failed to unban user", http.StatusInternalServerError)
 		return
 	}
 
 	c.Redirect(http.StatusFound, "/admin/users")
 }
 
-func (h *Handler) PromoteUser(c *gin.Context) {
+func (h *Handler) ChangeUserType(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		data := map[string]interface{}{
-			"title":   "Error",
-			"message": "Invalid user ID",
-		}
-		C.Tmpl[C.ErrorPath].Execute(c.Writer, data)
-		c.Status(http.StatusBadRequest)
+		renderError(c, "Invalid user ID", http.StatusBadRequest)
 		return
 	}
 
 	var user models.User
 	if err := h.db.First(&user, id).Error; err != nil {
-		data := map[string]interface{}{
-			"title":   "Error",
-			"message": "User not found",
-		}
-		C.Tmpl[C.ErrorPath].Execute(c.Writer, data)
-		c.Status(http.StatusNotFound)
+		renderError(c, "User not found", http.StatusNotFound)
 		return
 	}
 
@@ -273,52 +231,7 @@ func (h *Handler) PromoteUser(c *gin.Context) {
 	}
 
 	if err := h.db.Save(&user).Error; err != nil {
-		data := map[string]interface{}{
-			"title":   "Error",
-			"message": "Failed to update user type",
-		}
-		C.Tmpl[C.ErrorPath].Execute(c.Writer, data)
-		c.Status(http.StatusInternalServerError)
-		return
-	}
-
-	c.Redirect(http.StatusFound, "/admin/users")
-}
-
-func (h *Handler) DemoteUser(c *gin.Context) {
-	id, err := strconv.Atoi(c.Param("id"))
-	if err != nil {
-		data := map[string]interface{}{
-			"title":   "Error",
-			"message": "Invalid user ID",
-		}
-		C.Tmpl[C.ErrorPath].Execute(c.Writer, data)
-		c.Status(http.StatusBadRequest)
-		return
-	}
-
-	var user models.User
-	if err := h.db.First(&user, id).Error; err != nil {
-		data := map[string]interface{}{
-			"title":   "Error",
-			"message": "User not found",
-		}
-		C.Tmpl[C.ErrorPath].Execute(c.Writer, data)
-		c.Status(http.StatusNotFound)
-		return
-	}
-
-	if user.UserType > models.UserTypeUser {
-		user.UserType = models.UserTypeUser
-	}
-
-	if err := h.db.Save(&user).Error; err != nil {
-		data := map[string]interface{}{
-			"title":   "Error",
-			"message": "Failed to demote user",
-		}
-		C.Tmpl[C.ErrorPath].Execute(c.Writer, data)
-		c.Status(http.StatusInternalServerError)
+		renderError(c, "Failed to update user type", http.StatusInternalServerError)
 		return
 	}
 
@@ -331,22 +244,16 @@ func (h *Handler) SectionList(c *gin.Context) {
 
 	var sections []models.Section
 	if err := h.db.Order("\"order\" ASC").Find(&sections).Error; err != nil {
-		data := map[string]interface{}{
-			"title":   "Error",
-			"message": "Failed to load sections",
-		}
-		C.Tmpl[C.ErrorPath].Execute(c.Writer, data)
-		c.Status(http.StatusInternalServerError)
+		renderError(c, "Failed to load sections", http.StatusInternalServerError)
 		return
 	}
 
-	data := map[string]interface{}{
+	data := map[string]any{
 		"title":    "Section Management",
 		"sections": sections,
 		"user":     user,
 	}
-	C.Tmpl[C.SectionListPath].Execute(c.Writer, data)
-	c.Status(http.StatusOK)
+	renderTemplate(c, data, C.SectionListPath)
 }
 
 func (h *Handler) CreateSection(c *gin.Context) {
@@ -355,12 +262,7 @@ func (h *Handler) CreateSection(c *gin.Context) {
 	order, _ := strconv.Atoi(c.PostForm("order"))
 
 	if name == "" {
-		data := map[string]interface{}{
-			"title":   "Error",
-			"message": "Section name is required",
-		}
-		C.Tmpl[C.ErrorPath].Execute(c.Writer, data)
-		c.Status(http.StatusBadRequest)
+		renderError(c, "Section name is required", http.StatusBadRequest)
 		return
 	}
 
@@ -371,12 +273,7 @@ func (h *Handler) CreateSection(c *gin.Context) {
 	}
 
 	if err := h.db.Create(section).Error; err != nil {
-		data := map[string]interface{}{
-			"title":   "Error",
-			"message": "Failed to create section",
-		}
-		C.Tmpl[C.ErrorPath].Execute(c.Writer, data)
-		c.Status(http.StatusInternalServerError)
+		renderError(c, "Failed to create section", http.StatusInternalServerError)
 		return
 	}
 
@@ -386,22 +283,12 @@ func (h *Handler) CreateSection(c *gin.Context) {
 func (h *Handler) DeleteSection(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		data := map[string]interface{}{
-			"title":   "Error",
-			"message": "Invalid section ID",
-		}
-		C.Tmpl[C.ErrorPath].Execute(c.Writer, data)
-		c.Status(http.StatusBadRequest)
+		renderError(c, "Invalid section ID", http.StatusBadRequest)
 		return
 	}
 
 	if err := h.db.Delete(&models.Section{}, id).Error; err != nil {
-		data := map[string]interface{}{
-			"title":   "Error",
-			"message": "Failed to delete section",
-		}
-		C.Tmpl[C.ErrorPath].Execute(c.Writer, data)
-		c.Status(http.StatusInternalServerError)
+		renderError(c, "Failed to delete section", http.StatusInternalServerError)
 		return
 	}
 
@@ -414,34 +301,23 @@ func (h *Handler) CategoryList(c *gin.Context) {
 
 	var categories []models.Category
 	if err := h.db.Preload("Section").Order("section_id ASC, \"order\" ASC").Find(&categories).Error; err != nil {
-		data := map[string]interface{}{
-			"title":   "Error",
-			"message": "Failed to load categories",
-		}
-		C.Tmpl[C.ErrorPath].Execute(c.Writer, data)
-		c.Status(http.StatusInternalServerError)
+		renderError(c, "Failed to load categories", http.StatusInternalServerError)
 		return
 	}
 
 	var sections []models.Section
 	if err := h.db.Order("\"order\" ASC").Find(&sections).Error; err != nil {
-		data := map[string]interface{}{
-			"title":   "Error",
-			"message": "Failed to load sections",
-		}
-		C.Tmpl[C.ErrorPath].Execute(c.Writer, data)
-		c.Status(http.StatusInternalServerError)
+		renderError(c, "Failed to load sections", http.StatusInternalServerError)
 		return
 	}
 
-	data := map[string]interface{}{
+	data := map[string]any{
 		"title":      "Category Management",
 		"categories": categories,
 		"sections":   sections,
 		"user":       user,
 	}
-	C.Tmpl[C.CategoryListPath].Execute(c.Writer, data)
-	c.Status(http.StatusOK)
+	renderTemplate(c, data, C.CategoryListPath)
 }
 
 func (h *Handler) CreateCategory(c *gin.Context) {
@@ -451,12 +327,7 @@ func (h *Handler) CreateCategory(c *gin.Context) {
 	order, _ := strconv.Atoi(c.PostForm("order"))
 
 	if name == "" || sectionID == 0 {
-		data := map[string]interface{}{
-			"title":   "Error",
-			"message": "Category name and section are required",
-		}
-		C.Tmpl[C.ErrorPath].Execute(c.Writer, data)
-		c.Status(http.StatusBadRequest)
+		renderError(c, "Category name and section are required", http.StatusBadRequest)
 		return
 	}
 
@@ -468,12 +339,7 @@ func (h *Handler) CreateCategory(c *gin.Context) {
 	}
 
 	if err := h.db.Create(category).Error; err != nil {
-		data := map[string]interface{}{
-			"title":   "Error",
-			"message": "Failed to create category",
-		}
-		C.Tmpl[C.ErrorPath].Execute(c.Writer, data)
-		c.Status(http.StatusInternalServerError)
+		renderError(c, "Failed to create category", http.StatusInternalServerError)
 		return
 	}
 
@@ -483,22 +349,12 @@ func (h *Handler) CreateCategory(c *gin.Context) {
 func (h *Handler) DeleteCategory(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		data := map[string]interface{}{
-			"title":   "Error",
-			"message": "Invalid category ID",
-		}
-		C.Tmpl[C.ErrorPath].Execute(c.Writer, data)
-		c.Status(http.StatusBadRequest)
+		renderError(c, "Invalid category ID", http.StatusBadRequest)
 		return
 	}
 
 	if err := h.db.Delete(&models.Category{}, id).Error; err != nil {
-		data := map[string]interface{}{
-			"title":   "Error",
-			"message": "Failed to delete category",
-		}
-		C.Tmpl[C.ErrorPath].Execute(c.Writer, data)
-		c.Status(http.StatusInternalServerError)
+		renderError(c, "Failed to delete category", http.StatusInternalServerError)
 		return
 	}
 

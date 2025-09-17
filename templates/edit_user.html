@@ -37,8 +37,6 @@
                 <p><strong>Status:</strong> 
                     {{if .targetUser.IsBanned}}
                         <span class="user-banned">Banned</span>
-                    {{else if not .targetUser.EmailVerified}}
-                        <span style="color: #f39c12;">Unverified</span>
                     {{else}}
                         <span style="color: #27ae60;">Active</span>
                     {{end}}

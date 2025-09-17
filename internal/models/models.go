@@ -41,9 +41,9 @@ type User struct {
 	Motto         string `gorm:"size:255"`
 	ProfilePicURL string `gorm:"size:500"`
 	Signature     string `gorm:"size:1000"`
+	Theme         string `gorm:"size:20"`
 
 	// Email verification
-	EmailVerified     bool   `gorm:"default:false"`
 	VerificationToken string `gorm:"size:64"`
 
 	// Ban management
@@ -174,4 +174,8 @@ func (u *User) IsActive() bool {
 		return false
 	}
 	return true
+}
+
+func (u *User) IsVerified() bool {
+	return u.UserType != UserTypeUnverified
 }

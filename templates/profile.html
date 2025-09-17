@@ -40,15 +40,6 @@
                     <strong>Joined:</strong> {{.profileUser.CreatedAt.Format "January 2, 2006"}}
                 </div>
                 
-                <div style="margin-bottom: 15px;">
-                    <strong>Email Verified:</strong> 
-                    {{if .profileUser.EmailVerified}}
-                        <span style="color: #27ae60;">✓ Yes</span>
-                    {{else}}
-                        <span style="color: #e74c3c;">✗ No</span>
-                    {{end}}
-                </div>
-                
                 {{if .profileUser.IsBanned}}
                 <div style="margin-bottom: 15px;">
                     <strong>Status:</strong> 
