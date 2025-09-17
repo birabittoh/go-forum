@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"goforum/internal/auth"
 	"goforum/internal/config"
@@ -52,9 +53,39 @@ func main() {
 		&models.Category{},
 		&models.Topic{},
 		&models.Post{},
+		&models.Theme{},
 	)
 	if err != nil {
 		log.Fatal("Failed to migrate database:", err)
+	}
+
+	// Seed themes if not present
+	var themes []models.Theme
+	cssFiles, err := filepath.Glob("static/*.css")
+	if err != nil {
+		log.Fatal("Failed to read static directory:", err)
+	}
+	for _, file := range cssFiles {
+		_, fileName := filepath.Split(file)
+		themeID := fileName[:len(fileName)-4] // remove .css extension
+		words := strings.Split(themeID, "-")
+		for i, word := range words {
+			if len(word) > 0 {
+				words[i] = strings.ToUpper(word[:1]) + word[1:]
+			}
+		}
+		displayName := strings.Join(words, " ")
+
+		theme := models.Theme{
+			ID:          themeID,
+			DisplayName: displayName,
+		}
+
+		err := db.FirstOrCreate(&theme).Error
+		if err != nil {
+			log.Fatal("Failed to seed themes:", err)
+		}
+		themes = append(themes, theme)
 	}
 
 	// Initialize auth service
@@ -67,7 +98,7 @@ func main() {
 	}
 
 	// Initialize handlers
-	h := handlers.New(db, authService, cfg)
+	h := handlers.New(db, authService, cfg, themes)
 
 	// Setup Gin router
 	if cfg.Environment == "production" {

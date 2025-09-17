@@ -125,6 +125,11 @@ type Post struct {
 	Author User  `gorm:"foreignKey:AuthorID"`
 }
 
+type Theme struct {
+	ID          string `gorm:"primaryKey;size:20"`
+	DisplayName string `gorm:"not null;size:50"`
+}
+
 // Helper methods for permissions
 func (u *User) CanModerate() bool {
 	return u.UserType == UserTypeModerator || u.UserType == UserTypeAdmin

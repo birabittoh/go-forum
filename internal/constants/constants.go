@@ -110,7 +110,7 @@ var (
 			}
 			return u.CanDeletePost(p)
 		},
-		"canModerate": func(u *models.User, c *models.Category) bool {
+		"canModerate": func(u *models.User, c models.Category) bool {
 			if u == nil {
 				return false
 			}

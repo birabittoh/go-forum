@@ -39,6 +39,16 @@
             </div>
 
             <div class="form-group">
+                <label for="theme">Theme:</label>
+                <select id="theme" name="theme">
+                    {{range .themes}}
+                        <option value="{{.ID}}" {{if eq $.user.Theme .ID}}selected{{end}}>{{.DisplayName}}</option>
+                    {{end}}
+                </select>
+                <small style="color: #7f8c8d;">Choose your preferred site theme.</small>
+            </div>
+
+            <div class="form-group">
                 <button type="submit" class="btn btn-success">Save Changes</button>
                 <a href="/profile/{{.user.Username}}" class="btn btn-secondary">Cancel</a>
             </div>

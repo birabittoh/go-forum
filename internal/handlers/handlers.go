@@ -24,9 +24,10 @@ type Handler struct {
 	authService *auth.Service
 	config      *config.Config
 	markdown    goldmark.Markdown
+	themes      []models.Theme
 }
 
-func New(db *gorm.DB, authService *auth.Service, cfg *config.Config) *Handler {
+func New(db *gorm.DB, authService *auth.Service, cfg *config.Config, themes []models.Theme) *Handler {
 	// Configure Markdown parser
 	md := goldmark.New(
 		goldmark.WithExtensions(extension.GFM),
@@ -44,6 +45,7 @@ func New(db *gorm.DB, authService *auth.Service, cfg *config.Config) *Handler {
 		authService: authService,
 		config:      cfg,
 		markdown:    md,
+		themes:      themes,
 	}
 }
 
@@ -330,6 +332,7 @@ func (h *Handler) ProfileEdit(c *gin.Context) {
 		"title":              "Edit Profile",
 		"user":               user,
 		"maxSignatureLength": h.config.MaxSignatureLength,
+		"themes":             h.themes,
 	}
 	renderTemplate(c, data, C.ProfileEditPath)
 }
@@ -344,6 +347,7 @@ func (h *Handler) ProfileUpdate(c *gin.Context) {
 	motto := c.PostForm("motto")
 	profilePicURL := c.PostForm("profile_pic_url")
 	signature := c.PostForm("signature")
+	theme := c.PostForm("theme")
 
 	// Validate lengths
 	if len(motto) > 255 {
@@ -352,6 +356,7 @@ func (h *Handler) ProfileUpdate(c *gin.Context) {
 			"user":               user,
 			"error":              "Motto must be less than 255 characters",
 			"maxSignatureLength": h.config.MaxSignatureLength,
+			"themes":             h.themes,
 		}
 		renderTemplateStatus(c, data, C.ProfileEditPath, http.StatusBadRequest)
 		return
@@ -363,9 +368,17 @@ func (h *Handler) ProfileUpdate(c *gin.Context) {
 			"user":               user,
 			"error":              fmt.Sprintf("Signature must be less than %d characters", h.config.MaxSignatureLength),
 			"maxSignatureLength": h.config.MaxSignatureLength,
+			"themes":             h.themes,
 		}
 		renderTemplateStatus(c, data, C.ProfileEditPath, http.StatusBadRequest)
 		return
+	}
+
+	for _, t := range h.themes {
+		if t.ID == theme {
+			user.Theme = theme
+			break
+		}
 	}
 
 	// Update user
@@ -379,6 +392,7 @@ func (h *Handler) ProfileUpdate(c *gin.Context) {
 			"user":               user,
 			"error":              "Failed to update profile",
 			"maxSignatureLength": h.config.MaxSignatureLength,
+			"themes":             h.themes,
 		}
 		renderTemplateStatus(c, data, C.ProfileEditPath, http.StatusInternalServerError)
 		return
