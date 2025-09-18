@@ -551,7 +551,7 @@ textarea {
   text-shadow: 0 0 5px rgba(16, 185, 129, 0.5);
 }
 
-.category-name {
+.category-name, .category-name:visited {
   font-weight: bold;
   color: #dc2626;
   text-decoration: none;

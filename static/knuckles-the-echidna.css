@@ -488,7 +488,7 @@ textarea {
   color: #059669;
 }
 
-.category-name {
+.category-name, .category-name:visited {
   font-weight: bold;
   color: #b91c1c;
   text-decoration: none;
