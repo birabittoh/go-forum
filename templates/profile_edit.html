@@ -21,21 +21,21 @@
                 <label for="motto">Motto:</label>
                 <input type="text" id="motto" name="motto" maxlength="255" 
                        value="{{.user.Motto}}" placeholder="Your personal motto or tagline">
-                <small style="color: #7f8c8d;">Maximum 255 characters. This appears under your username in posts.</small>
+                <small class="color2">Maximum 255 characters. This appears under your username in posts.</small>
             </div>
 
             <div class="form-group">
                 <label for="profile_pic_url">Profile Picture URL:</label>
                 <input type="url" id="profile_pic_url" name="profile_pic_url" maxlength="500" 
                        value="{{.user.ProfilePicURL}}" placeholder="https://example.com/your-avatar.jpg">
-                <small style="color: #7f8c8d;">Enter a direct link to your profile picture. Only external URLs are supported.</small>
+                <small class="color2">Enter a direct link to your profile picture. Only external URLs are supported.</small>
             </div>
 
             <div class="form-group">
                 <label for="signature">Signature:</label>
                 <textarea id="signature" name="signature" maxlength="{{.maxSignatureLength | default 500}}" 
                           placeholder="Your signature appears at the bottom of all your posts. Markdown supported.">{{.user.Signature}}</textarea>
-                <small style="color: #7f8c8d;">Supports Markdown formatting. Maximum {{.maxSignatureLength | default 500}} characters.</small>
+                <small class="color2">Supports Markdown formatting. Maximum {{.maxSignatureLength | default 500}} characters.</small>
             </div>
 
             <div class="form-group">
@@ -45,7 +45,7 @@
                         <option value="{{.ID}}" {{if eq $.user.Theme .ID}}selected{{end}}>{{.DisplayName}}</option>
                     {{end}}
                 </select>
-                <small style="color: #7f8c8d;">Choose your preferred site theme.</small>
+                <small class="color2">Choose your preferred site theme.</small>
             </div>
 
             <div class="form-group">
@@ -54,7 +54,7 @@
             </div>
         </form>
         
-        <div style="margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 4px;">
+        <div class="mt-30 bg1" style="padding: 20px; border-radius: 4px;">
             <h4>Tips:</h4>
             <ul style="margin: 10px 0; padding-left: 20px;">
                 <li>Profile pictures should be square (1:1 aspect ratio) for best results</li>

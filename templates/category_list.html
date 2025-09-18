@@ -11,11 +11,11 @@
     
     <div class="content-body">
         <!-- Create New Category Form -->
-        <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 30px;">
-            <h3 style="margin-bottom: 15px;">Create New Category</h3>
+        <div class="mb-30 bg1" style="padding: 20px; border-radius: 8px;">
+            <h3 class="mb-15">Create New Category</h3>
             <form method="post" action="/admin/categories">
-                <div style="display: grid; grid-template-columns: 1fr 2fr 2fr 1fr auto; gap: 15px; align-items: end;">
-                    <div class="form-group" style="margin-bottom: 0;">
+                <div id="new-category-grid">
+                    <div class="form-group mb-0">
                         <label for="section_id">Section:</label>
                         <select id="section_id" name="section_id" required>
                             <option value="">Select Section</option>
@@ -24,15 +24,15 @@
                             {{end}}
                         </select>
                     </div>
-                    <div class="form-group" style="margin-bottom: 0;">
+                    <div class="form-group mb-0">
                         <label for="name">Category Name:</label>
                         <input type="text" id="name" name="name" required placeholder="e.g., Announcements">
                     </div>
-                    <div class="form-group" style="margin-bottom: 0;">
+                    <div class="form-group mb-0">
                         <label for="description">Description:</label>
                         <input type="text" id="description" name="description" placeholder="What this category is for">
                     </div>
-                    <div class="form-group" style="margin-bottom: 0;">
+                    <div class="form-group mb-0">
                         <label for="order">Order:</label>
                         <input type="number" id="order" name="order" value="0" min="0">
                     </div>
@@ -64,11 +64,11 @@
             <tbody>
                 {{range .categories}}
                 <tr>
-                    <td><span style="background: #e9ecef; padding: 2px 8px; border-radius: 4px; font-size: 12px;">{{.Section.Name}}</span></td>
+                    <td><span class="bg1" style="padding: 2px 8px; border-radius: 4px; font-size: 12px;">{{.Section.Name}}</span></td>
                     <td><strong><a href="/category/{{.ID}}">{{.Name}}</a></strong></td>
-                    <td style="color: #7f8c8d;">{{.Description}}</td>
+                    <td class="color2">{{.Description}}</td>
                     <td>{{.Order}}</td>
-                    <td style="text-align: center;">{{len .Topics}}</td>
+                    <td class="text-center">{{len .Topics}}</td>
                     <td>{{.CreatedAt.Format "2006-01-02"}}</td>
                     <td>
                         <form method="post" action="/admin/categories/{{.ID}}/delete" style="display: inline;" 
@@ -88,9 +88,9 @@
 
         {{end}}
 
-        <div style="margin-top: 30px; padding: 20px; background: #fff3cd; border-radius: 8px; border: 1px solid #ffeaa7;">
-            <h4 style="color: #856404; margin-bottom: 10px;">💡 Tips</h4>
-            <ul style="color: #856404; margin: 0; padding-left: 20px;">
+        <div class="mt-30" class="warning-box">
+            <h4 class="mb-30 color3">💡 Tips</h4>
+            <ul class="color3" style="margin: 0; padding-left: 20px;">
                 <li>Categories contain topics and posts - they're where discussions happen</li>
                 <li>Each category must belong to a section</li>
                 <li>Use the order field to control how categories appear within their section</li>

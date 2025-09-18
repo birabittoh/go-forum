@@ -17,13 +17,12 @@
         </div>
         {{end}}
 
-        <div style="display: flex; gap: 30px; margin-bottom: 30px;">
+        <div class="mb-30" style="display: flex; gap: 30px;">
             <div style="flex: 0 0 200px;">
                 {{if .targetUser.ProfilePicURL}}
-                    <img src="{{.targetUser.ProfilePicURL}}" alt="Avatar" 
-                         style="width: 150px; height: 150px; border-radius: 50%; object-fit: cover;">
+                    <img src="{{.targetUser.ProfilePicURL}}" alt="Avatar" class="avatar">
                 {{else}}
-                    <div style="width: 150px; height: 150px; background: #ddd; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 48px; color: white;">
+                    <div class="no-avatar">
                         {{substr .targetUser.Username 0 1 | upper}}
                     </div>
                 {{end}}
@@ -36,9 +35,9 @@
                 <p><strong>Joined:</strong> {{.targetUser.CreatedAt.Format "2006-01-02 15:04"}}</p>
                 <p><strong>Status:</strong> 
                     {{if .targetUser.IsBanned}}
-                        <span class="user-banned">Banned</span>
+                        <span class="user-banned">🚫 Banned</span>
                     {{else}}
-                        <span style="color: #27ae60;">Active</span>
+                        <span class="user-active">✅ Active</span>
                     {{end}}
                 </p>
             </div>
@@ -70,8 +69,8 @@
         </form>
 
         {{if .targetUser.IsBanned}}
-        <div style="margin-top: 40px; padding: 20px; background: #ffe6e6; border-radius: 8px; border: 1px solid #ffccd5;">
-            <h4 style="color: #721c24; margin-bottom: 15px;">🚫 Ban Information</h4>
+        <div class="mt-30 ban-info" style="padding: 20px; border-radius: 8px;">
+            <h4 class="mb-15">🚫 Ban Information</h4>
             <p><strong>Reason:</strong> {{.targetUser.BanReason}}</p>
             <p><strong>Banned At:</strong> {{.targetUser.BannedAt.Format "2006-01-02 15:04"}}</p>
             {{if .targetUser.BannedUntil}}

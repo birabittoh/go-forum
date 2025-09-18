@@ -249,9 +249,10 @@ func (h *Handler) EditPostForm(c *gin.Context) {
 	}
 
 	data := map[string]any{
-		"title": "Edit Post",
-		"post":  post,
-		"user":  user,
+		"title":     "Edit Post",
+		"post":      post,
+		"user":      user,
+		"maxLength": h.config.MaxPostLength,
 	}
 	renderTemplate(c, data, C.EditPostPath)
 }

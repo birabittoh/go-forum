@@ -9,12 +9,12 @@
     
     <div class="content-body">
         {{range .sections}}
-        <div style="margin-bottom: 40px;">
-            <h2 style="color: #2c3e50; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px solid #3498db;">
+        <div class="mb-40">
+            <h2 class="mb-15 color1 section-name">
                 {{.Name}}
             </h2>
             {{if .Description}}
-                <p style="color: #7f8c8d; margin-bottom: 20px;">{{.Description}}</p>
+                <p class="mb-20 color2">{{.Description}}</p>
             {{end}}
             
             {{if .Categories}}
@@ -31,13 +31,13 @@
                     {{range .Categories}}
                     <tr>
                         <td>
-                            <a href="/category/{{.ID}}" style="font-weight: bold; color: #3498db; text-decoration: none;">
+                            <a class="category-name" href="/category/{{.ID}}">
                                 {{.Name}}
                             </a>
                         </td>
-                        <td style="color: #7f8c8d;">{{.Description}}</td>
-                        <td style="text-align: center;">{{len .Topics}}</td>
-                        <td style="text-align: center;">
+                        <td class="color2">{{.Description}}</td>
+                        <td class="text-center">{{len .Topics}}</td>
+                        <td class="text-center">
                             {{$postCount := 0}}
                             {{range .Topics}}
                                 {{$postCount = add $postCount (len .Posts)}}
@@ -49,7 +49,7 @@
                 </tbody>
             </table>
             {{else}}
-            <p style="color: #95a5a6; font-style: italic;">No categories in this section yet.</p>
+            <p class="color2">No categories in this section yet.</p>
             {{end}}
         </div>
         {{end}}

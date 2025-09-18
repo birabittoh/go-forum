@@ -11,11 +11,11 @@
     
     <div class="content-body">
         {{if .category.Description}}
-        <p style="color: #7f8c8d; margin-bottom: 20px;">{{.category.Description}}</p>
+        <p class="mb-20 color2">{{.category.Description}}</p>
         {{end}}
 
         {{if and .user .user.CanPost}}
-        <div style="margin-bottom: 20px;">
+        <div class="mb-20">
             <a href="/category/{{.category.ID}}/new-topic" class="btn btn-success">New Topic</a>
         </div>
         {{end}}
@@ -42,7 +42,7 @@
                             {{if .IsLocked}}
                                 <span class="topic-locked" title="Locked">🔒</span>
                             {{end}}
-                            <a href="/topic/{{.ID}}" style="font-weight: bold; color: #3498db; text-decoration: none;">
+                            <a href="/topic/{{.ID}}" class="category-name">
                                 {{.Title}}
                             </a>
                         </div>
@@ -50,10 +50,10 @@
                     <td>
                         <a href="/profile/{{.Author.Username}}">{{.Author.Username}}</a>
                     </td>
-                    <td style="text-align: center;">{{sub (len .Posts) 1}}</td>
+                    <td class="text-center">{{sub (len .Posts) 1}}</td>
                     <td>{{.CreatedAt.Format "2006-01-02 15:04"}}</td>
                     <td>
-                        <div style="display: flex; gap: 5px;">
+                        <div>
                             {{if and $.user ($.user.CanEditTopic .)}}
                                 <a href="/topic/{{.ID}}/edit" class="btn btn-sm btn-secondary">Edit</a>
                             {{end}}

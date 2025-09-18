@@ -7,11 +7,16 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	enclave "github.com/quailyquaily/goldmark-enclave"
+	"github.com/quailyquaily/goldmark-enclave/core"
+	treeblood "github.com/wyatt915/goldmark-treeblood"
 	"github.com/yuin/goldmark"
+	emoji "github.com/yuin/goldmark-emoji"
 	"github.com/yuin/goldmark/extension"
 	"github.com/yuin/goldmark/parser"
 	"github.com/yuin/goldmark/renderer/html"
 	"gorm.io/gorm"
+	"mvdan.cc/xurls/v2"
 
 	"goforum/internal/auth"
 	"goforum/internal/config"
@@ -30,7 +35,36 @@ type Handler struct {
 func New(db *gorm.DB, authService *auth.Service, cfg *config.Config, themes []models.Theme) *Handler {
 	// Configure Markdown parser
 	md := goldmark.New(
-		goldmark.WithExtensions(extension.GFM),
+		goldmark.WithExtensions(
+			extension.GFM,
+			extension.Table,
+			extension.Strikethrough,
+			extension.TaskList,
+			extension.CJK,
+			extension.NewLinkify(
+				extension.WithLinkifyAllowedProtocols([]string{
+					"http:",
+					"https:",
+					"mailto:",
+					"ftp:",
+					"magnet:",
+					"gemini:",
+					"gopher:",
+				}),
+				extension.WithLinkifyURLRegexp(
+					xurls.Strict(),
+				),
+			),
+			enclave.New(
+				&core.Config{
+					DefaultImageAltPrefix: "Image",
+					IframeDisabled:        true,
+				},
+			),
+			treeblood.MathML(),
+			emoji.Emoji,
+			// https://github.com/tendstofortytwo/goldmark-customtag
+		),
 		goldmark.WithParserOptions(
 			parser.WithAutoHeadingID(),
 		),

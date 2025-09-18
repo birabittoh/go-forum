@@ -10,7 +10,7 @@
     </div>
     
     <div class="content-body">
-        <div style="margin-bottom: 20px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+        <div class="mb-20" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
             <span>Sort by:</span>
             <a href="/admin/users?sort=username&order={{if and (eq .sortBy "username") (eq .order "asc")}}desc{{else}}asc{{end}}" 
                class="btn btn-sm {{if eq .sortBy "username"}}btn-secondary{{end}}">
@@ -40,12 +40,12 @@
             </thead>
             <tbody>
                 {{range .users}}
-                <tr {{if .IsBanned}}style="background-color: #ffe6e6;"{{end}}>
+                <tr>
                     <td>
                         {{if .ProfilePicURL}}
-                            <img src="{{.ProfilePicURL}}" alt="Avatar" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;">
+                            <img src="{{.ProfilePicURL}}" alt="Avatar" class="avatar">
                         {{else}}
-                            <div style="width: 32px; height: 32px; background: #ddd; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: bold;">
+                            <div class="no-avatar">
                                 {{substr .Username 0 1 | upper}}
                             </div>
                         {{end}}
@@ -57,9 +57,9 @@
                     <td><span class="user-{{.UserType.String}}">{{.UserType.String | title}}</span></td>
                     <td>
                         {{if .IsBanned}}
-                            <span style="color: #e74c3c;">🚫 Banned</span>
+                            <span class="user-banned">🚫 Banned</span>
                         {{else}}
-                            <span style="color: #27ae60;">✅ Active</span>
+                            <span class="user-active">✅ Active</span>
                         {{end}}
                     </td>
                     <td>{{.CreatedAt.Format "2006-01-02"}}</td>
@@ -88,9 +88,9 @@
 </div>
 
 <!-- Ban Modal -->
-<div id="banModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000;">
-    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 30px; border-radius: 8px; min-width: 400px;">
-        <h3 style="margin-bottom: 20px;">Ban User</h3>
+<div id="banModal">
+    <div id="banModalContainer">
+        <h3 class="mb-20">Ban User</h3>
         <form id="banForm" method="post">
             <div class="form-group">
                 <label for="reason">Reason:</label>
@@ -114,9 +114,9 @@
 </div>
 
 <!-- User Type Modal -->
-<div id="userTypeModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000;">
-    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 30px; border-radius: 8px; min-width: 400px;">
-        <h3 style="margin-bottom: 20px;">Change User Type</h3>
+<div id="userTypeModal">
+    <div id="userTypeModalContainer">
+        <h3 class="mb-20">Change User Type</h3>
         <form id="userTypeForm" method="post">
             <div class="form-group">
                 <label for="user_type">New Type:</label>

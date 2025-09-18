@@ -7,8 +7,17 @@
 body {
   font-family: Arial, sans-serif;
   line-height: 1.6;
-  color: #7f1d1d;
-  background-color: #fef2f2;
+  color: #991b1b;
+  background-color: #fecaca;
+}
+
+a.btn, a.btn:visited, a.logo, a.logo:visited {
+  color: white;
+}
+
+a, a:visited {
+  color: #dc2626;
+  text-decoration: none;
 }
 
 .container {
@@ -19,10 +28,10 @@ body {
 
 /* Header */
 header {
-  background: linear-gradient(135deg, #dc2626, #b91c1c);
+  background: #dc2626;
   color: white;
   padding: 1rem 0;
-  box-shadow: 0 4px 8px rgba(220, 38, 38, 0.3);
+  box-shadow: 0 2px 5px rgba(220, 38, 38, 0.3);
 }
 
 .header-content {
@@ -37,7 +46,6 @@ header {
   font-weight: bold;
   text-decoration: none;
   color: white;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .nav {
@@ -51,14 +59,12 @@ header {
   color: white;
   text-decoration: none;
   padding: 8px 15px;
-  border-radius: 20px;
-  transition: all 0.3s;
-  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  transition: background-color 0.3s;
 }
 
 .nav a:hover {
-  background: #ef4444;
-  transform: translateY(-2px);
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
 .user-info {
@@ -71,7 +77,7 @@ header {
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  border: 2px solid #fca5a5;
+  border: 2px solid #ef4444;
 }
 
 /* Main content */
@@ -82,26 +88,24 @@ main {
 
 .content-wrapper {
   background: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 15px rgba(220, 38, 38, 0.15);
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(220, 38, 38, 0.2);
   overflow: hidden;
-  border: 2px solid #fca5a5;
 }
 
 .content-header {
-  background: linear-gradient(135deg, #fee2e2, #fecaca);
+  background: #fee2e2;
   padding: 20px;
-  border-bottom: 2px solid #fca5a5;
+  border-bottom: 1px solid #fca5a5;
 }
 
 .content-header h1 {
-  color: #991b1b;
+  color: #dc2626;
   margin-bottom: 5px;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .breadcrumb {
-  color: #7f1d1d;
+  color: #ef4444;
   font-size: 0.9rem;
 }
 
@@ -116,7 +120,7 @@ main {
 
 /* Footer */
 footer {
-  background: linear-gradient(135deg, #991b1b, #7f1d1d);
+  background: #b91c1c;
   color: white;
   text-align: center;
   padding: 20px 0;
@@ -128,22 +132,19 @@ table {
   width: 100%;
   border-collapse: collapse;
   margin: 20px 0;
-  border-radius: 8px;
-  overflow: hidden;
-  border: 2px solid #fca5a5;
 }
 
 th,
 td {
   padding: 12px;
   text-align: left;
-  border-bottom: 1px solid #fecaca;
+  border-bottom: 1px solid #fee2e2;
 }
 
 th {
-  background: linear-gradient(135deg, #fee2e2, #fecaca);
+  background-color: #fef2f2;
   font-weight: bold;
-  color: #991b1b;
+  color: #dc2626;
 }
 
 tr:hover {
@@ -154,21 +155,18 @@ tr:hover {
 .btn {
   display: inline-block;
   padding: 8px 16px;
-  background: linear-gradient(135deg, #dc2626, #b91c1c);
+  background: #ef4444;
   color: white;
   text-decoration: none;
   border: none;
-  border-radius: 20px;
+  border-radius: 4px;
   cursor: pointer;
   font-size: 14px;
-  transition: all 0.3s;
-  box-shadow: 0 2px 4px rgba(220, 38, 38, 0.3);
+  transition: background-color 0.3s;
 }
 
 .btn:hover {
-  background: linear-gradient(135deg, #b91c1c, #991b1b);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(220, 38, 38, 0.4);
+  background: #dc2626;
 }
 
 .btn-sm {
@@ -177,27 +175,27 @@ tr:hover {
 }
 
 .btn-danger {
-  background: linear-gradient(135deg, #dc2626, #b91c1c);
+  background: #dc2626;
 }
 
 .btn-danger:hover {
-  background: linear-gradient(135deg, #b91c1c, #991b1b);
+  background: #b91c1c;
 }
 
 .btn-success {
-  background: linear-gradient(135deg, #059669, #047857);
+  background: #059669;
 }
 
 .btn-success:hover {
-  background: linear-gradient(135deg, #047857, #065f46);
+  background: #047857;
 }
 
 .btn-secondary {
-  background: linear-gradient(135deg, #ef4444, #dc2626);
+  background: #6b7280;
 }
 
 .btn-secondary:hover {
-  background: linear-gradient(135deg, #dc2626, #b91c1c);
+  background: #4b5563;
 }
 
 /* Forms */
@@ -213,31 +211,21 @@ label {
   display: block;
   margin-bottom: 5px;
   font-weight: bold;
-  color: #991b1b;
+  color: #dc2626;
 }
 
 input[type="text"],
 input[type="email"],
 input[type="password"],
 input[type="url"],
+input[type="number"],
 textarea,
 select {
   width: 100%;
   padding: 10px;
-  border: 2px solid #fecaca;
-  border-radius: 8px;
+  border: 1px solid #fee2e2;
+  border-radius: 4px;
   font-size: 14px;
-  transition: border-color 0.3s;
-}
-
-input[type="text"]:focus,
-input[type="email"]:focus,
-input[type="password"]:focus,
-input[type="url"]:focus,
-textarea:focus,
-select:focus {
-  outline: none;
-  border-color: #dc2626;
 }
 
 textarea {
@@ -259,44 +247,42 @@ textarea {
 .alert {
   padding: 15px;
   margin: 20px 0;
-  border-radius: 8px;
-  border: 2px solid;
+  border-radius: 4px;
 }
 
 .alert-error {
-  background: #fef2f2;
+  background: #fecaca;
   color: #991b1b;
-  border-color: #fecaca;
+  border: 1px solid #f87171;
 }
 
 .alert-success {
-  background: #f0fdf4;
+  background: #bbf7d0;
   color: #166534;
-  border-color: #bbf7d0;
+  border: 1px solid #86efac;
 }
 
 .alert-info {
-  background: #fffbfb;
+  background: #fee2e2;
   color: #991b1b;
-  border-color: #fca5a5;
+  border: 1px solid #fca5a5;
 }
 
 /* Posts */
 .post {
   display: flex;
   margin: 20px 0;
-  border: 2px solid #fca5a5;
-  border-radius: 12px;
+  border: 1px solid #fee2e2;
+  border-radius: 8px;
   overflow: hidden;
   background: white;
-  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.1);
 }
 
 .post-author {
   width: 200px;
-  background: linear-gradient(135deg, #fffbfb, #fef2f2);
+  background: #fef2f2;
   padding: 20px;
-  border-right: 2px solid #fca5a5;
+  border-right: 1px solid #fee2e2;
   text-align: center;
 }
 
@@ -305,18 +291,17 @@ textarea {
   height: 64px;
   border-radius: 50%;
   margin-bottom: 10px;
-  border: 2px solid #f87171;
 }
 
 .post-author .username {
   font-weight: bold;
-  color: #991b1b;
+  color: #dc2626;
   margin-bottom: 5px;
 }
 
 .post-author .user-type {
   font-size: 12px;
-  color: #7f1d1d;
+  color: #ef4444;
   margin-bottom: 5px;
 }
 
@@ -329,23 +314,24 @@ textarea {
 .post-content {
   flex: 1;
   padding: 20px;
+  display: flex;
+  flex-direction: column;
 }
 
 .post-content .post-body {
+  flex: 1;
   margin-bottom: 15px;
   line-height: 1.7;
 }
 
 .post-content .signature {
-  border-top: 1px solid #fecaca;
+  border-top: 1px solid #e5e7eb;
   padding-top: 10px;
   font-size: 12px;
   color: #6b7280;
 }
 
 .post-actions {
-  display: flex;
-  gap: 10px;
   margin-top: 15px;
 }
 
@@ -378,7 +364,7 @@ textarea {
 }
 
 .user-moderator {
-  color: #d97706;
+  color: #f59e0b;
   font-weight: bold;
 }
 
@@ -392,7 +378,7 @@ textarea {
 
 /* Status indicators */
 .topic-pinned {
-  color: #d97706;
+  color: #f59e0b;
 }
 
 .topic-locked {
@@ -402,4 +388,255 @@ textarea {
 .user-banned {
   color: #dc2626;
   text-decoration: line-through;
+}
+
+.user-active {
+  color: #059669;
+}
+
+.admin-section {
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid #fee2e2;
+  background: #fef2f2;
+}
+
+
+/* Utility classes */
+
+.mb-0 {
+  margin-bottom: 0;
+}
+
+.mb-10 {
+  margin-bottom: 10px;
+}
+
+.mb-15 {
+  margin-bottom: 15px;
+}
+
+.mb-20 {
+  margin-bottom: 20px;
+}
+
+.mb-30 {
+  margin-bottom: 30px;
+}
+
+.mb-40 {
+  margin-bottom: 40px;
+}
+
+.mt-0 {
+  margin-top: 0;
+}
+
+.mt-10 {
+  margin-top: 10px;
+}
+
+.mt-15 {
+  margin-top: 15px;
+}
+
+.mt-20 {
+  margin-top: 20px;
+}
+
+.mt-30 {
+  margin-top: 30px;
+}
+
+.mt-40 {
+  margin-top: 40px;
+}
+
+.text-left {
+  text-align: left;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.bg1 {
+  background: #fef2f2
+}
+
+.color1 {
+  color: #dc2626;
+}
+
+.color2 {
+  color: #ef4444;
+}
+
+.color3 {
+  color: #991b1b;
+}
+
+.color4 {
+  color: #166534;
+}
+
+.color5 {
+  color: #059669;
+}
+
+.category-name {
+  font-weight: bold;
+  color: #b91c1c;
+  text-decoration: none;
+}
+
+#userTypeModal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(220, 38, 38, 0.5);
+  z-index: 1000;
+}
+
+#userTypeModalContainer {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  padding: 30px;
+  border-radius: 8px;
+  min-width: 400px;
+}
+
+#banModal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(220, 38, 38, 0.5);
+  z-index: 1000;
+}
+
+#banModalContainer {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  padding: 30px;
+  border-radius: 8px;
+  min-width: 400px;
+}
+
+.warning-box {
+  padding: 20px;
+  border-radius: 8px;
+  background: #fef3c7;
+  border: 1px solid #fbbf24;
+}
+
+.info-box {
+  padding: 20px;
+  border-radius: 8px;
+}
+
+#quick-stats {
+  padding: 20px;
+  background: #fecaca;
+  border-radius: 8px;
+  border: 1px solid #fca5a5;
+}
+
+#quick-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 15px;
+}
+
+#admin-functions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.font1 {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.font2 {
+  font-size: 14px;
+}
+
+.ban-info {
+  background: #fecaca;
+  border: 1px solid #f87171;
+}
+
+.ban-info h4 {
+  color: #991b1b;
+}
+
+#new-category-grid {
+  display: grid;
+  grid-template-columns: 1fr 2fr 2fr 1fr auto;
+  gap: 15px;
+  align-items: end;
+}
+
+.post-container {
+  font-size: 12px;
+  color: #999;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.avatar {
+  width: 150px; height: 150px; border-radius: 50%; object-fit: cover;
+}
+
+.no-avatar {
+  width: 150px;
+  height: 150px;
+  background: #fee2e2;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 48px;
+  color: white;
+}
+
+.signature {
+  padding-top: 20px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.signature-container {
+  padding: 15px;
+  border-radius: 4px;
+  border-left: 4px solid #ef4444;
+}
+
+.section-name {
+  padding-bottom: 10px;
+  border-bottom: 2px solid #ef4444;
+}
+
+blockquote {
+  border-left: 2px solid #ddd;
+  padding-left: 15px;
+  color: #555;
+  margin: 20px 0;
 }
