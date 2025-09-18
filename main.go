@@ -53,14 +53,13 @@ func main() {
 		&models.Category{},
 		&models.Topic{},
 		&models.Post{},
-		&models.Theme{},
 	)
 	if err != nil {
 		log.Fatal("Failed to migrate database:", err)
 	}
 
 	// Seed themes if not present
-	var themes []models.Theme
+
 	cssFiles, err := filepath.Glob("static/*.css")
 	if err != nil {
 		log.Fatal("Failed to read static directory:", err)
@@ -76,16 +75,27 @@ func main() {
 		}
 		displayName := strings.Join(words, " ")
 
-		theme := models.Theme{
-			ID:          themeID,
-			DisplayName: displayName,
+		// read first line of css file to find icon color comment
+		var iconColor string
+		f, err := os.Open(file)
+		if err == nil {
+			var line string
+			_, err = fmt.Fscanf(f, "/*%s", &line)
+			if err == nil {
+				iconColor = strings.TrimSpace(line[:len(line)-2]) // remove trailing */
+			}
+			f.Close()
+		}
+		if iconColor == "" {
+			iconColor = "white" // Default icon color
+			log.Printf("Warning: No icon color specified for theme %s, defaulting to white", themeID)
 		}
 
-		err := db.FirstOrCreate(&theme).Error
-		if err != nil {
-			log.Fatal("Failed to seed themes:", err)
-		}
-		themes = append(themes, theme)
+		c.Themes = append(c.Themes, models.Theme{
+			ID:          themeID,
+			DisplayName: displayName,
+			Color:       iconColor,
+		})
 	}
 
 	// Initialize auth service
@@ -98,7 +108,7 @@ func main() {
 	}
 
 	// Initialize handlers
-	h := handlers.New(db, authService, cfg, themes)
+	h := handlers.New(db, authService, cfg, c.Themes)
 
 	// Setup Gin router
 	if cfg.Environment == "production" {

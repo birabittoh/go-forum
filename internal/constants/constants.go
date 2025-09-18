@@ -116,7 +116,25 @@ var (
 			}
 			return u.CanModerate()
 		},
+		"validateTheme": func(theme string) string {
+			for _, t := range Themes {
+				if t.ID == theme {
+					return theme
+				}
+			}
+			return "default"
+		},
+		"getIconColor": func(theme string) string {
+			for _, t := range Themes {
+				if t.ID == theme {
+					return t.Color
+				}
+			}
+			return "white"
+		},
 	}
 
 	Tmpl = make(map[string]*template.Template)
+
+	Themes []models.Theme
 )

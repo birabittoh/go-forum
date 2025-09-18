@@ -29,7 +29,6 @@ type Handler struct {
 	authService *auth.Service
 	config      *config.Config
 	markdown    goldmark.Markdown
-	themes      []models.Theme
 }
 
 func New(db *gorm.DB, authService *auth.Service, cfg *config.Config, themes []models.Theme) *Handler {
@@ -79,7 +78,6 @@ func New(db *gorm.DB, authService *auth.Service, cfg *config.Config, themes []mo
 		authService: authService,
 		config:      cfg,
 		markdown:    md,
-		themes:      themes,
 	}
 }
 
@@ -366,7 +364,7 @@ func (h *Handler) ProfileEdit(c *gin.Context) {
 		"title":              "Edit Profile",
 		"user":               user,
 		"maxSignatureLength": h.config.MaxSignatureLength,
-		"themes":             h.themes,
+		"themes":             C.Themes,
 	}
 	renderTemplate(c, data, C.ProfileEditPath)
 }
@@ -390,7 +388,7 @@ func (h *Handler) ProfileUpdate(c *gin.Context) {
 			"user":               user,
 			"error":              "Motto must be less than 255 characters",
 			"maxSignatureLength": h.config.MaxSignatureLength,
-			"themes":             h.themes,
+			"themes":             C.Themes,
 		}
 		renderTemplateStatus(c, data, C.ProfileEditPath, http.StatusBadRequest)
 		return
@@ -402,13 +400,13 @@ func (h *Handler) ProfileUpdate(c *gin.Context) {
 			"user":               user,
 			"error":              fmt.Sprintf("Signature must be less than %d characters", h.config.MaxSignatureLength),
 			"maxSignatureLength": h.config.MaxSignatureLength,
-			"themes":             h.themes,
+			"themes":             C.Themes,
 		}
 		renderTemplateStatus(c, data, C.ProfileEditPath, http.StatusBadRequest)
 		return
 	}
 
-	for _, t := range h.themes {
+	for _, t := range C.Themes {
 		if t.ID == theme {
 			user.Theme = theme
 			break
@@ -426,7 +424,7 @@ func (h *Handler) ProfileUpdate(c *gin.Context) {
 			"user":               user,
 			"error":              "Failed to update profile",
 			"maxSignatureLength": h.config.MaxSignatureLength,
-			"themes":             h.themes,
+			"themes":             C.Themes,
 		}
 		renderTemplateStatus(c, data, C.ProfileEditPath, http.StatusInternalServerError)
 		return

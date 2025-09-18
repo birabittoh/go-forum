@@ -128,6 +128,7 @@ type Post struct {
 type Theme struct {
 	ID          string `gorm:"primaryKey;size:20"`
 	DisplayName string `gorm:"not null;size:50"`
+	Color       string `gorm:"size:20"`
 }
 
 // Helper methods for permissions

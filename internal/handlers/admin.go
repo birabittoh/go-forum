@@ -14,7 +14,7 @@ import (
 )
 
 func renderError(c *gin.Context, message string, status int) error {
-	data := map[string]interface{}{
+	data := map[string]any{
 		"title":   "Error",
 		"message": message,
 	}
