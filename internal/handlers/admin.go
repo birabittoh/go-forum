@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"goforum/internal/models"
@@ -43,8 +44,9 @@ func (h *Handler) AdminPanel(c *gin.Context) {
 	user := h.getCurrentUser(c)
 
 	data := map[string]any{
-		"title": "Admin Panel",
-		"user":  user,
+		"title":  "Admin Panel",
+		"user":   user,
+		"config": h.config,
 	}
 	renderTemplate(c, data, C.AdminPanelPath)
 }
@@ -83,6 +85,7 @@ func (h *Handler) UserList(c *gin.Context) {
 		"user":   user,
 		"sortBy": sortBy,
 		"order":  order,
+		"config": h.config,
 	}
 	renderTemplate(c, data, C.UserListPath)
 }
@@ -106,6 +109,7 @@ func (h *Handler) EditUser(c *gin.Context) {
 		"title":      "Edit User",
 		"user":       currentUser,
 		"targetUser": targetUser,
+		"config":     h.config,
 	}
 	renderTemplate(c, data, C.EditUserPath)
 }
@@ -127,7 +131,7 @@ func (h *Handler) UpdateUser(c *gin.Context) {
 
 	// Update fields
 	targetUser.Motto = c.PostForm("motto")
-	targetUser.ProfilePicURL = c.PostForm("profile_pic_url")
+	targetUser.ProfilePicURL, _ = strings.CutPrefix(c.PostForm("profile_pic_url"), h.config.ProfilePicsBaseURL)
 	targetUser.Signature = c.PostForm("signature")
 
 	if err := h.db.Save(&targetUser).Error; err != nil {
@@ -136,6 +140,7 @@ func (h *Handler) UpdateUser(c *gin.Context) {
 			"user":       currentUser,
 			"targetUser": targetUser,
 			"error":      "Failed to update user",
+			"config":     h.config,
 		}
 		renderTemplate(c, data, C.EditUserPath)
 		return
@@ -252,6 +257,7 @@ func (h *Handler) SectionList(c *gin.Context) {
 		"title":    "Section Management",
 		"sections": sections,
 		"user":     user,
+		"config":   h.config,
 	}
 	renderTemplate(c, data, C.SectionListPath)
 }
@@ -316,6 +322,7 @@ func (h *Handler) CategoryList(c *gin.Context) {
 		"categories": categories,
 		"sections":   sections,
 		"user":       user,
+		"config":     h.config,
 	}
 	renderTemplate(c, data, C.CategoryListPath)
 }

@@ -19,7 +19,7 @@
                     {{if .user}}
                         <div class="user-info">
                             {{if .user.ProfilePicURL}}
-                                <img src="{{.user.ProfilePicURL}}" alt="Avatar" class="user-avatar">
+                                <img src="{{.config.ProfilePicsBaseURL}}{{.user.ProfilePicURL}}" alt="Avatar" class="user-avatar">
                             {{end}}
                             <span>Hello, <a href="/profile/{{.user.Username}}">{{.user.Username}}</a></span>
                             {{if or .user.CanModerate .user.IsAdmin}}

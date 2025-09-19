@@ -337,7 +337,6 @@ textarea {
 .post-author img {
   width: 64px;
   height: 64px;
-  border-radius: 50%;
   margin-bottom: 10px;
   border: 2px solid #dc2626;
   box-shadow: 0 0 15px rgba(220, 38, 38, 0.3);
@@ -684,21 +683,21 @@ textarea {
 }
 
 .avatar {
-  width: 150px; height: 150px; border-radius: 50%; object-fit: cover;
-  border: 2px solid #dc2626;
-  box-shadow: 0 0 20px rgba(220, 38, 38, 0.3);
+  width: 64px;
+  height: 64px;
+  object-fit: cover;
 }
 
 .no-avatar {
-  width: 150px;
-  height: 150px;
-  background: #fee2e2;
-  border-radius: 50%;
+  width: 64px;
+  height: 64px;
+  background: #ddd;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 48px;
   color: white;
+  margin: auto;
 }
 
 .signature {

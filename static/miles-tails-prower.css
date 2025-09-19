@@ -291,7 +291,6 @@ textarea {
 .post-author img {
   width: 64px;
   height: 64px;
-  border-radius: 50%;
   margin-bottom: 10px;
 }
 
@@ -605,19 +604,21 @@ textarea {
 }
 
 .avatar {
-  width: 150px; height: 150px; border-radius: 50%; object-fit: cover;
+  width: 64px;
+  height: 64px;
+  object-fit: cover;
 }
 
 .no-avatar {
-  width: 150px;
-  height: 150px;
-  background: #fde68a;
-  border-radius: 50%;
+  width: 64px;
+  height: 64px;
+  background: #ddd;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 48px;
   color: white;
+  margin: auto;
 }
 
 .signature {

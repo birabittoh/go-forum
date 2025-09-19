@@ -12,7 +12,7 @@
         <div style="display: flex; gap: 30px; flex-wrap: wrap;">
             <div style="flex: 0 0 200px;">
                 {{if .profileUser.ProfilePicURL}}
-                    <img src="{{.profileUser.ProfilePicURL}}" alt="{{.profileUser.Username}}'s avatar" class="avatar">
+                    <img src="{{.config.ProfilePicsBaseURL}}{{.profileUser.ProfilePicURL}}" alt="{{.profileUser.Username}}'s avatar" class="avatar">
                 {{else}}
                     <div class="no-avatar">
                         {{substr .profileUser.Username 0 1 | upper}}

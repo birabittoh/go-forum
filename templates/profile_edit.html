@@ -19,23 +19,33 @@
         <form method="post" action="/profile/edit">
             <div class="form-group">
                 <label for="motto">Motto:</label>
-                <input type="text" id="motto" name="motto" maxlength="255" 
+                <input type="text" id="motto" name="motto" maxlength="{{.config.MaxMottoLength}}" 
                        value="{{.user.Motto}}" placeholder="Your personal motto or tagline">
-                <small class="color2">Maximum 255 characters. This appears under your username in posts.</small>
+                <small class="color2">Maximum {{.config.MaxMottoLength}} characters. This appears under your username in posts.</small>
             </div>
 
             <div class="form-group">
                 <label for="profile_pic_url">Profile Picture URL:</label>
                 <input type="url" id="profile_pic_url" name="profile_pic_url" maxlength="500" 
-                       value="{{.user.ProfilePicURL}}" placeholder="https://example.com/your-avatar.jpg">
-                <small class="color2">Enter a direct link to your profile picture. Only external URLs are supported.</small>
+                       value="{{.config.ProfilePicsBaseURL}}{{.user.ProfilePicURL}}" placeholder="https://download.xboxgamer.pics/titles/example.png">
+                <small class="color2">Enter a direct link to your profile picture. Only URLs from <a href="https://xboxgamer.pics/">xboxgamer.pics</a> are supported.</small>
+            </div>
+        
+            <div class="mt-15 mb-15 bg1" style="padding: 20px; border-radius: 4px;">
+                <h4>💡 Profile Picture Tips:</h4>
+                <ol style="margin: 10px 0; padding-left: 20px;">
+                    <li>Visit <a target="_blank" href="https://xboxgamer.pics/">xboxgamer.pics</a></li>
+                    <li>Pick any image you want</li>
+                    <li>Right click it, then Copy link</li>
+                    <li>Paste it here. It should start with <code>https://download.xboxgamer.pics/titles/</code></li>
+                </ol>
             </div>
 
             <div class="form-group">
                 <label for="signature">Signature:</label>
-                <textarea id="signature" name="signature" maxlength="{{.maxSignatureLength | default 500}}" 
+                <textarea id="signature" name="signature" maxlength="{{.config.MaxSignatureLength}}" 
                           placeholder="Your signature appears at the bottom of all your posts. Markdown supported.">{{.user.Signature}}</textarea>
-                <small class="color2">Supports Markdown formatting. Maximum {{.maxSignatureLength | default 500}} characters.</small>
+                <small class="color2">Supports Markdown formatting. Maximum {{.config.MaxSignatureLength}} characters.</small>
             </div>
 
             <div class="form-group">
@@ -53,16 +63,6 @@
                 <a href="/profile/{{.user.Username}}" class="btn btn-secondary">Cancel</a>
             </div>
         </form>
-        
-        <div class="mt-30 bg1" style="padding: 20px; border-radius: 4px;">
-            <h4>Tips:</h4>
-            <ul style="margin: 10px 0; padding-left: 20px;">
-                <li>Profile pictures should be square (1:1 aspect ratio) for best results</li>
-                <li>Recommended image size: 200x200 pixels or larger</li>
-                <li>Use external image hosting services like Imgur, GitHub, or your own server</li>
-                <li>Your signature supports Markdown: **bold**, *italic*, [links](url), etc.</li>
-            </ul>
-        </div>
     </div>
 </div>
 {{end}}

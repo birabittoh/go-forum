@@ -36,6 +36,7 @@ func (h *Handler) NewTopicForm(c *gin.Context) {
 		"category":  category,
 		"user":      user,
 		"maxLength": h.config.MaxPostLength,
+		"config":    h.config,
 	}
 	renderTemplate(c, data, C.NewTopicPath)
 }
@@ -131,9 +132,10 @@ func (h *Handler) EditTopicForm(c *gin.Context) {
 	}
 
 	data := map[string]any{
-		"title": "Edit Topic",
-		"topic": topic,
-		"user":  user,
+		"title":  "Edit Topic",
+		"topic":  topic,
+		"user":   user,
+		"config": h.config,
 	}
 	renderTemplate(c, data, C.EditTopicPath)
 }
@@ -253,6 +255,7 @@ func (h *Handler) EditPostForm(c *gin.Context) {
 		"post":      post,
 		"user":      user,
 		"maxLength": h.config.MaxPostLength,
+		"config":    h.config,
 	}
 	renderTemplate(c, data, C.EditPostPath)
 }

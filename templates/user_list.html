@@ -29,7 +29,6 @@
         <table>
             <thead>
                 <tr>
-                    <th>Avatar</th>
                     <th>Username</th>
                     <th>Email</th>
                     <th>Type</th>
@@ -41,15 +40,6 @@
             <tbody>
                 {{range .users}}
                 <tr>
-                    <td>
-                        {{if .ProfilePicURL}}
-                            <img src="{{.ProfilePicURL}}" alt="Avatar" class="avatar">
-                        {{else}}
-                            <div class="no-avatar">
-                                {{substr .Username 0 1 | upper}}
-                            </div>
-                        {{end}}
-                    </td>
                     <td>
                         <a href="/profile/{{.Username}}" {{if .IsBanned}}class="user-banned"{{end}}>{{.Username}}</a>
                     </td>

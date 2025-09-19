@@ -20,7 +20,7 @@
         <div class="mb-30" style="display: flex; gap: 30px;">
             <div style="flex: 0 0 200px;">
                 {{if .targetUser.ProfilePicURL}}
-                    <img src="{{.targetUser.ProfilePicURL}}" alt="Avatar" class="avatar">
+                    <img src="{{.config.ProfilePicsBaseURL}}{{.targetUser.ProfilePicURL}}" alt="Avatar" class="avatar">
                 {{else}}
                     <div class="no-avatar">
                         {{substr .targetUser.Username 0 1 | upper}}
@@ -46,19 +46,19 @@
         <form method="post" action="/admin/user/{{.targetUser.ID}}/edit">
             <div class="form-group">
                 <label for="motto">Motto:</label>
-                <input type="text" id="motto" name="motto" maxlength="255" 
+                <input type="text" id="motto" name="motto" maxlength="{{.config.MaxMottoLength}}" 
                        value="{{.targetUser.Motto}}" placeholder="User's personal motto">
             </div>
 
             <div class="form-group">
                 <label for="profile_pic_url">Profile Picture URL:</label>
                 <input type="url" id="profile_pic_url" name="profile_pic_url" maxlength="500" 
-                       value="{{.targetUser.ProfilePicURL}}" placeholder="https://example.com/avatar.jpg">
+                       value="{{.config.ProfilePicsBaseURL}}{{.targetUser.ProfilePicURL}}" placeholder="https://example.com/avatar.jpg">
             </div>
 
             <div class="form-group">
                 <label for="signature">Signature:</label>
-                <textarea id="signature" name="signature" maxlength="500" 
+                <textarea id="signature" name="signature" maxlength="{{.config.MaxSignatureLength}}" 
                           placeholder="User's forum signature (Markdown supported)">{{.targetUser.Signature}}</textarea>
             </div>
 

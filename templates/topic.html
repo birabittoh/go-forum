@@ -30,7 +30,7 @@
         <div class="post">
             <div class="post-author">
                 {{if .Author.ProfilePicURL}}
-                    <img src="{{.Author.ProfilePicURL}}" alt="{{.Author.Username}}'s avatar" class="avatar">
+                    <img src="{{$.config.ProfilePicsBaseURL}}{{.Author.ProfilePicURL}}" alt="{{.Author.Username}}'s avatar" class="avatar">
                 {{else}}
                     <div class="no-avatar">
                         {{substr .Author.Username 0 1 | upper}}

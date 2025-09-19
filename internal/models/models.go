@@ -39,7 +39,7 @@ type User struct {
 
 	// Profile fields
 	Motto         string `gorm:"size:255"`
-	ProfilePicURL string `gorm:"size:500"`
+	ProfilePicURL string `gorm:"size:20"`
 	Signature     string `gorm:"size:1000"`
 	Theme         string `gorm:"size:20"`
 

@@ -109,6 +109,7 @@ func (h *Handler) Home(c *gin.Context) {
 		"title":    "Home",
 		"sections": sections,
 		"user":     h.getCurrentUser(c),
+		"config":   h.config,
 	}
 	renderTemplate(c, data, C.HomePath)
 }
@@ -121,7 +122,8 @@ func (h *Handler) LoginForm(c *gin.Context) {
 	}
 
 	data := map[string]any{
-		"title": "Login",
+		"title":  "Login",
+		"config": h.config,
 	}
 	renderTemplate(c, data, C.LoginPath)
 }
@@ -138,8 +140,9 @@ func (h *Handler) Login(c *gin.Context) {
 
 	if username == "" || password == "" {
 		data := map[string]any{
-			"title": "Login",
-			"error": "Username and password are required",
+			"title":  "Login",
+			"error":  "Username and password are required",
+			"config": h.config,
 		}
 		renderTemplateStatus(c, data, C.LoginPath, http.StatusBadRequest)
 		return
@@ -148,8 +151,9 @@ func (h *Handler) Login(c *gin.Context) {
 	_, token, err := h.authService.Login(username, password)
 	if err != nil {
 		data := map[string]any{
-			"title": "Login",
-			"error": err.Error(),
+			"title":  "Login",
+			"error":  err.Error(),
+			"config": h.config,
 		}
 		renderTemplateStatus(c, data, C.LoginPath, http.StatusBadRequest)
 		return
@@ -198,8 +202,9 @@ func (h *Handler) Signup(c *gin.Context) {
 	// Validation
 	if username == "" || email == "" || password == "" {
 		data := map[string]any{
-			"title": "Sign Up",
-			"error": "All fields are required",
+			"title":  "Sign Up",
+			"error":  "All fields are required",
+			"config": h.config,
 		}
 		renderTemplateStatus(c, data, C.SignupPath, http.StatusBadRequest)
 		return
@@ -207,8 +212,9 @@ func (h *Handler) Signup(c *gin.Context) {
 
 	if password != confirmPassword {
 		data := map[string]any{
-			"title": "Sign Up",
-			"error": "Passwords do not match",
+			"title":  "Sign Up",
+			"error":  "Passwords do not match",
+			"config": h.config,
 		}
 		renderTemplateStatus(c, data, C.SignupPath, http.StatusBadRequest)
 		return
@@ -216,8 +222,9 @@ func (h *Handler) Signup(c *gin.Context) {
 
 	if len(password) < 6 {
 		data := map[string]any{
-			"title": "Sign Up",
-			"error": "Password must be at least 6 characters long",
+			"title":  "Sign Up",
+			"error":  "Password must be at least 6 characters long",
+			"config": h.config,
 		}
 		renderTemplateStatus(c, data, C.SignupPath, http.StatusBadRequest)
 		return
@@ -226,8 +233,9 @@ func (h *Handler) Signup(c *gin.Context) {
 	user, err := h.authService.Register(username, email, password)
 	if err != nil {
 		data := map[string]any{
-			"title": "Sign Up",
-			"error": err.Error(),
+			"title":  "Sign Up",
+			"error":  err.Error(),
+			"config": h.config,
 		}
 		renderTemplateStatus(c, data, C.SignupPath, http.StatusBadRequest)
 		return
@@ -246,6 +254,7 @@ func (h *Handler) Signup(c *gin.Context) {
 	data := map[string]any{
 		"title":   "Registration Successful",
 		"message": "Please check your email for verification instructions.",
+		"config":  h.config,
 	}
 	renderTemplate(c, data, C.SignupSuccessPath)
 }
@@ -267,6 +276,7 @@ func (h *Handler) VerifyEmail(c *gin.Context) {
 	data := map[string]any{
 		"title":   "Email Verified",
 		"message": "Your email has been verified successfully. You can now log in.",
+		"config":  h.config,
 	}
 	renderTemplate(c, data, C.VerificationSuccessPath)
 }
@@ -296,6 +306,7 @@ func (h *Handler) CategoryView(c *gin.Context) {
 		"category": category,
 		"topics":   topics,
 		"user":     h.getCurrentUser(c),
+		"config":   h.config,
 	}
 	renderTemplate(c, data, C.CategoryPath)
 }
@@ -327,10 +338,11 @@ func (h *Handler) TopicView(c *gin.Context) {
 	}
 
 	data := map[string]any{
-		"title": topic.Title,
-		"topic": &topic,
-		"posts": posts,
-		"user":  h.getCurrentUser(c),
+		"title":  topic.Title,
+		"topic":  &topic,
+		"posts":  posts,
+		"user":   h.getCurrentUser(c),
+		"config": h.config,
 	}
 	renderTemplate(c, data, C.TopicPath)
 }
@@ -349,6 +361,7 @@ func (h *Handler) ProfileView(c *gin.Context) {
 		"title":       fmt.Sprintf("%s's Profile", user.Username),
 		"profileUser": user,
 		"user":        h.getCurrentUser(c),
+		"config":      h.config,
 	}
 	renderTemplate(c, data, C.ProfilePath)
 }
@@ -361,10 +374,10 @@ func (h *Handler) ProfileEdit(c *gin.Context) {
 	}
 
 	data := map[string]any{
-		"title":              "Edit Profile",
-		"user":               user,
-		"maxSignatureLength": h.config.MaxSignatureLength,
-		"themes":             C.Themes,
+		"title":  "Edit Profile",
+		"user":   user,
+		"themes": C.Themes,
+		"config": h.config,
 	}
 	renderTemplate(c, data, C.ProfileEditPath)
 }
@@ -381,27 +394,22 @@ func (h *Handler) ProfileUpdate(c *gin.Context) {
 	signature := c.PostForm("signature")
 	theme := c.PostForm("theme")
 
+	data := map[string]any{
+		"title":  "Edit Profile",
+		"user":   user,
+		"config": h.config,
+		"themes": C.Themes,
+	}
+
 	// Validate lengths
-	if len(motto) > 255 {
-		data := map[string]any{
-			"title":              "Edit Profile",
-			"user":               user,
-			"error":              "Motto must be less than 255 characters",
-			"maxSignatureLength": h.config.MaxSignatureLength,
-			"themes":             C.Themes,
-		}
+	if len(motto) > h.config.MaxMottoLength {
+		data["error"] = fmt.Sprintf("Motto must be less than %d characters", h.config.MaxMottoLength)
 		renderTemplateStatus(c, data, C.ProfileEditPath, http.StatusBadRequest)
 		return
 	}
 
 	if len(signature) > h.config.MaxSignatureLength {
-		data := map[string]any{
-			"title":              "Edit Profile",
-			"user":               user,
-			"error":              fmt.Sprintf("Signature must be less than %d characters", h.config.MaxSignatureLength),
-			"maxSignatureLength": h.config.MaxSignatureLength,
-			"themes":             C.Themes,
-		}
+		data["error"] = fmt.Sprintf("Signature must be less than %d characters", h.config.MaxSignatureLength)
 		renderTemplateStatus(c, data, C.ProfileEditPath, http.StatusBadRequest)
 		return
 	}
@@ -413,18 +421,40 @@ func (h *Handler) ProfileUpdate(c *gin.Context) {
 		}
 	}
 
+	// Validate and set profile picture URL
+	if profilePicURL != "" {
+		if !strings.HasPrefix(profilePicURL, h.config.ProfilePicsBaseURL) {
+			data["error"] = "Profile picture URL must start with " + h.config.ProfilePicsBaseURL
+			renderTemplateStatus(c, data, C.ProfileEditPath, http.StatusBadRequest)
+			return
+		}
+
+		// Check if the full URL actually points to an image
+		r, err := http.DefaultClient.Get(profilePicURL)
+		if err != nil || r.StatusCode != http.StatusOK || !strings.HasPrefix(r.Header.Get("Content-Type"), "image/") {
+			data["error"] = "Profile picture URL must point to a valid image"
+			renderTemplateStatus(c, data, C.ProfileEditPath, http.StatusBadRequest)
+			return
+		}
+		r.Body.Close()
+
+		// Store only the path relative to base URL
+		user.ProfilePicURL = strings.TrimPrefix(profilePicURL, h.config.ProfilePicsBaseURL)
+	} else {
+		user.ProfilePicURL = ""
+	}
+
 	// Update user
 	user.Motto = motto
-	user.ProfilePicURL = profilePicURL
 	user.Signature = signature
 
 	if err := h.db.Save(user).Error; err != nil {
 		data := map[string]any{
-			"title":              "Edit Profile",
-			"user":               user,
-			"error":              "Failed to update profile",
-			"maxSignatureLength": h.config.MaxSignatureLength,
-			"themes":             C.Themes,
+			"title":  "Edit Profile",
+			"user":   user,
+			"error":  "Failed to update profile",
+			"themes": C.Themes,
+			"config": h.config,
 		}
 		renderTemplateStatus(c, data, C.ProfileEditPath, http.StatusInternalServerError)
 		return
@@ -463,6 +493,7 @@ func (h *Handler) NewPostForm(c *gin.Context) {
 		"topic":     topic,
 		"user":      user,
 		"maxLength": h.config.MaxPostLength,
+		"config":    h.config,
 	}
 	renderTemplate(c, data, C.NewPostPath)
 }
@@ -494,11 +525,11 @@ func (h *Handler) CreatePost(c *gin.Context) {
 	content := c.PostForm("content")
 	if len(content) == 0 {
 		data := map[string]any{
-			"title":     "New Post",
-			"topic":     topic,
-			"user":      user,
-			"error":     "Post content cannot be empty",
-			"maxLength": h.config.MaxPostLength,
+			"title":  "New Post",
+			"topic":  topic,
+			"user":   user,
+			"error":  "Post content cannot be empty",
+			"config": h.config,
 		}
 		renderTemplateStatus(c, data, C.NewPostPath, http.StatusBadRequest)
 		return
@@ -506,11 +537,11 @@ func (h *Handler) CreatePost(c *gin.Context) {
 
 	if len(content) > h.config.MaxPostLength {
 		data := map[string]any{
-			"title":     "New Post",
-			"topic":     topic,
-			"user":      user,
-			"error":     fmt.Sprintf("Post content must be less than %d characters", h.config.MaxPostLength),
-			"maxLength": h.config.MaxPostLength,
+			"title":  "New Post",
+			"topic":  topic,
+			"user":   user,
+			"error":  fmt.Sprintf("Post content must be less than %d characters", h.config.MaxPostLength),
+			"config": h.config,
 		}
 		renderTemplateStatus(c, data, C.NewPostPath, http.StatusBadRequest)
 		return
@@ -524,11 +555,11 @@ func (h *Handler) CreatePost(c *gin.Context) {
 
 	if err := h.db.Create(post).Error; err != nil {
 		data := map[string]any{
-			"title":     "New Post",
-			"topic":     topic,
-			"user":      user,
-			"error":     "Failed to create post",
-			"maxLength": h.config.MaxPostLength,
+			"title":  "New Post",
+			"topic":  topic,
+			"user":   user,
+			"error":  "Failed to create post",
+			"config": h.config,
 		}
 		renderTemplateStatus(c, data, C.NewPostPath, http.StatusInternalServerError)
 		return
