@@ -18,7 +18,7 @@
         {{end}}
 
         <div class="mb-30" style="display: flex; gap: 30px;">
-            <div style="flex: 0 0 200px;">
+            <div style="margin: auto; text-align: center;">
                 {{if .targetUser.ProfilePicURL}}
                     <img src="{{.config.ProfilePicsBaseURL}}{{.targetUser.ProfilePicURL}}" alt="Avatar" class="avatar">
                 {{else}}
@@ -53,7 +53,7 @@
             <div class="form-group">
                 <label for="profile_pic_url">Profile Picture URL:</label>
                 <input type="url" id="profile_pic_url" name="profile_pic_url" maxlength="500" 
-                       value="{{.config.ProfilePicsBaseURL}}{{.targetUser.ProfilePicURL}}" placeholder="https://example.com/avatar.jpg">
+                       value="{{if .targetUser.ProfilePicURL}}{{.config.ProfilePicsBaseURL}}{{.targetUser.ProfilePicURL}}{{end}}" placeholder="{{.config.ProfilePicsBaseURL}}fffe07d1/20006.png">
             </div>
 
             <div class="form-group">
@@ -69,7 +69,7 @@
         </form>
 
         {{if .targetUser.IsBanned}}
-        <div class="mt-30 ban-info" style="padding: 20px; border-radius: 8px;">
+        <div class="mt-30 ban-info" style="padding: 20px; border-radius: 4px;">
             <h4 class="mb-15">🚫 Ban Information</h4>
             <p><strong>Reason:</strong> {{.targetUser.BanReason}}</p>
             <p><strong>Banned At:</strong> {{.targetUser.BannedAt.Format "2006-01-02 15:04"}}</p>

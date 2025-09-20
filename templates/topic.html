@@ -37,7 +37,7 @@
                     </div>
                 {{end}}
                 
-                <div class="username">{{.Author.Username}}</div>
+                <div class="username"><a href="/profile/{{.Author.Username}}">{{.Author.Username}}</a></div>
                 <div class="user-type user-{{.Author.UserType.String}}">{{.Author.UserType.String | title}}</div>
                 
                 {{if .Author.Motto}}

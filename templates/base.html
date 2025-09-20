@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{if .title}}{{.title}} - {{end}}Go Forum</title>
+    <title>{{if .title}}{{.title}} - {{end}}{{.config.SiteName}}</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22 fill=%22{{if .user }}{{getIconColor .user.Theme}}{{else}}white{{end}}%22>🗫</text></svg>">
     
     <link rel="stylesheet" href="/static/{{ if .user }}{{validateTheme .user.Theme}}{{else}}default{{end}}.css">
@@ -12,16 +12,16 @@
     <header>
         <div class="container">
             <div class="header-content">
-                <a href="/" class="logo">Go Forum</a>
+                <a href="/" class="logo">{{.config.SiteName}}</a>
                 
                 <nav class="nav">
                     <!--<a href="/">Home</a>-->
                     {{if .user}}
                         <div class="user-info">
                             {{if .user.ProfilePicURL}}
-                                <img src="{{.config.ProfilePicsBaseURL}}{{.user.ProfilePicURL}}" alt="Avatar" class="user-avatar">
+                                <a href="/profile/{{.user.Username}}" class="avatar-link"><img src="{{.config.ProfilePicsBaseURL}}{{.user.ProfilePicURL}}" alt="Avatar" class="user-avatar"></a>
                             {{end}}
-                            <span>Hello, <a href="/profile/{{.user.Username}}">{{.user.Username}}</a></span>
+                            <span><a href="/profile/{{.user.Username}}">{{.user.Username}}</a></span>
                             {{if or .user.CanModerate .user.IsAdmin}}
                                 <a href="/admin">Admin Panel</a>
                             {{end}}
@@ -46,7 +46,7 @@
 
     <footer>
         <div class="container">
-            <p>&copy; 2025 Go Forum. Built with Go and Gin.</p>
+            <p>&copy; {{.config.SiteName}}</p>
         </div>
     </footer>
 </body>

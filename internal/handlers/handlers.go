@@ -7,21 +7,21 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	enclave "github.com/quailyquaily/goldmark-enclave"
-	"github.com/quailyquaily/goldmark-enclave/core"
 	treeblood "github.com/wyatt915/goldmark-treeblood"
 	"github.com/yuin/goldmark"
 	emoji "github.com/yuin/goldmark-emoji"
 	"github.com/yuin/goldmark/extension"
 	"github.com/yuin/goldmark/parser"
+	"github.com/yuin/goldmark/renderer"
 	"github.com/yuin/goldmark/renderer/html"
+	"github.com/yuin/goldmark/util"
 	"gorm.io/gorm"
-	"mvdan.cc/xurls/v2"
 
 	"goforum/internal/auth"
 	"goforum/internal/config"
 	C "goforum/internal/constants"
 	"goforum/internal/models"
+	"goforum/internal/renderers"
 )
 
 type Handler struct {
@@ -40,29 +40,9 @@ func New(db *gorm.DB, authService *auth.Service, cfg *config.Config, themes []mo
 			extension.Strikethrough,
 			extension.TaskList,
 			extension.CJK,
-			extension.NewLinkify(
-				extension.WithLinkifyAllowedProtocols([]string{
-					"http:",
-					"https:",
-					"mailto:",
-					"ftp:",
-					"magnet:",
-					"gemini:",
-					"gopher:",
-				}),
-				extension.WithLinkifyURLRegexp(
-					xurls.Strict(),
-				),
-			),
-			enclave.New(
-				&core.Config{
-					DefaultImageAltPrefix: "Image",
-					IframeDisabled:        true,
-				},
-			),
 			treeblood.MathML(),
 			emoji.Emoji,
-			// https://github.com/tendstofortytwo/goldmark-customtag
+		// https://github.com/tendstofortytwo/goldmark-customtag
 		),
 		goldmark.WithParserOptions(
 			parser.WithAutoHeadingID(),
@@ -72,6 +52,11 @@ func New(db *gorm.DB, authService *auth.Service, cfg *config.Config, themes []mo
 			html.WithXHTML(),
 		),
 	)
+
+	md.Renderer().AddOptions(renderer.WithNodeRenderers(
+		util.Prioritized(renderers.NewCustomImageRenderer(), 100),
+		util.Prioritized(renderers.NewCustomLinkRenderer(), 100),
+	))
 
 	return &Handler{
 		db:          db,
@@ -356,6 +341,9 @@ func (h *Handler) ProfileView(c *gin.Context) {
 		renderError(c, "User not found", http.StatusNotFound)
 		return
 	}
+
+	// Render markdown for signature
+	user.Signature = h.renderMarkdown(user.Signature)
 
 	data := map[string]any{
 		"title":       fmt.Sprintf("%s's Profile", user.Username),

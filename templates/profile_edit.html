@@ -27,17 +27,17 @@
             <div class="form-group">
                 <label for="profile_pic_url">Profile Picture URL:</label>
                 <input type="url" id="profile_pic_url" name="profile_pic_url" maxlength="500" 
-                       value="{{.config.ProfilePicsBaseURL}}{{.user.ProfilePicURL}}" placeholder="https://download.xboxgamer.pics/titles/example.png">
-                <small class="color2">Enter a direct link to your profile picture. Only URLs from <a target="_blank" href="https://xboxgamer.pics/">xboxgamer.pics</a> are supported.</small>
+                       value="{{if .user.ProfilePicURL}}{{.config.ProfilePicsBaseURL}}{{.user.ProfilePicURL}}{{end}}" placeholder="{{.config.ProfilePicsBaseURL}}fffe07d1/20006.png">
+                <small class="color2">Enter a direct link to your profile picture. Only URLs from <a target="_blank" href="https://{{.config.ProfilePicsWebsite}}/">{{.config.ProfilePicsWebsite}}</a> are supported.</small>
             </div>
         
             <div class="mt-15 mb-15 bg1" style="padding: 20px; border-radius: 4px;">
                 <h4>💡 Profile Picture Tips:</h4>
                 <ol style="margin: 10px 0; padding-left: 20px;">
-                    <li>Visit <a target="_blank" href="https://xboxgamer.pics/">xboxgamer.pics</a></li>
+                    <li>Visit <a target="_blank" href="https://{{.config.ProfilePicsWebsite}}/">{{.config.ProfilePicsWebsite}}</a></li>
                     <li>Pick any image you want</li>
                     <li>Right click it, then Copy link</li>
-                    <li>Paste it here. It should start with <code>https://download.xboxgamer.pics/titles/</code></li>
+                    <li>Paste it here. It should start with <code>{{.config.ProfilePicsBaseURL}}</code></li>
                 </ol>
             </div>
 
