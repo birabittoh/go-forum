@@ -24,7 +24,7 @@
                        value="{{.topic.Title}}" placeholder="Enter a descriptive title for your topic">
             </div>
 
-            {{if canModerate .user .topic.Category}}
+            {{if .user.CanModerate .topic.Category}}
             <div class="mb-20 bg1" style="padding: 15px; border-radius: 4px;">
                 <h4 class="mb-15 color1">Moderation Options</h4>
                 <div style="display: flex; gap: 20px;">

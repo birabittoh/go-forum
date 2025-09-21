@@ -5,6 +5,9 @@ import (
 	"html/template"
 	"os"
 	"strings"
+
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 const (
@@ -71,51 +74,18 @@ var (
 			if start < 0 || start >= len(r) || length <= 0 {
 				return ""
 			}
-			end := start + length
-			if end > len(r) {
-				end = len(r)
-			}
+			end := min(start+length, len(r))
 			return string(r[start:end])
 		},
 		"upper": func(s string) string {
 			return strings.ToUpper(s)
 		},
 		"title": func(s string) string {
-			return strings.Title(s)
+			return cases.Title(language.Und).String(s)
 		},
 		"add":      func(a, b int) int { return a + b },
 		"safeHTML": func(s string) template.HTML { return template.HTML(s) },
 
-		"canEditTopic": func(u *models.User, t *models.Topic) bool {
-			if u == nil {
-				return false
-			}
-			return u.CanEditTopic(t)
-		},
-		"canDeleteTopic": func(u *models.User, t *models.Topic) bool {
-			if u == nil {
-				return false
-			}
-			return u.CanDeleteTopic(t)
-		},
-		"canEditPost": func(u *models.User, p *models.Post) bool {
-			if u == nil {
-				return false
-			}
-			return u.CanEditPost(p)
-		},
-		"canDeletePost": func(u *models.User, p *models.Post) bool {
-			if u == nil {
-				return false
-			}
-			return u.CanDeletePost(p)
-		},
-		"canModerate": func(u *models.User, c models.Category) bool {
-			if u == nil {
-				return false
-			}
-			return u.CanModerate()
-		},
 		"validateTheme": func(theme string) string {
 			for _, t := range Themes {
 				if t.ID == theme {
