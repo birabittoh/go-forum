@@ -11,7 +11,7 @@
     
     <div class="content-body">
         <!-- Create New Category Form -->
-        <div class="mb-30 bg1" style="padding: 20px; border-radius: 4px;">
+        <div class="generic-container">
             <h3 class="mb-15">Create New Category</h3>
             <form method="post" action="/admin/categories">
                 <div id="new-category-grid">
@@ -64,14 +64,14 @@
             <tbody>
                 {{range .categories}}
                 <tr>
-                    <td><span class="bg1" style="padding: 2px 8px; border-radius: 4px; font-size: 12px;">{{.Section.Name}}</span></td>
+                    <td><span class="section-name-small">{{.Section.Name}}</span></td>
                     <td><strong><a href="/category/{{.ID}}">{{.Name}}</a></strong></td>
-                    <td class="color2">{{.Description}}</td>
+                    <td class="generic-subtitle">{{.Description}}</td>
                     <td>{{.Order}}</td>
                     <td class="text-center">{{len .Topics}}</td>
                     <td>{{.CreatedAt.Format "2006-01-02"}}</td>
                     <td>
-                        <form method="post" action="/admin/categories/{{.ID}}/delete" style="display: inline;" 
+                        <form method="post" action="/admin/categories/{{.ID}}/delete" class="inline-form"
                               onsubmit="return confirm('Are you sure? This will delete the category and all its topics!')">
                             <button type="submit" class="btn btn-sm btn-danger">Delete</button>
                         </form>
@@ -88,9 +88,9 @@
 
         {{end}}
 
-        <div class="mt-30" class="warning-box">
-            <h4 class="mb-30 color3">💡 Tips</h4>
-            <ul class="color3" style="margin: 0; padding-left: 20px;">
+        <div class="warning-box">
+            <h4 class="tips-title">💡 Tips</h4>
+            <ul class="tips-list">
                 <li>Categories contain topics and posts - they're where discussions happen</li>
                 <li>Each category must belong to a section</li>
                 <li>Use the order field to control how categories appear within their section</li>

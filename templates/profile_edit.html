@@ -21,19 +21,19 @@
                 <label for="motto">Motto:</label>
                 <input type="text" id="motto" name="motto" maxlength="{{.config.MaxMottoLength}}" 
                        value="{{.user.Motto}}" placeholder="Your personal motto or tagline">
-                <small class="color2">Maximum {{.config.MaxMottoLength}} characters. This appears under your username in posts.</small>
+                <small class="generic-subtitle">Maximum {{.config.MaxMottoLength}} characters. This appears under your username in posts.</small>
             </div>
 
             <div class="form-group">
                 <label for="profile_pic_url">Profile Picture URL:</label>
                 <input type="url" id="profile_pic_url" name="profile_pic_url" maxlength="500" 
                        value="{{if .user.ProfilePicURL}}{{.config.ProfilePicsBaseURL}}{{.user.ProfilePicURL}}{{end}}" placeholder="{{.config.ProfilePicsBaseURL}}fffe07d1/20006.png">
-                <small class="color2">Enter a direct link to your profile picture. Only URLs from <a target="_blank" href="https://{{.config.ProfilePicsWebsite}}/">{{.config.ProfilePicsWebsite}}</a> are supported.</small>
+                <small class="generic-subtitle">Enter a direct link to your profile picture. Only URLs from <a target="_blank" href="https://{{.config.ProfilePicsWebsite}}/">{{.config.ProfilePicsWebsite}}</a> are supported.</small>
             </div>
         
-            <div class="mt-15 mb-15 bg1" style="padding: 20px; border-radius: 4px;">
+            <div class="generic-container mt-15 mb-15">
                 <h4>💡 Profile Picture Tips:</h4>
-                <ol style="margin: 10px 0; padding-left: 20px;">
+                <ol class="tips-list">
                     <li>Visit <a target="_blank" href="https://{{.config.ProfilePicsWebsite}}/">{{.config.ProfilePicsWebsite}}</a></li>
                     <li>Pick any image you want</li>
                     <li>Right click it, then Copy link</li>
@@ -45,7 +45,7 @@
                 <label for="signature">Signature:</label>
                 <textarea id="signature" name="signature" maxlength="{{.config.MaxSignatureLength}}" 
                           placeholder="Your signature appears at the bottom of all your posts. Markdown supported.">{{.user.Signature}}</textarea>
-                <small class="color2">Supports Markdown formatting. Maximum {{.config.MaxSignatureLength}} characters.</small>
+                <small class="generic-subtitle">Supports Markdown formatting. Maximum {{.config.MaxSignatureLength}} characters.</small>
             </div>
 
             <div class="form-group">
@@ -55,7 +55,7 @@
                         <option value="{{.ID}}" {{if eq $.user.Theme .ID}}selected{{end}}>{{.DisplayName}}</option>
                     {{end}}
                 </select>
-                <small class="color2">Choose your preferred site theme.</small>
+                <small class="generic-subtitle">Choose your preferred site theme.</small>
             </div>
 
             <div class="form-group">

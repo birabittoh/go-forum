@@ -10,7 +10,7 @@
     </div>
     
     <div class="content-body">
-        <div class="mb-20" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+        <div class="mb-20" class="actions-container">
             <span>Sort by:</span>
             <a href="/admin/users?sort=username&order={{if and (eq .sortBy "username") (eq .order "asc")}}desc{{else}}asc{{end}}" 
                class="btn btn-sm {{if eq .sortBy "username"}}btn-secondary{{end}}">
@@ -54,11 +54,11 @@
                     </td>
                     <td>{{.CreatedAt.Format "2006-01-02"}}</td>
                     <td>
-                        <div style="display: flex; gap: 5px; flex-wrap: wrap;">
+                        <div class="actions-container">
                             <a href="/admin/user/{{.ID}}/edit" class="btn btn-sm btn-secondary">Edit</a>
                             
                             {{if .IsBanned}}
-                                <form method="post" action="/admin/user/{{.ID}}/unban" style="display: inline;">
+                                <form method="post" action="/admin/user/{{.ID}}/unban" class="inline-form">
                                     <button type="submit" class="btn btn-sm btn-success">Unban</button>
                                 </form>
                             {{else}}
@@ -75,7 +75,7 @@
             </tbody>
         </table>
         <!-- Pagination Controls -->
-        <div class="pagination" style="margin-top: 20px; display: flex; gap: 5px; flex-wrap: wrap;">
+        <div class="pagination">
             {{if gt .totalPages 1}}
                 {{if gt .page 1}}
                     <a href="/admin/users?sort={{.sortBy}}&order={{.order}}&page={{sub .page 1}}" class="btn btn-sm">Prev</a>
@@ -118,7 +118,7 @@
                     <option value="permanent">Permanent</option>
                 </select>
             </div>
-            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+            <div class="actions-container">
                 <button type="button" onclick="hideBanModal()" class="btn btn-secondary">Cancel</button>
                 <button type="submit" class="btn btn-danger">Ban User</button>
             </div>
@@ -139,7 +139,7 @@
                     <option value="admin">Admin</option>
                 </select>
             </div>
-            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+            <div class="actions-container">
                 <button type="button" onclick="hideUserTypeModal()" class="btn btn-secondary">Cancel</button>
                 <button type="submit" class="btn btn-success">Change</button>
             </div>

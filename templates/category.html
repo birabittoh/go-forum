@@ -10,7 +10,7 @@
     
     <div class="content-body">
         {{if .category.Description}}
-        <p class="mb-20 color2">{{.category.Description}}</p>
+        <p class="mb-20 generic-subtitle">{{.category.Description}}</p>
         {{end}}
 
         {{if and .user .user.CanPost}}
@@ -27,14 +27,13 @@
                     <th>Author</th>
                     <th>Replies</th>
                     <th>Created</th>
-                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
                 {{range .topics}}
                 <tr>
                     <td>
-                        <div style="display: flex; align-items: center; gap: 10px;">
+                        <div>
                             {{if .IsPinned}}
                                 <span class="topic-pinned" title="Pinned">📌</span>
                             {{end}}
@@ -51,25 +50,12 @@
                     </td>
                     <td class="text-center">{{sub (len .Posts) 1}}</td>
                     <td>{{.CreatedAt.Format "2006-01-02 15:04"}}</td>
-                    <td>
-                        <div>
-                            {{if and $.user ($.user.CanEditTopic .)}}
-                                <a href="/topic/{{.ID}}/edit" class="btn btn-sm btn-secondary">Edit</a>
-                            {{end}}
-                            {{if and $.user ($.user.CanDeleteTopic .)}}
-                                <form method="post" action="/topic/{{.ID}}/delete" style="display: inline;" 
-                                      onsubmit="return confirm('Are you sure you want to delete this topic?')">
-                                    <button type="submit" class="btn btn-sm btn-danger">Delete</button>
-                                </form>
-                            {{end}}
-                        </div>
-                    </td>
                 </tr>
                 {{end}}
             </tbody>
         </table>
         <!-- Pagination Controls -->
-        <div class="pagination" style="margin-top: 20px; display: flex; gap: 5px; flex-wrap: wrap;">
+        <div class="pagination">
             {{with .totalPages}}
                 {{if gt . 1}}
                     {{if gt $.page 1}}

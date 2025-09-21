@@ -9,8 +9,8 @@
     </div>
     
     <div class="content-body">
-        <div style="display: flex; gap: 30px; flex-wrap: wrap;">
-            <div style="margin: auto; text-align: center;">
+        <div class="profile-header">
+            <div class="propic-container">
                 {{if .profileUser.ProfilePicURL}}
                     <img src="{{.config.ProfilePicsBaseURL}}{{.profileUser.ProfilePicURL}}" alt="{{.profileUser.Username}}'s avatar" class="avatar">
                 {{else}}
@@ -20,8 +20,8 @@
                 {{end}}
             </div>
             
-            <div style="flex: 1;">
-                <h2 class="mb-20 color1">{{.profileUser.Username}}</h2>
+            <div class="profile-container">
+                <h2 class="generic-title">{{.profileUser.Username}}</h2>
                 
                 <div class="mb-15">
                     <strong>User Type:</strong> 
@@ -63,9 +63,9 @@
         </div>
         
         {{if .profileUser.Signature}}
-        <div class="mt-40 signature">
-            <h3 class="mb-15 color1">Signature</h3>
-            <div class="bg1 signature-container">
+        <div class="signature">
+            <h3 class="generic-title">Signature</h3>
+            <div class="signature-container">
                 {{.profileUser.Signature | safeHTML}}
             </div>
         </div>

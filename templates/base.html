@@ -22,10 +22,10 @@
                                 <a href="/profile/{{.user.Username}}" class="avatar-link"><img src="{{.config.ProfilePicsBaseURL}}{{.user.ProfilePicURL}}" alt="Avatar" class="user-avatar"></a>
                             {{end}}
                             <span><a href="/profile/{{.user.Username}}">{{.user.Username}}</a></span>
-                            {{if or .user.CanModerate .user.IsAdmin}}
+                            {{if or (.user.CanModerate) (.user.IsAdmin)}}
                                 <a href="/admin">Admin Panel</a>
                             {{end}}
-                            <form method="post" action="/auth/logout" style="display: inline;">
+                            <form method="post" action="/auth/logout">
                                 <button type="submit" class="btn btn-sm btn-secondary">Logout</button>
                             </form>
                         </div>

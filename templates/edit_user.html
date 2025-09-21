@@ -17,8 +17,8 @@
         </div>
         {{end}}
 
-        <div class="mb-30" style="display: flex; gap: 30px;">
-            <div style="margin: auto; text-align: center;">
+        <div class="mb-20 profile-header">
+            <div class="propic-container">
                 {{if .targetUser.ProfilePicURL}}
                     <img src="{{.config.ProfilePicsBaseURL}}{{.targetUser.ProfilePicURL}}" alt="Avatar" class="avatar">
                 {{else}}
@@ -28,7 +28,7 @@
                 {{end}}
             </div>
             
-            <div style="flex: 1;">
+            <div class="profile-container">
                 <h3>{{.targetUser.Username}}</h3>
                 <p><strong>Email:</strong> {{.targetUser.Email}}</p>
                 <p><strong>Type:</strong> <span class="user-{{.targetUser.UserType.String}}">{{.targetUser.UserType.String | title}}</span></p>
@@ -69,7 +69,7 @@
         </form>
 
         {{if .targetUser.IsBanned}}
-        <div class="mt-30 ban-info" style="padding: 20px; border-radius: 4px;">
+        <div class="generic-container ban-info">
             <h4 class="mb-15">🚫 Ban Information</h4>
             <p><strong>Reason:</strong> {{.targetUser.BanReason}}</p>
             <p><strong>Banned At:</strong> {{.targetUser.BannedAt.Format "2006-01-02 15:04"}}</p>

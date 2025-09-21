@@ -69,7 +69,7 @@ func main() {
 		themeID := fileName[:len(fileName)-4] // remove .css extension
 		words := strings.Split(themeID, "-")
 		for i, word := range words {
-			if len(word) > 0 {
+			if len(word) > 0 && (word != "and" && word != "or" && word != "the" && word != "of") {
 				words[i] = strings.ToUpper(word[:1]) + word[1:]
 			}
 		}
