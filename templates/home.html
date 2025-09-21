@@ -36,14 +36,8 @@
                             </a>
                         </td>
                         <td class="generic-subtitle">{{.Description}}</td>
-                        <td class="text-center">{{len .Topics}}</td>
-                        <td class="text-center">
-                            {{$postCount := 0}}
-                            {{range .Topics}}
-                                {{$postCount = add $postCount (len .Posts)}}
-                            {{end}}
-                            {{$postCount}}
-                        </td>
+                        <td class="text-center">{{.TopicsCount}}</td>
+                        <td class="text-center">{{.RepliesCount}}</td>
                     </tr>
                     {{end}}
                 </tbody>

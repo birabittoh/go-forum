@@ -48,7 +48,7 @@
                     <td>
                         <a href="/profile/{{.Author.Username}}">{{.Author.Username}}</a>
                     </td>
-                    <td class="text-center">{{sub (len .Posts) 1}}</td>
+                    <td class="text-center">{{.RepliesCount}}</td>
                     <td>{{.CreatedAt.Format "2006-01-02 15:04"}}</td>
                 </tr>
                 {{end}}

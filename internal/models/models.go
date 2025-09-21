@@ -90,6 +90,9 @@ type Category struct {
 	// Relations
 	Section Section `gorm:"foreignKey:SectionID"`
 	Topics  []Topic `gorm:"foreignKey:CategoryID"`
+
+	TopicsCount  int64 `gorm:"-"` // ignore for migrations
+	RepliesCount int64 `gorm:"-"` // ignore for migrations
 }
 
 type Topic struct {
@@ -108,6 +111,8 @@ type Topic struct {
 	Category Category `gorm:"foreignKey:CategoryID"`
 	Author   User     `gorm:"foreignKey:AuthorID"`
 	Posts    []Post   `gorm:"foreignKey:TopicID"`
+
+	RepliesCount int64 `gorm:"-"` // ignore for migrations
 }
 
 type Post struct {

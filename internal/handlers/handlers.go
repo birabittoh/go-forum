@@ -86,10 +86,51 @@ func (h *Handler) renderMarkdown(content string) string {
 // Home page
 func (h *Handler) Home(c *gin.Context) {
 	var sections []models.Section
-	if err := h.db.Preload("Categories.Topics.Posts").Order("\"order\" ASC").Find(&sections).Error; err != nil {
+	if err := h.db.Preload("Categories").Order("\"order\" ASC").Find(&sections).Error; err != nil {
 		// Manual render error template
 		renderError(c, "Internal server error", http.StatusInternalServerError)
 		return
+	}
+
+	// manually count topics and replies for each category
+	categoryIDs := []uint{}
+	for i := range sections {
+		for j := range sections[i].Categories {
+			categoryIDs = append(categoryIDs, sections[i].Categories[j].ID)
+		}
+	}
+
+	type CountResult struct {
+		CategoryID   uint
+		TopicsCount  int64
+		RepliesCount int64
+	}
+
+	var counts []CountResult
+	if len(categoryIDs) > 0 {
+		err := h.db.Model(&models.Topic{}).
+			Select("category_id, COUNT(*) AS topics_count, SUM((SELECT COUNT(*) - 1 FROM posts WHERE posts.topic_id = topics.id AND deleted_at IS NULL)) AS replies_count").
+			Where("category_id IN ?", categoryIDs).
+			Group("category_id").
+			Scan(&counts).Error
+		if err != nil {
+			renderError(c, "Internal server error", http.StatusInternalServerError)
+			return
+		}
+	}
+
+	countMap := make(map[uint]CountResult)
+	for _, count := range counts {
+		countMap[count.CategoryID] = count
+	}
+
+	for i := range sections {
+		for j := range sections[i].Categories {
+			if count, exists := countMap[sections[i].Categories[j].ID]; exists {
+				sections[i].Categories[j].TopicsCount = count.TopicsCount
+				sections[i].Categories[j].RepliesCount = count.RepliesCount
+			}
+		}
 	}
 
 	data := map[string]any{
@@ -295,9 +336,47 @@ func (h *Handler) CategoryView(c *gin.Context) {
 	}
 
 	var topics []models.Topic
-	if err := h.db.Preload("Author").Preload("Posts").Where("category_id = ?", id).Order("is_pinned DESC, created_at DESC").Find(&topics).Error; err != nil {
+	if err := h.db.Preload("Author").Where("category_id = ?", id).Order("is_pinned DESC, created_at DESC").Find(&topics).Error; err != nil {
 		renderError(c, "Failed to load topics", http.StatusInternalServerError)
 		return
+	}
+
+	var topicIDs []uint
+	for _, topic := range topics {
+		topicIDs = append(topicIDs, topic.ID)
+	}
+
+	// Fetch replies count for all topics in a single query
+	type ReplyCount struct {
+		TopicID uint
+		Count   int64
+	}
+	var replyCounts []ReplyCount
+	if len(topicIDs) > 0 {
+		err = h.db.Model(&models.Post{}).
+			Select("topic_id, COUNT(*) - 1 AS count").
+			Where("topic_id IN ?", topicIDs).
+			Group("topic_id").
+			Scan(&replyCounts).Error
+		if err != nil {
+			renderError(c, "Failed to load reply counts", http.StatusInternalServerError)
+			return
+		}
+	}
+
+	// Map topic ID to replies count
+	repliesMap := make(map[uint]int64)
+	for _, rc := range replyCounts {
+		repliesMap[rc.TopicID] = rc.Count
+	}
+
+	// Assign replies count to each topic
+	for i := range topics {
+		if count, exists := repliesMap[topics[i].ID]; exists {
+			topics[i].RepliesCount = count
+		} else {
+			topics[i].RepliesCount = 0
+		}
 	}
 
 	data := map[string]any{
