@@ -26,6 +26,7 @@ type Config struct {
 	MaxPostLength      int
 	MaxMottoLength     int
 	MaxSignatureLength int
+	TopicPageSize      int
 }
 
 func Load() *Config {
@@ -48,6 +49,7 @@ func Load() *Config {
 		MaxPostLength:      getEnvInt("MAX_POST_LENGTH", 10000),
 		MaxMottoLength:     getEnvInt("MAX_MOTTO_LENGTH", 255),
 		MaxSignatureLength: getEnvInt("MAX_SIGNATURE_LENGTH", 500),
+		TopicPageSize:      getEnvInt("TOPIC_PAGE_SIZE", 10),
 	}
 
 	return cfg

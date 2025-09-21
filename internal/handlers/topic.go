@@ -11,6 +11,22 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+func getPageRedirect(h *Handler, topicID int, postID int) string {
+	pageRedirect := fmt.Sprintf("/topic/%d", topicID)
+
+	var postNumber int64
+	err := h.db.Model(&models.Post{}).
+		Where("topic_id = ? AND id <= ?", topicID, postID).
+		Count(&postNumber).Error
+	if err == nil {
+		page := int(postNumber-1)/h.config.TopicPageSize + 1
+		if page > 1 {
+			pageRedirect += fmt.Sprintf("?page=%d", page)
+		}
+	}
+	return pageRedirect
+}
+
 // Topic management
 func (h *Handler) NewTopicForm(c *gin.Context) {
 	user := h.getCurrentUser(c)
@@ -302,7 +318,8 @@ func (h *Handler) UpdatePost(c *gin.Context) {
 		return
 	}
 
-	c.Redirect(http.StatusFound, fmt.Sprintf("/topic/%d", post.TopicID))
+	pageRedirect := getPageRedirect(h, int(post.TopicID), int(post.ID))
+	c.Redirect(http.StatusFound, pageRedirect)
 }
 
 func (h *Handler) DeletePost(c *gin.Context) {
@@ -329,12 +346,11 @@ func (h *Handler) DeletePost(c *gin.Context) {
 		return
 	}
 
-	topicID := post.TopicID
-
 	if err := h.db.Delete(&post).Error; err != nil {
 		renderError(c, "Failed to delete post", http.StatusInternalServerError)
 		return
 	}
 
-	c.Redirect(http.StatusFound, fmt.Sprintf("/topic/%d", topicID))
+	pageRedirect := getPageRedirect(h, int(post.TopicID), int(post.ID))
+	c.Redirect(http.StatusFound, pageRedirect)
 }

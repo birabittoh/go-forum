@@ -325,7 +325,6 @@ func (h *Handler) TopicView(c *gin.Context) {
 	}
 
 	// Pagination
-	pageSize := 10
 	pageStr := c.DefaultQuery("page", "1")
 	page, err := strconv.Atoi(pageStr)
 	if err != nil || page < 1 {
@@ -334,14 +333,14 @@ func (h *Handler) TopicView(c *gin.Context) {
 
 	var totalPosts int64
 	h.db.Model(&models.Post{}).Where("topic_id = ?", id).Count(&totalPosts)
-	totalPages := int((totalPosts + int64(pageSize) - 1) / int64(pageSize))
+	totalPages := int((totalPosts + int64(h.config.TopicPageSize) - 1) / int64(h.config.TopicPageSize))
 
 	var posts []models.Post
 	if err := h.db.Preload("Author").
 		Where("topic_id = ?", id).
 		Order("created_at ASC").
-		Limit(pageSize).
-		Offset((page - 1) * pageSize).
+		Limit(h.config.TopicPageSize).
+		Offset((page - 1) * h.config.TopicPageSize).
 		Find(&posts).Error; err != nil {
 		renderError(c, "Failed to load posts", http.StatusInternalServerError)
 		return
@@ -586,16 +585,6 @@ func (h *Handler) CreatePost(c *gin.Context) {
 		return
 	}
 
-	pageRedirect := fmt.Sprintf("/topic/%d", topicID)
-
-	// count total posts to determine the page number
-	var totalPosts int64
-	h.db.Model(&models.Post{}).Where("topic_id = ?", topicID).Count(&totalPosts)
-	totalPages := int((totalPosts + 9) / 10) // Assuming page size of 10
-
-	if totalPages > 1 {
-		pageRedirect += fmt.Sprintf("?page=%d", totalPages)
-	}
-
+	pageRedirect := getPageRedirect(h, topicID, int(post.ID))
 	c.Redirect(http.StatusFound, pageRedirect)
 }
