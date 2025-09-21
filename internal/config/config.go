@@ -23,6 +23,7 @@ type Config struct {
 	SiteName           string
 	ProfilePicsWebsite string
 	ProfilePicsBaseURL string
+	ProfilePicsLinkURL string
 	MaxPostLength      int
 	MaxMottoLength     int
 	MaxSignatureLength int
@@ -46,6 +47,7 @@ func Load() *Config {
 		SiteName:           getEnv("SITE_NAME", "Go Forum"),
 		ProfilePicsWebsite: getEnv("PROFILE_PICS_WEBSITE", "xboxgamer.pics"),
 		ProfilePicsBaseURL: getEnv("PROFILE_PICS_BASE_URL", "https://download.xboxgamer.pics/titles/"),
+		ProfilePicsLinkURL: getEnv("PROFILE_PICS_LINK_URL", "https://assets.xboxgamer.pics/titles/"),
 		MaxPostLength:      getEnvInt("MAX_POST_LENGTH", 10000),
 		MaxMottoLength:     getEnvInt("MAX_MOTTO_LENGTH", 255),
 		MaxSignatureLength: getEnvInt("MAX_SIGNATURE_LENGTH", 500),

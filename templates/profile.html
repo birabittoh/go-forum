@@ -12,7 +12,7 @@
         <div class="profile-header">
             <div class="propic-container">
                 {{if .profileUser.ProfilePicURL}}
-                    <img src="{{.config.ProfilePicsBaseURL}}{{.profileUser.ProfilePicURL}}" alt="{{.profileUser.Username}}'s avatar" class="avatar">
+                    <img src="{{.config.ProfilePicsLinkURL}}{{.profileUser.ProfilePicURL}}" alt="{{.profileUser.Username}}'s avatar" class="avatar">
                 {{else}}
                     <div class="no-avatar">
                         {{substr .profileUser.Username 0 1 | upper}}
