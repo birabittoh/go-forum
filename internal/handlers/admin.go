@@ -58,6 +58,18 @@ func (h *Handler) UserList(c *gin.Context) {
 	sortBy := c.DefaultQuery("sort", "created_at")
 	order := c.DefaultQuery("order", "desc")
 
+	// Pagination
+	pageSize := 20
+	pageStr := c.DefaultQuery("page", "1")
+	page, err := strconv.Atoi(pageStr)
+	if err != nil || page < 1 {
+		page = 1
+	}
+
+	var totalUsers int64
+	h.db.Model(&models.User{}).Count(&totalUsers)
+	totalPages := int((totalUsers + int64(pageSize) - 1) / int64(pageSize))
+
 	var users []models.User
 	query := h.db.Model(&models.User{})
 
@@ -74,18 +86,20 @@ func (h *Handler) UserList(c *gin.Context) {
 		query = query.Order("created_at " + order)
 	}
 
-	if err := query.Find(&users).Error; err != nil {
+	if err := query.Limit(pageSize).Offset((page - 1) * pageSize).Find(&users).Error; err != nil {
 		renderError(c, "Failed to load users", http.StatusInternalServerError)
 		return
 	}
 
 	data := map[string]any{
-		"title":  "User Management",
-		"users":  users,
-		"user":   user,
-		"sortBy": sortBy,
-		"order":  order,
-		"config": h.config,
+		"title":      "User Management",
+		"users":      users,
+		"user":       user,
+		"sortBy":     sortBy,
+		"order":      order,
+		"page":       page,
+		"totalPages": totalPages,
+		"config":     h.config,
 	}
 	renderTemplate(c, data, C.UserListPath)
 }
@@ -305,8 +319,24 @@ func (h *Handler) DeleteSection(c *gin.Context) {
 func (h *Handler) CategoryList(c *gin.Context) {
 	user := h.getCurrentUser(c)
 
+	// Pagination
+	pageSize := 20
+	pageStr := c.DefaultQuery("page", "1")
+	page, err := strconv.Atoi(pageStr)
+	if err != nil || page < 1 {
+		page = 1
+	}
+
+	var totalCategories int64
+	h.db.Model(&models.Category{}).Count(&totalCategories)
+	totalPages := int((totalCategories + int64(pageSize) - 1) / int64(pageSize))
+
 	var categories []models.Category
-	if err := h.db.Preload("Section").Order("section_id ASC, \"order\" ASC").Find(&categories).Error; err != nil {
+	if err := h.db.Preload("Section").
+		Order("section_id ASC, \"order\" ASC").
+		Limit(pageSize).
+		Offset((page - 1) * pageSize).
+		Find(&categories).Error; err != nil {
 		renderError(c, "Failed to load categories", http.StatusInternalServerError)
 		return
 	}
@@ -322,6 +352,8 @@ func (h *Handler) CategoryList(c *gin.Context) {
 		"categories": categories,
 		"sections":   sections,
 		"user":       user,
+		"page":       page,
+		"totalPages": totalPages,
 		"config":     h.config,
 	}
 	renderTemplate(c, data, C.CategoryListPath)

@@ -80,6 +80,29 @@
             </div>
         </div>
         {{end}}
+        <!-- Pagination Controls -->
+        <div class="pagination" style="margin-top: 20px; display: flex; gap: 5px; flex-wrap: wrap;">
+            {{if gt .totalPages 1}}
+                {{if gt .page 1}}
+                    <a href="/topic/{{.topic.ID}}?page={{sub .page 1}}" class="btn btn-sm">Prev</a>
+                {{else}}
+                    <span class="btn btn-sm btn-disabled">Prev</span>
+                {{end}}
+                {{range $i := until .totalPages}}
+                    {{ $pageNum := add $i 1 }}
+                    {{if eq $.page $pageNum}}
+                        <span class="btn btn-sm btn-secondary">{{$pageNum}}</span>
+                    {{else}}
+                        <a href="/topic/{{$.topic.ID}}?page={{$pageNum}}" class="btn btn-sm">{{$pageNum}}</a>
+                    {{end}}
+                {{end}}
+                {{if lt .page .totalPages}}
+                    <a href="/topic/{{.topic.ID}}?page={{add .page 1}}" class="btn btn-sm">Next</a>
+                {{else}}
+                    <span class="btn btn-sm btn-disabled">Next</span>
+                {{end}}
+            {{end}}
+        </div>
 
         {{if and .user .user.CanPost (not .topic.IsLocked)}}
         <div class="mt-30 text-center">

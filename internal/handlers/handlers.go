@@ -310,8 +310,25 @@ func (h *Handler) TopicView(c *gin.Context) {
 		return
 	}
 
+	// Pagination
+	pageSize := 10
+	pageStr := c.DefaultQuery("page", "1")
+	page, err := strconv.Atoi(pageStr)
+	if err != nil || page < 1 {
+		page = 1
+	}
+
+	var totalPosts int64
+	h.db.Model(&models.Post{}).Where("topic_id = ?", id).Count(&totalPosts)
+	totalPages := int((totalPosts + int64(pageSize) - 1) / int64(pageSize))
+
 	var posts []models.Post
-	if err := h.db.Preload("Author").Where("topic_id = ?", id).Order("created_at ASC").Find(&posts).Error; err != nil {
+	if err := h.db.Preload("Author").
+		Where("topic_id = ?", id).
+		Order("created_at ASC").
+		Limit(pageSize).
+		Offset((page - 1) * pageSize).
+		Find(&posts).Error; err != nil {
 		renderError(c, "Failed to load posts", http.StatusInternalServerError)
 		return
 	}
@@ -323,11 +340,13 @@ func (h *Handler) TopicView(c *gin.Context) {
 	}
 
 	data := map[string]any{
-		"title":  topic.Title,
-		"topic":  &topic,
-		"posts":  posts,
-		"user":   h.getCurrentUser(c),
-		"config": h.config,
+		"title":      topic.Title,
+		"topic":      &topic,
+		"posts":      posts,
+		"user":       h.getCurrentUser(c),
+		"page":       page,
+		"totalPages": totalPages,
+		"config":     h.config,
 	}
 	renderTemplate(c, data, C.TopicPath)
 }
@@ -553,5 +572,16 @@ func (h *Handler) CreatePost(c *gin.Context) {
 		return
 	}
 
-	c.Redirect(http.StatusFound, fmt.Sprintf("/topic/%d", topicID))
+	pageRedirect := fmt.Sprintf("/topic/%d", topicID)
+
+	// count total posts to determine the page number
+	var totalPosts int64
+	h.db.Model(&models.Post{}).Where("topic_id = ?", topicID).Count(&totalPosts)
+	totalPages := int((totalPosts + 9) / 10) // Assuming page size of 10
+
+	if totalPages > 1 {
+		pageRedirect += fmt.Sprintf("?page=%d", totalPages)
+	}
+
+	c.Redirect(http.StatusFound, pageRedirect)
 }

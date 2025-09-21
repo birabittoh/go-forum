@@ -132,6 +132,13 @@ var (
 			}
 			return "white"
 		},
+		"until": func(count int) []int {
+			var i []int
+			for j := 0; j < count; j++ {
+				i = append(i, j)
+			}
+			return i
+		},
 	}
 
 	Tmpl = make(map[string]*template.Template)
