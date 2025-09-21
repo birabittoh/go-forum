@@ -82,7 +82,7 @@ func main() {
 			var line string
 			_, err = fmt.Fscanf(f, "/*%s", &line)
 			if err == nil {
-				iconColor = strings.TrimSpace(line[:len(line)-2]) // remove trailing */
+				iconColor = strings.TrimSpace(strings.TrimSuffix(line, "*/"))
 			}
 			f.Close()
 		}
@@ -120,20 +120,20 @@ func main() {
 	// Static files
 	r.Static("/static", "./static")
 
+	// Set config in gin context for all requests
+	r.Use(func(c *gin.Context) {
+		c.Set("config", cfg)
+		c.Next()
+	})
+
 	// Apply global middleware
 	r.Use(middleware.Auth(authService))
 
 	// Setup routes
 	setupRoutes(r, h)
 
-	// Start server
-	port := cfg.Port
-	if port == "" {
-		port = "8080"
-	}
-
-	fmt.Printf("Starting forum server on port %s\n", port)
-	if err := r.Run(":" + port); err != nil {
+	fmt.Printf("Starting forum server on %s\n", cfg.Address)
+	if err := r.Run(cfg.Address); err != nil {
 		log.Fatal("Failed to start server:", err)
 	}
 }

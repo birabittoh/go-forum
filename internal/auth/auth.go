@@ -18,7 +18,7 @@ import (
 
 type Service struct {
 	db     *gorm.DB
-	config *config.Config
+	Config *config.Config
 }
 
 type Claims struct {
@@ -29,7 +29,7 @@ type Claims struct {
 func NewService(db *gorm.DB, cfg *config.Config) *Service {
 	return &Service{
 		db:     db,
-		config: cfg,
+		Config: cfg,
 	}
 }
 
@@ -53,14 +53,14 @@ func (s *Service) GenerateToken(userID uint) (string, error) {
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString([]byte(s.config.JWTSecret))
+	return token.SignedString([]byte(s.Config.JWTSecret))
 }
 
 func (s *Service) ValidateToken(tokenString string) (*Claims, error) {
 	claims := &Claims{}
 
-	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
-		return []byte(s.config.JWTSecret), nil
+	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (any, error) {
+		return []byte(s.Config.JWTSecret), nil
 	})
 
 	if err != nil {
@@ -175,13 +175,13 @@ func (s *Service) VerifyEmail(token string) error {
 }
 
 func (s *Service) SendVerificationEmail(user *models.User) error {
-	if s.config.SMTPHost == "" || s.config.SMTPUsername == "" {
+	if s.Config.SMTPHost == "" || s.Config.SMTPUsername == "" {
 		return errors.New("email configuration not set")
 	}
 
-	verificationURL := fmt.Sprintf("%s/auth/verify/%s", s.config.SiteURL, user.VerificationToken)
+	verificationURL := fmt.Sprintf("%s/auth/verify/%s", s.Config.SiteURL, user.VerificationToken)
 
-	subject := fmt.Sprintf("Verify your email - %s", s.config.SiteName)
+	subject := fmt.Sprintf("Verify your email - %s", s.Config.SiteName)
 	body := fmt.Sprintf(`
 Hello %s,
 
@@ -192,15 +192,15 @@ If you didn't create an account, please ignore this email.
 
 Best regards,
 %s Team
-`, user.Username, verificationURL, s.config.SiteName)
+`, user.Username, verificationURL, s.Config.SiteName)
 
 	m := gomail.NewMessage()
-	m.SetHeader("From", s.config.FromEmail)
+	m.SetHeader("From", s.Config.FromEmail)
 	m.SetHeader("To", user.Email)
 	m.SetHeader("Subject", subject)
 	m.SetBody("text/plain", body)
 
-	d := gomail.NewDialer(s.config.SMTPHost, s.config.SMTPPort, s.config.SMTPUsername, s.config.SMTPPassword)
+	d := gomail.NewDialer(s.Config.SMTPHost, s.Config.SMTPPort, s.Config.SMTPUsername, s.Config.SMTPPassword)
 
 	return d.DialAndSend(m)
 }

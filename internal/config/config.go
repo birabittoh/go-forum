@@ -9,7 +9,7 @@ type Config struct {
 	DatabasePath string
 	JWTSecret    string
 	Environment  string
-	Port         string
+	Address      string
 
 	// Email configuration
 	SMTPHost     string
@@ -33,7 +33,7 @@ func Load() *Config {
 		DatabasePath: getEnv("DATABASE_PATH", "data/forum.db"),
 		JWTSecret:    getEnv("JWT_SECRET", "your-secret-key-change-in-production"),
 		Environment:  getEnv("ENVIRONMENT", "development"),
-		Port:         getEnv("PORT", "8080"),
+		Address:      getEnv("ADDRESS", ":8080"),
 
 		SMTPHost:     getEnv("SMTP_HOST", "smtp.gmail.com"),
 		SMTPPort:     getEnvInt("SMTP_PORT", 587),

@@ -15,9 +15,11 @@ import (
 )
 
 func renderError(c *gin.Context, message string, status int) error {
+	config, _ := c.Get("config")
 	data := map[string]any{
 		"title":   "Error",
 		"message": message,
+		"config":  config,
 	}
 	c.Status(status)
 	return C.Tmpl[C.ErrorPath].Execute(c.Writer, data)

@@ -59,9 +59,11 @@ func RequireAdmin() gin.HandlerFunc {
 
 		u := user.(*models.User)
 		if !u.IsAdmin() {
-			data := map[string]interface{}{
+			config, _ := c.Get("config")
+			data := map[string]any{
 				"title":   "Access Denied",
 				"message": "You need administrator privileges to access this area.",
+				"config":  config,
 			}
 			C.Tmpl[C.ErrorPath].Execute(c.Writer, data)
 			c.Status(http.StatusForbidden)
@@ -84,9 +86,11 @@ func RequireModerator() gin.HandlerFunc {
 
 		u := user.(*models.User)
 		if !u.CanModerate() {
-			data := map[string]interface{}{
+			config, _ := c.Get("config")
+			data := map[string]any{
 				"title":   "Access Denied",
 				"message": "You need moderator privileges to access this area.",
+				"config":  config,
 			}
 			C.Tmpl[C.ErrorPath].Execute(c.Writer, data)
 			c.Status(http.StatusForbidden)
@@ -110,9 +114,11 @@ func RequireAuth() gin.HandlerFunc {
 		// Ensure user is verified
 		u := user.(*models.User)
 		if !u.IsVerified() {
-			data := map[string]interface{}{
+			config, _ := c.Get("config")
+			data := map[string]any{
 				"title":   "Email Verification Required",
 				"message": "Please verify your email address before accessing this feature.",
+				"config":  config,
 			}
 			C.Tmpl[C.ErrorPath].Execute(c.Writer, data)
 			c.Status(http.StatusForbidden)

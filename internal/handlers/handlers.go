@@ -3,6 +3,7 @@ package handlers
 import (
 	"fmt"
 	"net/http"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -42,6 +43,7 @@ func New(db *gorm.DB, authService *auth.Service, cfg *config.Config, themes []mo
 			extension.CJK,
 			treeblood.MathML(),
 			emoji.Emoji,
+			&renderers.MentionExtension{},
 		// https://github.com/tendstofortytwo/goldmark-customtag
 		),
 		goldmark.WithParserOptions(
@@ -167,9 +169,10 @@ func (h *Handler) SignupForm(c *gin.Context) {
 	}
 
 	data := map[string]any{
-		"title": "Sign Up",
+		"title":  "Sign Up",
+		"config": h.config,
 	}
-	C.Tmpl["templates/signup.html"].Execute(c.Writer, data)
+	C.Tmpl[C.SignupPath].Execute(c.Writer, data)
 	c.Status(http.StatusOK)
 }
 
@@ -183,6 +186,17 @@ func (h *Handler) Signup(c *gin.Context) {
 	email := c.PostForm("email")
 	password := c.PostForm("password")
 	confirmPassword := c.PostForm("confirm_password")
+
+	// Username regex validation
+	if matched := regexp.MustCompile(C.UsernameRegex).MatchString(username); !matched {
+		data := map[string]any{
+			"title":  "Sign Up",
+			"error":  "Username must be 4-20 characters, start with a letter or number, and only contain letters, numbers, underscores, hyphens, or dots.",
+			"config": h.config,
+		}
+		renderTemplateStatus(c, data, C.SignupPath, http.StatusBadRequest)
+		return
+	}
 
 	// Validation
 	if username == "" || email == "" || password == "" {
@@ -404,8 +418,8 @@ func (h *Handler) ProfileUpdate(c *gin.Context) {
 	data := map[string]any{
 		"title":  "Edit Profile",
 		"user":   user,
-		"config": h.config,
 		"themes": C.Themes,
+		"config": h.config,
 	}
 
 	// Validate lengths

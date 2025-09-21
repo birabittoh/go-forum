@@ -104,7 +104,7 @@ var (
 		},
 		"until": func(count int) []int {
 			var i []int
-			for j := 0; j < count; j++ {
+			for j := range count {
 				i = append(i, j)
 			}
 			return i
@@ -113,5 +113,6 @@ var (
 
 	Tmpl = make(map[string]*template.Template)
 
-	Themes []models.Theme
+	Themes        []models.Theme
+	UsernameRegex = `^[a-zA-Z0-9][a-zA-Z0-9_.-]{3,19}$` // 4-20 chars, letters, numbers, _ and - .
 )
