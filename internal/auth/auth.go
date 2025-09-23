@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -75,9 +76,11 @@ func (s *Service) ValidateToken(tokenString string) (*Claims, error) {
 }
 
 func (s *Service) Register(username, email, password string) (*models.User, error) {
-	// Check if user already exists
+	lowerUsername := strings.ToLower(username)
+	lowerEmail := strings.ToLower(email)
+	// Check if user already exists (case-insensitive)
 	var existingUser models.User
-	if err := s.db.Where("username = ? OR email = ?", username, email).First(&existingUser).Error; err == nil {
+	if err := s.db.Where("LOWER(username) = ? OR LOWER(email) = ?", lowerUsername, lowerEmail).First(&existingUser).Error; err == nil {
 		return nil, errors.New("user with this username or email already exists")
 	}
 
@@ -129,8 +132,9 @@ func (s *Service) Register(username, email, password string) (*models.User, erro
 }
 
 func (s *Service) Login(username, password string) (*models.User, string, error) {
+	lowerUsername := strings.ToLower(username)
 	var user models.User
-	if err := s.db.Where("username = ? OR email = ?", username, username).First(&user).Error; err != nil {
+	if err := s.db.Where("LOWER(username) = ? OR LOWER(email) = ?", lowerUsername, lowerUsername).First(&user).Error; err != nil {
 		return nil, "", errors.New("invalid credentials")
 	}
 
