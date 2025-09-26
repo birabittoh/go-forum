@@ -1,6 +1,7 @@
 package constants
 
 import (
+	"goforum/internal/cache"
 	"goforum/internal/models"
 	"html/template"
 	"os"
@@ -110,6 +111,8 @@ var (
 			return i
 		},
 	}
+
+	Cache = cache.New()
 
 	Tmpl = make(map[string]*template.Template)
 

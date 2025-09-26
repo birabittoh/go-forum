@@ -6,6 +6,7 @@ require (
 	github.com/gin-gonic/gin v1.10.0
 	github.com/glebarez/sqlite v1.6.0
 	github.com/golang-jwt/jwt/v5 v5.2.1
+	github.com/hashicorp/golang-lru/v2 v2.0.7
 	github.com/joho/godotenv v1.5.1
 	github.com/wyatt915/goldmark-treeblood v0.0.0-20250825231212-5dcbdb2f4b57
 	github.com/yuin/goldmark v1.7.12

@@ -335,47 +335,18 @@ func (h *Handler) CategoryView(c *gin.Context) {
 		return
 	}
 
-	var topics []models.Topic
-	if err := h.db.Preload("Author").Where("category_id = ?", id).Order("is_pinned DESC, created_at DESC").Find(&topics).Error; err != nil {
+	topics, err := C.Cache.TopicsInCategory(h.db, uint(id))
+	if err != nil {
 		renderError(c, "Failed to load topics", http.StatusInternalServerError)
 		return
 	}
 
-	var topicIDs []uint
-	for _, topic := range topics {
-		topicIDs = append(topicIDs, topic.ID)
-	}
-
-	// Fetch replies count for all topics in a single query
-	type ReplyCount struct {
-		TopicID uint
-		Count   int64
-	}
-	var replyCounts []ReplyCount
-	if len(topicIDs) > 0 {
-		err = h.db.Model(&models.Post{}).
-			Select("topic_id, COUNT(*) - 1 AS count").
-			Where("topic_id IN ?", topicIDs).
-			Group("topic_id").
-			Scan(&replyCounts).Error
+	// Assign replies count to each topic
+	for i := range topics {
+		topics[i].RepliesCount, err = C.Cache.CountRepliesInTopic(h.db, topics[i].ID) // default to DB count
 		if err != nil {
 			renderError(c, "Failed to load reply counts", http.StatusInternalServerError)
 			return
-		}
-	}
-
-	// Map topic ID to replies count
-	repliesMap := make(map[uint]int64)
-	for _, rc := range replyCounts {
-		repliesMap[rc.TopicID] = rc.Count
-	}
-
-	// Assign replies count to each topic
-	for i := range topics {
-		if count, exists := repliesMap[topics[i].ID]; exists {
-			topics[i].RepliesCount = count
-		} else {
-			topics[i].RepliesCount = 0
 		}
 	}
 
@@ -410,9 +381,12 @@ func (h *Handler) TopicView(c *gin.Context) {
 		page = 1
 	}
 
-	var totalPosts int64
-	h.db.Model(&models.Post{}).Where("topic_id = ?", id).Count(&totalPosts)
-	totalPages := int((totalPosts + int64(h.config.TopicPageSize) - 1) / int64(h.config.TopicPageSize))
+	repliesInTopic, err := C.Cache.CountRepliesInTopic(h.db, uint(id)) // default to DB count
+	if err != nil {
+		renderError(c, "Failed to load reply counts", http.StatusInternalServerError)
+		return
+	}
+	totalPages := int((repliesInTopic + int64(h.config.TopicPageSize)) / int64(h.config.TopicPageSize))
 
 	var posts []models.Post
 	if err := h.db.Preload("Author").
@@ -663,6 +637,13 @@ func (h *Handler) CreatePost(c *gin.Context) {
 		renderTemplateStatus(c, data, C.NewPostPath, http.StatusInternalServerError)
 		return
 	}
+
+	// Invalidate relevant caches
+	C.Cache.InvalidatePostsInTopic(uint(topicID))
+	C.Cache.InvalidateCountsForTopic(h.db, uint(topicID))
+	C.Cache.InvalidateCountsForUser(h.db, user.ID)
+
+	// Redirect to the new post
 
 	pageRedirect := getPageRedirect(h, topicID, int(post.ID))
 	c.Redirect(http.StatusFound, pageRedirect)

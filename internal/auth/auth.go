@@ -14,6 +14,7 @@ import (
 	"gorm.io/gorm"
 
 	"goforum/internal/config"
+	"goforum/internal/constants"
 	"goforum/internal/models"
 )
 
@@ -97,8 +98,10 @@ func (s *Service) Register(username, email, password string) (*models.User, erro
 	}
 
 	// Determine user type (first user is admin)
-	var userCount int64
-	s.db.Model(&models.User{}).Count(&userCount)
+	userCount, err := constants.Cache.CountAllUsers(s.db)
+	if err != nil {
+		return nil, err
+	}
 
 	userType := models.UserTypeUnverified
 
@@ -117,6 +120,11 @@ func (s *Service) Register(username, email, password string) (*models.User, erro
 	}
 
 	if err := s.db.Create(user).Error; err != nil {
+		return nil, err
+	}
+
+	err = constants.Cache.InvalidateCountsForUser(s.db, user.ID)
+	if err != nil {
 		return nil, err
 	}
 

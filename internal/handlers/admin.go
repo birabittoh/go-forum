@@ -68,8 +68,11 @@ func (h *Handler) UserList(c *gin.Context) {
 		page = 1
 	}
 
-	var totalUsers int64
-	h.db.Model(&models.User{}).Count(&totalUsers)
+	totalUsers, err := C.Cache.CountAllUsers(h.db)
+	if err != nil {
+		renderError(c, "Failed to load users", http.StatusInternalServerError)
+		return
+	}
 	totalPages := int((totalUsers + int64(pageSize) - 1) / int64(pageSize))
 
 	var users []models.User
@@ -314,6 +317,8 @@ func (h *Handler) DeleteSection(c *gin.Context) {
 		return
 	}
 
+	C.Cache.InvalidateCountsForUser(h.db, uint(id))
+
 	c.Redirect(http.StatusFound, "/admin/sections")
 }
 
@@ -398,6 +403,10 @@ func (h *Handler) DeleteCategory(c *gin.Context) {
 		renderError(c, "Failed to delete category", http.StatusInternalServerError)
 		return
 	}
+
+	// Invalidate relevant caches
+	C.Cache.InvalidateTopicsInCategory(uint(id))
+	C.Cache.InvalidateCountsForCategory(h.db, uint(id))
 
 	c.Redirect(http.StatusFound, "/admin/categories")
 }

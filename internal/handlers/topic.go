@@ -120,6 +120,13 @@ func (h *Handler) CreateTopic(c *gin.Context) {
 
 	tx.Commit()
 
+	// Invalidate relevant caches
+	C.Cache.InvalidateTopicsInCategory(uint(categoryID))
+	C.Cache.InvalidatePostsInTopic(uint(topic.ID))
+	C.Cache.InvalidateCountsForTopic(h.db, topic.ID)
+	C.Cache.InvalidateCountsForCategory(h.db, category.ID)
+	C.Cache.InvalidateCountsForUser(h.db, user.ID)
+
 	c.Redirect(http.StatusFound, fmt.Sprintf("/topic/%d", topic.ID))
 }
 
@@ -238,6 +245,13 @@ func (h *Handler) DeleteTopic(c *gin.Context) {
 		return
 	}
 
+	// Invalidate relevant caches
+	C.Cache.InvalidatePostsInTopic(uint(topic.ID))
+	C.Cache.InvalidateCountsForTopic(h.db, topic.ID)
+	C.Cache.InvalidateCountsForCategory(h.db, topic.CategoryID)
+	C.Cache.InvalidateCountsForUser(h.db, topic.AuthorID)
+	C.Cache.InvalidateTopicsInCategory(uint(topic.CategoryID))
+
 	c.Redirect(http.StatusFound, fmt.Sprintf("/category/%d", topic.CategoryID))
 }
 
@@ -336,7 +350,7 @@ func (h *Handler) DeletePost(c *gin.Context) {
 	}
 
 	var post models.Post
-	if err := h.db.First(&post, id).Error; err != nil {
+	if err := h.db.Preload("Topic").First(&post, id).Error; err != nil {
 		renderError(c, "Post not found", http.StatusNotFound)
 		return
 	}
@@ -350,6 +364,12 @@ func (h *Handler) DeletePost(c *gin.Context) {
 		renderError(c, "Failed to delete post", http.StatusInternalServerError)
 		return
 	}
+
+	// Invalidate relevant caches
+	C.Cache.InvalidatePostsInTopic(uint(post.TopicID))
+	C.Cache.InvalidateCountsForTopic(h.db, post.TopicID)
+	C.Cache.InvalidateCountsForCategory(h.db, post.Topic.CategoryID)
+	C.Cache.InvalidateCountsForUser(h.db, post.AuthorID)
 
 	pageRedirect := getPageRedirect(h, int(post.TopicID), int(post.ID))
 	c.Redirect(http.StatusFound, pageRedirect)
