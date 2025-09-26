@@ -355,6 +355,26 @@ func (h *Handler) DeletePost(c *gin.Context) {
 		return
 	}
 
+	postsInTopic, err := C.Cache.PostsInTopic(h.db, uint(post.TopicID))
+	if err != nil {
+		renderError(c, "Failed to retrieve posts in topic", http.StatusInternalServerError)
+		return
+	}
+
+	if post.ID == postsInTopic[0].ID {
+		renderError(c, "You cannot delete the first post in a topic.", http.StatusForbidden)
+		return
+	}
+
+	// Prevent deletion of the first post in the topic
+	var firstPost models.Post
+	if err := h.db.Where("topic_id = ?", post.TopicID).Order("id ASC").First(&firstPost).Error; err == nil {
+		if post.ID == firstPost.ID {
+			renderError(c, "You cannot delete the first post in a topic.", http.StatusForbidden)
+			return
+		}
+	}
+
 	if !user.CanDeletePost(&post) {
 		renderError(c, "You cannot delete this post", http.StatusForbidden)
 		return
