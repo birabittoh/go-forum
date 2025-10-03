@@ -21,7 +21,7 @@
             <div class="form-group">
                 <label for="content">Post content:</label>
                 <textarea id="content" name="content" required maxlength="{{.maxLength | default 10000}}" 
-                          placeholder="Write your reply here. You can use Markdown formatting.">{{.content}}</textarea>
+                          placeholder="Write your reply here. You can use Markdown formatting." autofocus>{{.content}}</textarea>
                 <small class="generic-subtitle">Supports Markdown formatting. Maximum {{.maxLength | default 10000}} characters.</small>
             </div>
 

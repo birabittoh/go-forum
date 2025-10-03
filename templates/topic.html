@@ -90,10 +90,11 @@
         <!-- Pagination Controls -->
         <div class="pagination">
             {{if gt .totalPages 1}}
+                {{if and (gt .page 2)}}
+                    <a href="/topic/{{.topic.ID}}?page=1" class="btn btn-sm">&laquo;</a>
+                {{end}}
                 {{if gt .page 1}}
-                    <a href="/topic/{{.topic.ID}}?page={{sub .page 1}}" class="btn btn-sm">Prev</a>
-                {{else}}
-                    <span class="btn btn-sm btn-disabled">Prev</span>
+                    <a href="/topic/{{.topic.ID}}?page={{sub .page 1}}" class="btn btn-sm">&lsaquo;</a>
                 {{end}}
                 {{range $i := until .totalPages}}
                     {{ $pageNum := add $i 1 }}
@@ -104,9 +105,10 @@
                     {{end}}
                 {{end}}
                 {{if lt .page .totalPages}}
-                    <a href="/topic/{{.topic.ID}}?page={{add .page 1}}" class="btn btn-sm">Next</a>
-                {{else}}
-                    <span class="btn btn-sm btn-disabled">Next</span>
+                    <a href="/topic/{{.topic.ID}}?page={{add .page 1}}" class="btn btn-sm">&rsaquo;</a>
+                {{end}}
+                {{if and (lt .page (sub .totalPages 1)) (gt .totalPages 2)}}
+                    <a href="/topic/{{.topic.ID}}?page={{.totalPages}}" class="btn btn-sm">&raquo;</a>
                 {{end}}
             {{end}}
         </div>

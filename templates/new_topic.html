@@ -19,7 +19,7 @@
         <form method="post" action="/category/{{.category.ID}}/new-topic">
             <div class="form-group">
                 <label for="title">Topic Title:</label>
-                <input type="text" id="title" name="title" required maxlength="255" 
+                <input type="text" id="title" name="title" required maxlength="255" autofocus 
                        value="{{.title}}" placeholder="Enter a descriptive title for your topic">
             </div>
 

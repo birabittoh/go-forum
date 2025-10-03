@@ -19,7 +19,7 @@
         <form method="post" action="/post/{{.post.ID}}/edit">
             <div class="form-group">
                 <label for="content">Post Content:</label>
-                <textarea id="content" name="content" required maxlength="{{.maxLength | default 10000}}" 
+                <textarea id="content" name="content" required maxlength="{{.maxLength | default 10000}}" autofocus
                           placeholder="Write your post content here. You can use Markdown formatting.">{{.post.Content}}</textarea>
                 <small class="generic-subtitle">Supports Markdown formatting. Maximum {{.maxLength | default 10000}} characters.</small>
             </div>
