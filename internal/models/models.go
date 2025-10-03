@@ -96,13 +96,14 @@ type Category struct {
 }
 
 type Topic struct {
-	ID          uint   `gorm:"primaryKey"`
-	CategoryID  uint   `gorm:"not null"`
-	AuthorID    uint   `gorm:"not null"`
-	Title       string `gorm:"not null"`
-	IsPinned    bool   `gorm:"default:false"`
-	IsLocked    bool   `gorm:"default:false"`
-	FirstPostID uint   `gorm:"not null"`
+	ID          uint      `gorm:"primaryKey"`
+	CategoryID  uint      `gorm:"not null"`
+	AuthorID    uint      `gorm:"not null"`
+	Title       string    `gorm:"not null"`
+	IsPinned    bool      `gorm:"default:false"`
+	IsLocked    bool      `gorm:"default:false"`
+	FirstPostID uint      `gorm:"not null"`
+	RepliedAt   time.Time `gorm:"autoCreateTime"`
 
 	CreatedAt time.Time
 	UpdatedAt time.Time

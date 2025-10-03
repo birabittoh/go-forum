@@ -609,27 +609,23 @@ func (h *Handler) CreatePost(c *gin.Context) {
 		return
 	}
 
+	data := map[string]any{
+		"title":  "New Post",
+		"topic":  topic,
+		"user":   user,
+		"error":  "Failed to create post",
+		"config": h.config,
+	}
+
 	content := c.PostForm("content")
 	if len(content) == 0 {
-		data := map[string]any{
-			"title":  "New Post",
-			"topic":  topic,
-			"user":   user,
-			"error":  "Post content cannot be empty",
-			"config": h.config,
-		}
+		data["error"] = "Post content cannot be empty"
 		renderTemplateStatus(c, data, C.NewPostPath, http.StatusBadRequest)
 		return
 	}
 
 	if len(content) > h.config.MaxPostLength {
-		data := map[string]any{
-			"title":  "New Post",
-			"topic":  topic,
-			"user":   user,
-			"error":  fmt.Sprintf("Post content must be less than %d characters", h.config.MaxPostLength),
-			"config": h.config,
-		}
+		data["error"] = "Post content must be less than " + strconv.Itoa(h.config.MaxPostLength) + " characters"
 		renderTemplateStatus(c, data, C.NewPostPath, http.StatusBadRequest)
 		return
 	}
@@ -640,14 +636,25 @@ func (h *Handler) CreatePost(c *gin.Context) {
 		Content:  strings.TrimSpace(content),
 	}
 
-	if err := h.db.Create(post).Error; err != nil {
-		data := map[string]any{
-			"title":  "New Post",
-			"topic":  topic,
-			"user":   user,
-			"error":  "Failed to create post",
-			"config": h.config,
-		}
+	tx := h.db.Begin()
+
+	// Create post
+	if err := tx.Create(post).Error; err != nil {
+		tx.Rollback()
+		renderTemplateStatus(c, data, C.NewPostPath, http.StatusInternalServerError)
+		return
+	}
+
+	// Update topic's RepliedAt
+	topic.RepliedAt = post.CreatedAt
+	if err := tx.Save(&topic).Error; err != nil {
+		tx.Rollback()
+		renderTemplateStatus(c, data, C.NewPostPath, http.StatusInternalServerError)
+		return
+	}
+
+	if err := tx.Commit().Error; err != nil {
+		tx.Rollback()
 		renderTemplateStatus(c, data, C.NewPostPath, http.StatusInternalServerError)
 		return
 	}
@@ -656,6 +663,7 @@ func (h *Handler) CreatePost(c *gin.Context) {
 	C.Cache.InvalidatePostsInTopic(uint(topicID))
 	C.Cache.InvalidateCountsForTopic(h.db, uint(topicID))
 	C.Cache.InvalidateCountsForUser(h.db, user.ID)
+	C.Cache.InvalidateTopicsInCategory(topic.CategoryID)
 
 	// Redirect to the new post
 
