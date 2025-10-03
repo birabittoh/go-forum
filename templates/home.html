@@ -1,11 +1,5 @@
 {{define "content"}}
 <div class="content-wrapper">
-    <div class="content-header">
-        <h1>Categories</h1>
-        <div class="breadcrumb">
-            Welcome to our comfy retro forum
-        </div>
-    </div>
     
     <div class="content-body">
         {{range .sections}}
@@ -22,22 +16,22 @@
                 <thead>
                     <tr>
                         <th>Category</th>
-                        <th>Description</th>
-                        <th>Topics</th>
-                        <th>Replies</th>
+                        <th class="count-column">T</th>
+                        <th class="count-column">R</th>
                     </tr>
                 </thead>
                 <tbody>
                     {{range .Categories}}
                     <tr>
                         <td>
-                            <a class="category-name" href="/category/{{.ID}}">
-                                {{.Name}}
+                            <a href="/category/{{.ID}}">
+                                <span class="category-name">{{.Name}}</span>
+                                <br />
+                                <span class="generic-subtitle">{{.Description}}</span>
                             </a>
-                        </td>
-                        <td class="generic-subtitle">{{.Description}}</td>
-                        <td class="text-center">{{.TopicsCount}}</td>
-                        <td class="text-center">{{.RepliesCount}}</td>
+                        </td>    
+                        <td class="count-column">{{.TopicsCount}}</td>
+                        <td class="count-column">{{.RepliesCount}}</td>
                     </tr>
                     {{end}}
                 </tbody>

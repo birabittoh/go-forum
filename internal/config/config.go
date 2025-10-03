@@ -21,6 +21,7 @@ type Config struct {
 	// App configuration
 	SiteURL            string
 	SiteName           string
+	SiteMotto          string
 	ProfilePicsWebsite string
 	ProfilePicsBaseURL string
 	ProfilePicsLinkURL string
@@ -45,6 +46,7 @@ func Load() *Config {
 
 		SiteURL:            getEnv("SITE_URL", "http://localhost:8080"),
 		SiteName:           getEnv("SITE_NAME", "Go Forum"),
+		SiteMotto:          getEnv("SITE_MOTTO", ""),
 		ProfilePicsWebsite: getEnv("PROFILE_PICS_WEBSITE", "xboxgamer.pics"),
 		ProfilePicsBaseURL: getEnv("PROFILE_PICS_BASE_URL", "https://download.xboxgamer.pics/titles/"),
 		ProfilePicsLinkURL: getEnv("PROFILE_PICS_LINK_URL", "https://assets.xboxgamer.pics/titles/"),

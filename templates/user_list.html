@@ -30,7 +30,6 @@
             <thead>
                 <tr>
                     <th>Username</th>
-                    <th>Email</th>
                     <th>Type</th>
                     <th>Status</th>
                     <th>Joined</th>
@@ -42,8 +41,8 @@
                 <tr>
                     <td>
                         <a href="/profile/{{.Username}}" {{if .IsBanned}}class="user-banned"{{end}}>{{.Username}}</a>
+                        <a href="mailto:{{.Email}}">📧</a>
                     </td>
-                    <td>{{.Email}}</td>
                     <td><span class="user-{{.UserType.String}}">{{.UserType.String | title}}</span></td>
                     <td>
                         {{if .IsBanned}}

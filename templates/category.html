@@ -24,9 +24,7 @@
             <thead>
                 <tr>
                     <th>Topic</th>
-                    <th>Author</th>
-                    <th>Replies</th>
-                    <th>Created</th>
+                    <th class="count-column">Replies</th>
                 </tr>
             </thead>
             <tbody>
@@ -44,12 +42,11 @@
                                 {{.Title}}
                             </a>
                         </div>
+                        <div class="generic-subtitle">
+                            by <a href="/profile/{{.Author.Username}}">{{.Author.Username}}</a>
+                        </div>
                     </td>
-                    <td>
-                        <a href="/profile/{{.Author.Username}}">{{.Author.Username}}</a>
-                    </td>
-                    <td class="text-center">{{.RepliesCount}}</td>
-                    <td>{{.CreatedAt.Format "2006-01-02 15:04"}}</td>
+                    <td class="count-column">{{.RepliesCount}}</td>
                 </tr>
                 {{end}}
             </tbody>

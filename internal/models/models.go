@@ -88,29 +88,30 @@ type Category struct {
 	DeletedAt gorm.DeletedAt `gorm:"index"`
 
 	// Relations
-	Section Section `gorm:"foreignKey:SectionID"`
-	Topics  []Topic `gorm:"foreignKey:CategoryID"`
+	Section *Section `gorm:"foreignKey:SectionID"`
+	Topics  []Topic  `gorm:"foreignKey:CategoryID"`
 
 	TopicsCount  int64 `gorm:"-"` // ignore for migrations
 	RepliesCount int64 `gorm:"-"` // ignore for migrations
 }
 
 type Topic struct {
-	ID         uint   `gorm:"primaryKey"`
-	CategoryID uint   `gorm:"not null"`
-	AuthorID   uint   `gorm:"not null"`
-	Title      string `gorm:"not null"`
-	IsPinned   bool   `gorm:"default:false"`
-	IsLocked   bool   `gorm:"default:false"`
+	ID          uint   `gorm:"primaryKey"`
+	CategoryID  uint   `gorm:"not null"`
+	AuthorID    uint   `gorm:"not null"`
+	Title       string `gorm:"not null"`
+	IsPinned    bool   `gorm:"default:false"`
+	IsLocked    bool   `gorm:"default:false"`
+	FirstPostID uint   `gorm:"not null"`
 
 	CreatedAt time.Time
 	UpdatedAt time.Time
 	DeletedAt gorm.DeletedAt `gorm:"index"`
 
 	// Relations
-	Category Category `gorm:"foreignKey:CategoryID"`
-	Author   User     `gorm:"foreignKey:AuthorID"`
-	Posts    []Post   `gorm:"foreignKey:TopicID"`
+	Category *Category `gorm:"foreignKey:CategoryID"`
+	Author   *User     `gorm:"foreignKey:AuthorID"`
+	Posts    []Post    `gorm:"foreignKey:TopicID"`
 
 	RepliesCount int64 `gorm:"-"` // ignore for migrations
 }
@@ -126,8 +127,8 @@ type Post struct {
 	DeletedAt gorm.DeletedAt `gorm:"index"`
 
 	// Relations
-	Topic  Topic `gorm:"foreignKey:TopicID"`
-	Author User  `gorm:"foreignKey:AuthorID"`
+	Topic  *Topic `gorm:"foreignKey:TopicID"`
+	Author *User  `gorm:"foreignKey:AuthorID"`
 }
 
 type Theme struct {

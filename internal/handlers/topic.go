@@ -118,6 +118,16 @@ func (h *Handler) CreateTopic(c *gin.Context) {
 		return
 	}
 
+	// Update topic with first post ID
+	topic.FirstPostID = post.ID
+	if err := tx.Save(topic).Error; err != nil {
+		tx.Rollback()
+		renderError(c, "Failed to update topic", http.StatusInternalServerError)
+		return
+	}
+
+	// Commit transaction
+
 	tx.Commit()
 
 	// Invalidate relevant caches

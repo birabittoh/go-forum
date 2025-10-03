@@ -40,7 +40,7 @@ body {
   min-height: 100vh;
 }
 
-a.btn, a.btn:visited, a.logo, a.logo:visited {
+a.btn, a.btn:visited, a.logo, a.logo:visited, footer a, footer a:visited {
   color: white;
 }
 
@@ -183,16 +183,24 @@ td {
   padding: 12px;
   text-align: left;
   border-bottom: 1px solid var(--border-color);
+  word-break: break-word;
 }
 
 th {
   background-color: var(--background-alt);
   font-weight: bold;
   color: var(--text-primary);
+  white-space: nowrap;
 }
 
 tr:hover {
   background-color: var(--background-alt);
+}
+
+.count-column {
+  white-space: nowrap;
+  text-align: center;
+  width: 1%;
 }
 
 /* Buttons */

@@ -39,11 +39,10 @@ For Gmail:
 
 ## Roadmap
 
-- [ ] Search functionality
 - [ ] User reputation system
+- [ ] Search functionality
 - [ ] Multi-language support
-- [ ] Themes
-- [ ] File attachments?
+- [x] Themes
 
 ## License
 

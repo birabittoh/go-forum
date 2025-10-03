@@ -68,7 +68,7 @@
                         {{if ($.user.CanEditPost $post)}}
                             <a href="/post/{{$post.ID}}/edit" class="btn btn-sm btn-secondary">Edit</a>
                         {{end}}
-                        {{if and ($.user.CanDeletePost $post) (ne $i 0)}}
+                        {{if and ($.user.CanDeletePost $post) (ne $post.ID $.topic.FirstPostID)}}
                             <form method="post" action="/post/{{$post.ID}}/delete" class="inline-form"
                                   onsubmit="return confirm('Are you sure you want to delete this post?')">
                                 <button type="submit" class="btn btn-sm btn-danger">Delete</button>

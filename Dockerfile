@@ -10,11 +10,10 @@ RUN go mod download
 
 # Transfer source code
 COPY *.go ./
-#COPY templates ./templates
 COPY internal ./internal
 
 # Build
-RUN CGO_ENABLED=0 go build -trimpath -o /dist/go-forum
+RUN CGO_ENABLED=0 go build -o /dist/go-forum
 
 # Test
 FROM build-stage AS run-test-stage

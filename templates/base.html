@@ -12,19 +12,20 @@
     <header>
         <div class="container">
             <div class="header-content">
-                <a href="/" class="logo">{{.config.SiteName}}</a>
-                
+                <div>
+                    <a href="/" class="logo">{{.config.SiteName}}</a>
+                    <div class="breadcrumb">{{ .config.SiteMotto }}</div>
+                </div>
                 <nav class="nav">
-                    <!--<a href="/">Home</a>-->
                     {{if .user}}
+                        {{if or (.user.CanModerate) (.user.IsAdmin)}}
+                            <a href="/admin">Admin Panel</a>
+                        {{end}}
                         <div class="user-info">
                             {{if .user.ProfilePicURL}}
                                 <a href="/profile/{{.user.Username}}" class="avatar-link"><img src="{{.config.ProfilePicsLinkURL}}{{.user.ProfilePicURL}}" alt="Avatar" class="user-avatar"></a>
                             {{end}}
                             <span><a href="/profile/{{.user.Username}}">{{.user.Username}}</a></span>
-                            {{if or (.user.CanModerate) (.user.IsAdmin)}}
-                                <a href="/admin">Admin Panel</a>
-                            {{end}}
                             <form method="post" action="/auth/logout">
                                 <button type="submit" class="btn btn-sm btn-secondary">Logout</button>
                             </form>
@@ -46,7 +47,7 @@
 
     <footer>
         <div class="container">
-            <p>&copy; {{.config.SiteName}}</p>
+            <p>&copy; {{.config.SiteName}} - <a href="https://github.com/birabittoh/go-forum" target="_blank">Source Code</a></p>
         </div>
     </footer>
 </body>
