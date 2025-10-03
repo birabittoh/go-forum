@@ -27,7 +27,7 @@
         {{end}}
 
         {{range $i, $post := .posts}}
-        <div class="post">
+        <div class="post" id="{{$post.ID}}">
             <div class="post-author">
                 {{if .Author.ProfilePicURL}}
                     <img src="{{$.config.ProfilePicsLinkURL}}{{.Author.ProfilePicURL}}" alt="{{.Author.Username}}'s avatar" class="avatar">
@@ -61,10 +61,17 @@
                 {{end}}
                 
                 <div class="mt-15 post-container">
-                    <span>Posted: {{$post.CreatedAt.Format "2006-01-02 15:04"}}</span>
+                    
+                    <span>
+                        <a href="#{{$post.ID}}" class="ml-10">#{{$i | add 1}}</a><br />
+                        Posted: {{$post.CreatedAt.Format "2006-01-02 15:04"}}
+                        {{if ne $post.CreatedAt $post.UpdatedAt}}| Edited: {{$post.UpdatedAt.Format "2006-01-02 15:04"}}{{end}}
+                    </span>
+                    
                     
                     {{if and $.user (or ($.user.CanEditPost $post) ($.user.CanDeletePost $post))}}
                     <div class="post-actions">
+                        <a href="/topic/{{$.topic.ID}}/new-post?quote={{$post.ID}}" class="btn btn-sm btn-primary">Quote</a>
                         {{if ($.user.CanEditPost $post)}}
                             <a href="/post/{{$post.ID}}/edit" class="btn btn-sm btn-secondary">Edit</a>
                         {{end}}

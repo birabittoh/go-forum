@@ -5,6 +5,7 @@ import (
 	C "goforum/internal/constants"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"goforum/internal/models"
 
@@ -335,7 +336,7 @@ func (h *Handler) UpdatePost(c *gin.Context) {
 		return
 	}
 
-	post.Content = content
+	post.Content = strings.TrimSpace(content)
 
 	if err := h.db.Save(&post).Error; err != nil {
 		renderError(c, "Failed to update post", http.StatusInternalServerError)

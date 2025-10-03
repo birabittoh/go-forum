@@ -561,10 +561,24 @@ func (h *Handler) NewPostForm(c *gin.Context) {
 		return
 	}
 
+	var quote string
+	// Read quote param
+	quoteIDStr := c.Query("quote")
+	if quoteIDStr != "" {
+		quoteID, err := strconv.Atoi(quoteIDStr)
+		if err == nil {
+			var quotePost models.Post
+			if err := h.db.Preload("Author").First(&quotePost, quoteID).Error; err == nil && quotePost.TopicID == topic.ID {
+				quote = fmt.Sprintf("> %s\n\n", strings.ReplaceAll(quotePost.Content, "\n", "\n> "))
+			}
+		}
+	}
+
 	data := map[string]any{
 		"title":     "New Post",
 		"topic":     topic,
 		"user":      user,
+		"content":   quote,
 		"maxLength": h.config.MaxPostLength,
 		"config":    h.config,
 	}
@@ -623,7 +637,7 @@ func (h *Handler) CreatePost(c *gin.Context) {
 	post := &models.Post{
 		TopicID:  uint(topicID),
 		AuthorID: user.ID,
-		Content:  content,
+		Content:  strings.TrimSpace(content),
 	}
 
 	if err := h.db.Create(post).Error; err != nil {

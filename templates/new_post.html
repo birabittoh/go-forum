@@ -6,7 +6,7 @@
             <a href="/">Home</a> &rsaquo; 
             <a href="/category/{{.topic.Category.ID}}">{{.topic.Category.Name}}</a> &rsaquo; 
             <a href="/topic/{{.topic.ID}}">{{.topic.Title}}</a> &rsaquo; 
-            New Reply
+            New Post
         </div>
     </div>
     
@@ -19,7 +19,7 @@
 
         <form method="post" action="/topic/{{.topic.ID}}/new-post">
             <div class="form-group">
-                <label for="content">Your Reply:</label>
+                <label for="content">Post content:</label>
                 <textarea id="content" name="content" required maxlength="{{.maxLength | default 10000}}" 
                           placeholder="Write your reply here. You can use Markdown formatting.">{{.content}}</textarea>
                 <small class="generic-subtitle">Supports Markdown formatting. Maximum {{.maxLength | default 10000}} characters.</small>
