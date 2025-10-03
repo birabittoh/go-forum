@@ -31,23 +31,19 @@
         </div>
 
         <div id="quick-stats">
-            <h3 class="mb-15">📊 Quick Stats</h3>
+            <h3 class="mb-15">📊 Stats</h3>
             <div id="quick-stats-grid">
                 <div class="text-center">
-                    <div class="quick-stats-value">--</div>
-                    <div class="quick-stats-name">Total Users</div>
+                    <div class="quick-stats-value">{{ .users }}</div>
+                    <div class="quick-stats-name">Users</div>
                 </div>
                 <div class="text-center">
-                    <div class="quick-stats-value">--</div>
-                    <div class="quick-stats-name">Total Topics</div>
+                    <div class="quick-stats-value">{{ .topics}}</div>
+                    <div class="quick-stats-name">Topics</div>
                 </div>
                 <div class="text-center">
-                    <div class="quick-stats-value">--</div>
-                    <div class="quick-stats-name">Total Posts</div>
-                </div>
-                <div class="text-center">
-                    <div class="quick-stats-value">--</div>
-                    <div class="quick-stats-name">Categories</div>
+                    <div class="quick-stats-value">{{ .replies }}</div>
+                    <div class="quick-stats-name">Replies</div>
                 </div>
             </div>
         </div>

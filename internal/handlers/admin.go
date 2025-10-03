@@ -45,10 +45,30 @@ func renderTemplate(c *gin.Context, data map[string]any, templatePath string) er
 func (h *Handler) AdminPanel(c *gin.Context) {
 	user := h.getCurrentUser(c)
 
+	users, err := C.Cache.CountAllUsers(h.db)
+	if err != nil {
+		renderError(c, "Failed to load stats", http.StatusInternalServerError)
+		return
+	}
+	topics, err := C.Cache.CountAllTopics(h.db)
+	if err != nil {
+		renderError(c, "Failed to load stats", http.StatusInternalServerError)
+		return
+	}
+	replies, err := C.Cache.CountAllReplies(h.db)
+	if err != nil {
+		renderError(c, "Failed to load stats", http.StatusInternalServerError)
+		return
+	}
+
 	data := map[string]any{
 		"title":  "Admin Panel",
 		"user":   user,
 		"config": h.config,
+
+		"users":   users,
+		"topics":  topics,
+		"replies": replies,
 	}
 	renderTemplate(c, data, C.AdminPanelPath)
 }
