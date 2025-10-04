@@ -1,0 +1,44 @@
+/*%23ff69b4*/
+
+/* Hello Kitty Theme - Pink Focus */
+:root {
+  --primary-color: #ff69b4;
+  --primary-hover: #ff1493;
+  --secondary-color: #c71585;
+  --secondary-light: #db7093;
+  --accent-color: #ff0066;
+  --accent-hover: #cc0052;
+  --success-color: #ff85c0;
+  --success-hover: #ff6bb0;
+  --warning-color: #ffb6c1;
+  --info-color: #dda0dd;
+  --info-hover: #cc88cc;
+  --background-main: #fff0f5;
+  --background-card: #ffffff;
+  --background-alt: #ffe6f0;
+  --background-secondary: #ffd9e8;
+  --background-hover: #fff5f8;
+  --text-primary: #5d001e;
+  --text-secondary: #8b4562;
+  --text-light: #b87896;
+  --border-color: #ffb3d9;
+  --border-light: #ffd9eb;
+  --blockquote-text: #773344;
+  --alert-error-bg: #ffe6ee;
+  --alert-error-text: #990033;
+  --alert-error-border: #ffcce0;
+  --alert-success-bg: #ffe6f5;
+  --alert-success-text: #990066;
+  --alert-success-border: #ffcceb;
+  --alert-info-bg: #fff0f9;
+  --alert-info-text: #8b0052;
+  --alert-info-border: #ffcce6;
+  --warning-box-bg: #fff0f5;
+  --warning-box-border: #ffcce6;
+  --stats-bg: #ffe6f0;
+  --stats-border: #ffb3d9;
+  --stats-text: #8b0052;
+  --ban-info-bg: #ffe0e6;
+  --ban-info-border: #ffb3c1;
+  --ban-info-text: #8b0000;
+}

@@ -1,0 +1,44 @@
+/*%233498db*/
+
+/* Default Theme Color Palette */
+:root {
+  --primary-color: #3498db;
+  --primary-hover: #2980b9;
+  --secondary-color: #2c3e50;
+  --secondary-light: #34495e;
+  --accent-color: #e74c3c;
+  --accent-hover: #c0392b;
+  --success-color: #27ae60;
+  --success-hover: #229954;
+  --warning-color: #f39c12;
+  --info-color: #95a5a6;
+  --info-hover: #7f8c8d;
+  --background-main: #f4f4f4;
+  --background-card: #ffffff;
+  --background-alt: #f8f9fa;
+  --background-secondary: #ecf0f1;
+  --background-hover: #f5f5f5;
+  --text-primary: #333333;
+  --text-secondary: #7f8c8d;
+  --text-light: #95a5a6;
+  --border-color: #dddddd;
+  --border-light: #eeeeee;
+  --blockquote-text: #555555;
+  --alert-error-bg: #f8d7da;
+  --alert-error-text: #721c24;
+  --alert-error-border: #f5c6cb;
+  --alert-success-bg: #d4edda;
+  --alert-success-text: #155724;
+  --alert-success-border: #c3e6cb;
+  --alert-info-bg: #d1ecf1;
+  --alert-info-text: #0c5460;
+  --alert-info-border: #bee5eb;
+  --warning-box-bg: #fff3cd;
+  --warning-box-border: #ffeaa7;
+  --stats-bg: #e8f5e8;
+  --stats-border: #c3e6c3;
+  --stats-text: #155724;
+  --ban-info-bg: #ffe6e6;
+  --ban-info-border: #ffccd5;
+  --ban-info-text: #721c24;
+}

@@ -1,0 +1,44 @@
+/*%23ff9900*/
+
+/* Miles "Tails" Prower Theme - Yellow-Orange Focus */
+:root {
+  --primary-color: #ff9900;
+  --primary-hover: #e68a00;
+  --secondary-color: #cc6600;
+  --secondary-light: #e67300;
+  --accent-color: #ff3300;
+  --accent-hover: #cc2900;
+  --success-color: #99cc33;
+  --success-hover: #80b32b;
+  --warning-color: #ffcc00;
+  --info-color: #cc9966;
+  --info-hover: #b38855;
+  --background-main: #fff5e6;
+  --background-card: #ffffff;
+  --background-alt: #ffedd9;
+  --background-secondary: #ffe6cc;
+  --background-hover: #fff9f0;
+  --text-primary: #4d2600;
+  --text-secondary: #805000;
+  --text-light: #996600;
+  --border-color: #ffcc99;
+  --border-light: #ffe0b3;
+  --blockquote-text: #664411;
+  --alert-error-bg: #ffebe6;
+  --alert-error-text: #991100;
+  --alert-error-border: #ffd1c4;
+  --alert-success-bg: #f0ffe6;
+  --alert-success-text: #446600;
+  --alert-success-border: #d4f2b3;
+  --alert-info-bg: #fff5e6;
+  --alert-info-text: #663300;
+  --alert-info-border: #ffcc99;
+  --warning-box-bg: #fffae6;
+  --warning-box-border: #fff0b3;
+  --stats-bg: #fff5e6;
+  --stats-border: #ffcc99;
+  --stats-text: #663300;
+  --ban-info-bg: #ffe8e6;
+  --ban-info-border: #ffccb3;
+  --ban-info-text: #8b1100;
+}

@@ -1,0 +1,44 @@
+/*%23aa00cc*/
+
+/* Rouge the Bat Theme - Dark with Purple Hints */
+:root {
+  --primary-color: #aa00cc;
+  --primary-hover: #cc00ff;
+  --secondary-color: #1a1a1a;
+  --secondary-light: #2d2d2d;
+  --accent-color: #ff00aa;
+  --accent-hover: #ff33bb;
+  --success-color: #00cc88;
+  --success-hover: #00ff99;
+  --warning-color: #ffaa00;
+  --info-color: #8866aa;
+  --info-hover: #9977bb;
+  --background-main: #0d0d0d;
+  --background-card: #1a1a1a;
+  --background-alt: #262626;
+  --background-secondary: #2d2d2d;
+  --background-hover: #333333;
+  --text-primary: #e6d9ff;
+  --text-secondary: #aa99cc;
+  --text-light: #7766aa;
+  --border-color: #443355;
+  --border-light: #554466;
+  --blockquote-text: #ccbbee;
+  --alert-error-bg: #330022;
+  --alert-error-text: #ff99cc;
+  --alert-error-border: #660044;
+  --alert-success-bg: #003322;
+  --alert-success-text: #66ffcc;
+  --alert-success-border: #006644;
+  --alert-info-bg: #220033;
+  --alert-info-text: #ccaaff;
+  --alert-info-border: #440066;
+  --warning-box-bg: #332200;
+  --warning-box-border: #665500;
+  --stats-bg: #220033;
+  --stats-border: #550088;
+  --stats-text: #cc99ff;
+  --ban-info-bg: #330022;
+  --ban-info-border: #660044;
+  --ban-info-text: #ff99cc;
+}

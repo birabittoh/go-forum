@@ -1,0 +1,44 @@
+/*%2300cc44*/
+
+/* Keroppi Theme - Green Focus */
+:root {
+  --primary-color: #00cc44;
+  --primary-hover: #00a838;
+  --secondary-color: #006622;
+  --secondary-light: #008833;
+  --accent-color: #ff6600;
+  --accent-hover: #cc5200;
+  --success-color: #00dd55;
+  --success-hover: #00bb44;
+  --warning-color: #ffcc00;
+  --info-color: #66cc88;
+  --info-hover: #55b377;
+  --background-main: #f0fff5;
+  --background-card: #ffffff;
+  --background-alt: #e6ffed;
+  --background-secondary: #d9ffe6;
+  --background-hover: #f5fff8;
+  --text-primary: #002211;
+  --text-secondary: #446655;
+  --text-light: #669977;
+  --border-color: #99eebb;
+  --border-light: #ccf5dd;
+  --blockquote-text: #224433;
+  --alert-error-bg: #ffe8e6;
+  --alert-error-text: #882200;
+  --alert-error-border: #ffc9c4;
+  --alert-success-bg: #e6ffe6;
+  --alert-success-text: #004400;
+  --alert-success-border: #b3f0b3;
+  --alert-info-bg: #e6fff0;
+  --alert-info-text: #004422;
+  --alert-info-border: #b3eec9;
+  --warning-box-bg: #fffae6;
+  --warning-box-border: #ffecb3;
+  --stats-bg: #e6ffed;
+  --stats-border: #99eebb;
+  --stats-text: #004422;
+  --ban-info-bg: #ffe8e6;
+  --ban-info-border: #ffccb3;
+  --ban-info-text: #663300;
+}

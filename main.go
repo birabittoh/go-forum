@@ -59,10 +59,9 @@ func main() {
 	}
 
 	// Seed themes if not present
-
-	cssFiles, err := filepath.Glob("static/*.css")
+	cssFiles, err := filepath.Glob(filepath.Join("static", "themes", "*.css"))
 	if err != nil {
-		log.Fatal("Failed to read static directory:", err)
+		log.Fatal("Failed to read themes directory:", err)
 	}
 	for _, file := range cssFiles {
 		_, fileName := filepath.Split(file)

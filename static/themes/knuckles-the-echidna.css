@@ -1,0 +1,44 @@
+/*%23cc0000*/
+
+/* Knuckles the Echidna Theme - Red Focus */
+:root {
+  --primary-color: #cc0000;
+  --primary-hover: #990000;
+  --secondary-color: #8b0000;
+  --secondary-light: #a50000;
+  --accent-color: #ff4444;
+  --accent-hover: #ff2222;
+  --success-color: #779900;
+  --success-hover: #668800;
+  --warning-color: #ff9900;
+  --info-color: #cc6666;
+  --info-hover: #b35555;
+  --background-main: #fff0f0;
+  --background-card: #ffffff;
+  --background-alt: #ffe6e6;
+  --background-secondary: #ffd9d9;
+  --background-hover: #fff5f5;
+  --text-primary: #330000;
+  --text-secondary: #664444;
+  --text-light: #996666;
+  --border-color: #ffb3b3;
+  --border-light: #ffd9d9;
+  --blockquote-text: #552222;
+  --alert-error-bg: #ffe6e6;
+  --alert-error-text: #880000;
+  --alert-error-border: #ffcccc;
+  --alert-success-bg: #eeffd9;
+  --alert-success-text: #445500;
+  --alert-success-border: #cce6b3;
+  --alert-info-bg: #ffebe6;
+  --alert-info-text: #660000;
+  --alert-info-border: #ffc9c9;
+  --warning-box-bg: #fff5e6;
+  --warning-box-border: #ffe0b3;
+  --stats-bg: #ffe6e6;
+  --stats-border: #ffb3b3;
+  --stats-text: #8b0000;
+  --ban-info-bg: #ffe0e0;
+  --ban-info-border: #ffb3b3;
+  --ban-info-text: #660000;
+}

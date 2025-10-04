@@ -1,0 +1,44 @@
+/*%230066cc*/
+
+/* Sonic the Hedgehog Theme - Blue Focus */
+:root {
+  --primary-color: #0066cc;
+  --primary-hover: #0052a3;
+  --secondary-color: #003d7a;
+  --secondary-light: #004e99;
+  --accent-color: #ff0000;
+  --accent-hover: #cc0000;
+  --success-color: #00aa00;
+  --success-hover: #008800;
+  --warning-color: #ffaa00;
+  --info-color: #6699cc;
+  --info-hover: #5580b3;
+  --background-main: #e6f2ff;
+  --background-card: #ffffff;
+  --background-alt: #d9ebff;
+  --background-secondary: #cce0ff;
+  --background-hover: #f0f7ff;
+  --text-primary: #002244;
+  --text-secondary: #4d6680;
+  --text-light: #7799bb;
+  --border-color: #99c2e6;
+  --border-light: #cce0ff;
+  --blockquote-text: #335577;
+  --alert-error-bg: #ffe6e6;
+  --alert-error-text: #990000;
+  --alert-error-border: #ffcccc;
+  --alert-success-bg: #e6ffe6;
+  --alert-success-text: #006600;
+  --alert-success-border: #b3e6b3;
+  --alert-info-bg: #e6f2ff;
+  --alert-info-text: #003d7a;
+  --alert-info-border: #99c2e6;
+  --warning-box-bg: #fff5e6;
+  --warning-box-border: #ffddaa;
+  --stats-bg: #cce0ff;
+  --stats-border: #99c2e6;
+  --stats-text: #003d7a;
+  --ban-info-bg: #ffe6e6;
+  --ban-info-border: #ffb3b3;
+  --ban-info-text: #990000;
+}
