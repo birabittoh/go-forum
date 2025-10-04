@@ -1,15 +1,27 @@
 package config
 
 import (
+	"log"
 	"os"
+	"path/filepath"
 	"strconv"
 )
 
 type Config struct {
+	// SQLite
 	DatabasePath string
-	JWTSecret    string
-	Environment  string
-	Address      string
+
+	// PostgreSQL
+	DBHost     string
+	DBPort     int
+	DBUser     string
+	DBPassword string
+	DBName     string
+
+	// Common
+	JWTSecret   string
+	Environment string
+	Address     string
 
 	// Email configuration
 	SMTPHost     string
@@ -34,9 +46,15 @@ type Config struct {
 func Load() *Config {
 	cfg := &Config{
 		DatabasePath: getEnv("DATABASE_PATH", "data/forum.db"),
-		JWTSecret:    getEnv("JWT_SECRET", "your-secret-key-change-in-production"),
-		Environment:  getEnv("ENVIRONMENT", "development"),
-		Address:      getEnv("ADDRESS", ":8080"),
+		DBHost:       getEnv("DB_HOST", ""),
+		DBPort:       getEnvInt("DB_PORT", 5432),
+		DBUser:       getEnv("DB_USER", ""),
+		DBPassword:   getEnv("DB_PASSWORD", ""),
+		DBName:       getEnv("DB_NAME", ""),
+
+		JWTSecret:   getEnv("JWT_SECRET", "your-secret-key-change-in-production"),
+		Environment: getEnv("ENVIRONMENT", "development"),
+		Address:     getEnv("ADDRESS", ":8080"),
 
 		SMTPHost:     getEnv("SMTP_HOST", "smtp.gmail.com"),
 		SMTPPort:     getEnvInt("SMTP_PORT", 587),
@@ -79,4 +97,24 @@ func getEnvInt(key string, defaultValue int) int {
 	}
 
 	return intValue
+}
+
+func (c *Config) GetDB() (string, bool) {
+	if c.DBHost != "" && c.DBUser != "" && c.DBName != "" {
+		// PostgreSQL
+		pgConn := "host=" + c.DBHost +
+			" user=" + c.DBUser +
+			" password=" + c.DBPassword +
+			" dbname=" + c.DBName +
+			" port=" + strconv.Itoa(c.DBPort) +
+			" sslmode=disable TimeZone=UTC"
+		return pgConn, true
+	}
+
+	// SQLite
+	dbDir := filepath.Dir(c.DatabasePath)
+	if err := os.MkdirAll(dbDir, 0755); err != nil {
+		log.Fatal("Failed to create database directory:", err)
+	}
+	return c.DatabasePath + "?_pragma=foreign_keys(1)", false
 }

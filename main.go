@@ -4,9 +4,6 @@ import (
 	"fmt"
 	"html/template"
 	"log"
-	"os"
-	"path/filepath"
-	"strings"
 
 	"goforum/internal/auth"
 	"goforum/internal/config"
@@ -14,7 +11,6 @@ import (
 	"goforum/internal/database"
 	"goforum/internal/handlers"
 	"goforum/internal/middleware"
-	"goforum/internal/models"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -34,68 +30,14 @@ func main() {
 	// Load configuration
 	cfg := config.Load()
 
-	// Ensure database directory exists
-	dbDir := filepath.Dir(cfg.DatabasePath)
-	if err := os.MkdirAll(dbDir, 0755); err != nil {
-		log.Fatal("Failed to create database directory:", err)
-	}
-
 	// Initialize database
-	db, err := database.Initialize(cfg.DatabasePath)
+	db, err := database.Initialize(cfg)
 	if err != nil {
 		log.Fatal("Failed to initialize database:", err)
 	}
 
-	// Auto-migrate models
-	err = db.AutoMigrate(
-		&models.User{},
-		&models.Section{},
-		&models.Category{},
-		&models.Topic{},
-		&models.Post{},
-	)
-	if err != nil {
-		log.Fatal("Failed to migrate database:", err)
-	}
-
-	// Seed themes if not present
-	cssFiles, err := filepath.Glob(filepath.Join("static", "themes", "*.css"))
-	if err != nil {
-		log.Fatal("Failed to read themes directory:", err)
-	}
-	for _, file := range cssFiles {
-		_, fileName := filepath.Split(file)
-		themeID := fileName[:len(fileName)-4] // remove .css extension
-		words := strings.Split(themeID, "-")
-		for i, word := range words {
-			if len(word) > 0 && (word != "and" && word != "or" && word != "the" && word != "of") {
-				words[i] = strings.ToUpper(word[:1]) + word[1:]
-			}
-		}
-		displayName := strings.Join(words, " ")
-
-		// read first line of css file to find icon color comment
-		var iconColor string
-		f, err := os.Open(file)
-		if err == nil {
-			var line string
-			_, err = fmt.Fscanf(f, "/*%s", &line)
-			if err == nil {
-				iconColor = strings.TrimSpace(strings.TrimSuffix(line, "*/"))
-			}
-			f.Close()
-		}
-		if iconColor == "" {
-			iconColor = "white" // Default icon color
-			log.Printf("Warning: No icon color specified for theme %s, defaulting to white", themeID)
-		}
-
-		c.Themes = append(c.Themes, models.Theme{
-			ID:          themeID,
-			DisplayName: displayName,
-			Color:       iconColor,
-		})
-	}
+	// Seed themes
+	c.SeedThemes()
 
 	// Initialize auth service
 	authService := auth.NewService(db, cfg)

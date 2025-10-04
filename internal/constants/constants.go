@@ -1,10 +1,13 @@
 package constants
 
 import (
+	"fmt"
 	"goforum/internal/cache"
 	"goforum/internal/models"
 	"html/template"
+	"log"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"golang.org/x/text/cases"
@@ -119,3 +122,43 @@ var (
 	Themes        []models.Theme
 	UsernameRegex = `^[a-zA-Z0-9][a-zA-Z0-9_.-]{3,19}$` // 4-20 chars, letters, numbers, _ and - .
 )
+
+func SeedThemes() {
+	cssFiles, err := filepath.Glob(filepath.Join("static", "themes", "*.css"))
+	if err != nil {
+		log.Fatal("Failed to read themes directory:", err)
+	}
+	for _, file := range cssFiles {
+		_, fileName := filepath.Split(file)
+		themeID := fileName[:len(fileName)-4] // remove .css extension
+		words := strings.Split(themeID, "-")
+		for i, word := range words {
+			if len(word) > 0 && (word != "and" && word != "or" && word != "the" && word != "of") {
+				words[i] = strings.ToUpper(word[:1]) + word[1:]
+			}
+		}
+		displayName := strings.Join(words, " ")
+
+		// read first line of css file to find icon color comment
+		var iconColor string
+		f, err := os.Open(file)
+		if err == nil {
+			var line string
+			_, err = fmt.Fscanf(f, "/*%s", &line)
+			if err == nil {
+				iconColor = strings.TrimSpace(strings.TrimSuffix(line, "*/"))
+			}
+			f.Close()
+		}
+		if iconColor == "" {
+			iconColor = "white" // Default icon color
+			log.Printf("Warning: No icon color specified for theme %s, defaulting to white", themeID)
+		}
+
+		Themes = append(Themes, models.Theme{
+			ID:          themeID,
+			DisplayName: displayName,
+			Color:       iconColor,
+		})
+	}
+}
