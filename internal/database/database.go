@@ -44,5 +44,21 @@ func Initialize(cfg *config.Config) (*gorm.DB, error) {
 		log.Fatal("Failed to migrate database:", err)
 	}
 
+	if cfg.EnableReadySet && isPG {
+		sqlDB, err := db.DB()
+		if err != nil {
+			log.Printf("Failed to get underlying DB: %v", err)
+		} else {
+			// Use Exec instead of Query
+			r, err := sqlDB.Exec("SHOW READYSET VERSION")
+			if err != nil {
+				log.Printf("⚠ Not connected to ReadySet: %v", err)
+			} else {
+				log.Printf("✓ Connected to ReadySet")
+				_ = r
+			}
+		}
+	}
+
 	return db, nil
 }
