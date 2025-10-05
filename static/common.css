@@ -249,6 +249,8 @@ select {
   border: 1px solid var(--border-color);
   border-radius: 4px;
   font-size: 14px;
+  background-color: var(--background-card);
+  color: var(--text-primary);
 }
 
 textarea {

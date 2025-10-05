@@ -2,43 +2,52 @@
 
 /* Shadow the Hedgehog Theme - Dark with Red Hints */
 :root {
-  --primary-color: #cc0000;
-  --primary-hover: #ff0000;
+  --primary-color: #ff3333;
+  --primary-hover: #ff5555;
   --secondary-color: #1a1a1a;
   --secondary-light: #2d2d2d;
-  --accent-color: #ff3333;
-  --accent-hover: #ff0000;
-  --success-color: #00aa00;
-  --success-hover: #00cc00;
-  --warning-color: #ff9900;
-  --info-color: #666666;
-  --info-hover: #808080;
-  --background-main: #0d0d0d;
+  --accent-color: #ff4444;
+  --accent-hover: #ff6666;
+  --success-color: #359c35;
+  --success-hover: #2d842d;
+  --warning-color: #ffaa33;
+  --info-color: #888888;
+  --info-hover: #999999;
+  --background-main: #0a0a0a;
   --background-card: #1a1a1a;
   --background-alt: #262626;
-  --background-secondary: #333333;
-  --background-hover: #2d2d2d;
-  --text-primary: #e6e6e6;
-  --text-secondary: #999999;
-  --text-light: #666666;
-  --border-color: #404040;
-  --border-light: #4d4d4d;
-  --blockquote-text: #b3b3b3;
-  --alert-error-bg: #330000;
-  --alert-error-text: #ff6666;
-  --alert-error-border: #660000;
-  --alert-success-bg: #003300;
-  --alert-success-text: #66ff66;
-  --alert-success-border: #006600;
-  --alert-info-bg: #1a1a1a;
-  --alert-info-text: #cccccc;
-  --alert-info-border: #333333;
-  --warning-box-bg: #332200;
-  --warning-box-border: #664400;
-  --stats-bg: #1a0000;
-  --stats-border: #660000;
-  --stats-text: #ff6666;
-  --ban-info-bg: #330000;
-  --ban-info-border: #660000;
-  --ban-info-text: #ff6666;
+  --background-secondary: #2d2d2d;
+  --background-hover: #333333;
+  --text-primary: #f0f0f0;
+  --text-secondary: #bbbbbb;
+  --text-light: #888888;
+  --border-color: #444444;
+  --border-light: #333333;
+  --blockquote-text: #cccccc;
+  --alert-error-bg: #3d1010;
+  --alert-error-text: #ffaaaa;
+  --alert-error-border: #661111;
+  --alert-success-bg: #103d10;
+  --alert-success-text: #aaffaa;
+  --alert-success-border: #116611;
+  --alert-info-bg: #2d2d2d;
+  --alert-info-text: #dddddd;
+  --alert-info-border: #444444;
+  --warning-box-bg: #3d3310;
+  --warning-box-border: #666622;
+  --stats-bg: #2d1010;
+  --stats-border: #661111;
+  --stats-text: #ffaaaa;
+  --ban-info-bg: #3d1010;
+  --ban-info-border: #661111;
+  --ban-info-text: #ffaaaa;
+}
+
+/* Dark theme overrides */
+.nav a, footer, .btn, a.btn, a.btn:visited, .no-avatar, h1, h2, h3, h4, h5, h6, th {
+  color: var(--text-primary) !important;
+}
+
+.logo, footer a {
+  color: var(--primary-color) !important;
 }
