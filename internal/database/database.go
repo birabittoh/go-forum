@@ -14,7 +14,13 @@ import (
 
 func Initialize(cfg *config.Config) (*gorm.DB, error) {
 	path, isPG := cfg.GetDB()
-	gormCfg := &gorm.Config{Logger: logger.Default.LogMode(logger.Info)}
+
+	var l logger.LogLevel
+	if cfg.Environment == "development" {
+		l = logger.Info
+	} else {
+		l = logger.Silent
+	}
 
 	var d gorm.Dialector
 	if isPG {
@@ -27,7 +33,7 @@ func Initialize(cfg *config.Config) (*gorm.DB, error) {
 		log.Println("Using SQLite database")
 	}
 
-	db, err := gorm.Open(d, gormCfg)
+	db, err := gorm.Open(d, &gorm.Config{Logger: logger.Default.LogMode(l)})
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect database: %w", err)
 	}
@@ -44,20 +50,13 @@ func Initialize(cfg *config.Config) (*gorm.DB, error) {
 		log.Fatal("Failed to migrate database:", err)
 	}
 
-	if cfg.EnableReadySet && isPG {
-		sqlDB, err := db.DB()
-		if err != nil {
-			log.Printf("Failed to get underlying DB: %v", err)
-		} else {
-			// Use Exec instead of Query
-			r, err := sqlDB.Exec("SHOW READYSET VERSION")
-			if err != nil {
-				log.Printf("⚠ Not connected to ReadySet: %v", err)
-			} else {
-				log.Printf("✓ Connected to ReadySet")
-				_ = r
-			}
-		}
+	// Check for ReadySet connection
+	sqlDB, _ := db.DB()
+	_, err = sqlDB.Exec("SHOW READYSET VERSION")
+	if err != nil {
+		log.Printf("⚠ Not connected to ReadySet")
+	} else {
+		log.Printf("✓ Connected to ReadySet")
 	}
 
 	return db, nil

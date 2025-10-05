@@ -2,6 +2,7 @@ services:
   postgres:
     image: postgres:15
     container_name: go-forum-pg
+    restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
@@ -22,6 +23,7 @@ services:
   readyset:
     image: readysettech/readyset:latest
     container_name: go-forum-rs
+    restart: unless-stopped
     environment:
       UPSTREAM_DB_URL: postgresql://postgres:postgres@postgres:5432/goforum
       LISTEN_ADDRESS: 0.0.0.0:5433

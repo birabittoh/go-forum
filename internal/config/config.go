@@ -12,12 +12,11 @@ type Config struct {
 	DatabasePath string
 
 	// PostgreSQL
-	DBHost         string
-	DBPort         int
-	DBUser         string
-	DBPassword     string
-	DBName         string
-	EnableReadySet bool
+	DBHost     string
+	DBPort     int
+	DBUser     string
+	DBPassword string
+	DBName     string
 
 	// Common
 	JWTSecret   string
@@ -48,12 +47,11 @@ func Load() *Config {
 	cfg := &Config{
 		DatabasePath: getEnv("DATABASE_PATH", "data/forum.db"),
 
-		DBHost:         getEnv("DB_HOST", ""),
-		DBPort:         getEnvInt("DB_PORT", 5432),
-		DBUser:         getEnv("DB_USER", ""),
-		DBPassword:     getEnv("DB_PASSWORD", ""),
-		DBName:         getEnv("DB_NAME", ""),
-		EnableReadySet: getEnvBool("ENABLE_READYSET", false),
+		DBHost:     getEnv("DB_HOST", ""),
+		DBPort:     getEnvInt("DB_PORT", 5432),
+		DBUser:     getEnv("DB_USER", ""),
+		DBPassword: getEnv("DB_PASSWORD", ""),
+		DBName:     getEnv("DB_NAME", ""),
 
 		JWTSecret:   getEnv("JWT_SECRET", "your-secret-key-change-in-production"),
 		Environment: getEnv("ENVIRONMENT", "development"),
@@ -100,20 +98,6 @@ func getEnvInt(key string, defaultValue int) int {
 	}
 
 	return intValue
-}
-
-func getEnvBool(key string, defaultValue bool) bool {
-	value := os.Getenv(key)
-	if value == "" {
-		return defaultValue
-	}
-
-	boolValue, err := strconv.ParseBool(value)
-	if err != nil {
-		return defaultValue
-	}
-
-	return boolValue
 }
 
 func (c *Config) GetDB() (string, bool) {

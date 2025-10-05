@@ -22,10 +22,7 @@ func parseTemplate(path string) *template.Template {
 
 func main() {
 	// Load environment variables
-	err := godotenv.Load()
-	if err != nil {
-		log.Println("Warning: .env file not found, using system environment variables")
-	}
+	godotenv.Load()
 
 	// Load configuration
 	cfg := config.Load()
