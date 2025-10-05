@@ -487,8 +487,6 @@ func (h *Handler) ProfileUpdate(c *gin.Context) {
 		return
 	}
 
-	user.Theme = C.ValidateTheme(theme).ID
-
 	// Validate and set profile picture URL
 	if profilePicURL != "" {
 		if !strings.HasPrefix(profilePicURL, h.config.ProfilePicsBaseURL) {
@@ -497,6 +495,7 @@ func (h *Handler) ProfileUpdate(c *gin.Context) {
 			return
 		}
 
+		/* TODO: Uncomment this when pictures are hosted from this application
 		// Check if the full URL actually points to an image
 		r, err := http.DefaultClient.Get(profilePicURL)
 		if err != nil || r.StatusCode != http.StatusOK || !strings.HasPrefix(r.Header.Get("Content-Type"), "image/") {
@@ -505,6 +504,7 @@ func (h *Handler) ProfileUpdate(c *gin.Context) {
 			return
 		}
 		r.Body.Close()
+		*/
 
 		// Store only the path relative to base URL
 		user.ProfilePicURL = strings.TrimPrefix(profilePicURL, h.config.ProfilePicsBaseURL)
@@ -515,15 +515,10 @@ func (h *Handler) ProfileUpdate(c *gin.Context) {
 	// Update user
 	user.Motto = motto
 	user.Signature = signature
+	user.Theme = C.ValidateTheme(theme).ID
 
 	if err := h.db.Save(user).Error; err != nil {
-		data := map[string]any{
-			"title":  "Edit Profile",
-			"user":   user,
-			"error":  "Failed to update profile",
-			"themes": C.Themes,
-			"config": h.config,
-		}
+		data["error"] = "Failed to update profile"
 		renderTemplateStatus(c, data, C.ProfileEditPath, http.StatusInternalServerError)
 		return
 	}
