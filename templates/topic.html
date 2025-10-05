@@ -114,15 +114,15 @@
         </div>
 
         {{if and .user .user.CanPost (not .topic.IsLocked)}}
-        <div class="text-center mt-30">
-            <a href="/topic/{{.topic.ID}}/new-post" class="btn btn-success">Reply to Topic</a>
+        <div class="text-center mt-20">
+            <a href="/topic/{{.topic.ID}}/new-post" class="btn btn-success">Reply</a>
         </div>
         {{else if .topic.IsLocked}}
-        <div class="alert alert-info mt-30">
+        <div class="alert alert-info mt-20">
             This topic is locked and cannot accept new replies.
         </div>
         {{else if not .user}}
-        <div class="alert alert-info mt-30">
+        <div class="alert alert-info mt-20">
             Please <a href="/auth/login">log in</a> to reply to this topic.
         </div>
         {{end}}

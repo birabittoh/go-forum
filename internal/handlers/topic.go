@@ -12,7 +12,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func getPageRedirect(h *Handler, topicID int, postID int) string {
+func getPageRedirect(h *Handler, topicID, postID uint) string {
 	pageRedirect := fmt.Sprintf("/topic/%d", topicID)
 
 	var postNumber int64
@@ -343,7 +343,7 @@ func (h *Handler) UpdatePost(c *gin.Context) {
 		return
 	}
 
-	pageRedirect := getPageRedirect(h, int(post.TopicID), int(post.ID))
+	pageRedirect := getPageRedirect(h, post.TopicID, post.ID)
 	c.Redirect(http.StatusFound, pageRedirect)
 }
 
@@ -402,6 +402,6 @@ func (h *Handler) DeletePost(c *gin.Context) {
 	C.Cache.InvalidateCountsForCategory(h.db, post.Topic.CategoryID)
 	C.Cache.InvalidateCountsForUser(h.db, post.AuthorID)
 
-	pageRedirect := getPageRedirect(h, int(post.TopicID), int(post.ID))
+	pageRedirect := getPageRedirect(h, post.TopicID, post.ID)
 	c.Redirect(http.StatusFound, pageRedirect)
 }

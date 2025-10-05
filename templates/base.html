@@ -4,10 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{if .title}}{{.title}} - {{end}}{{.config.SiteName}}</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22 fill=%22{{if .user }}{{getIconColor .user.Theme}}{{else}}white{{end}}%22>🗫</text></svg>">
-    
+    <link rel="icon" href="/favicon.svg">
     <link rel="stylesheet" href="/static/common.css">
-    <link rel="stylesheet" href="/static/themes/{{ if .user }}{{validateTheme .user.Theme}}{{else}}default{{end}}.css">
+    <link rel="stylesheet" href="/static/themes/{{if .user}}{{validateTheme .user.Theme}}{{else}}default{{end}}.css">
 </head>
 <body>
     <header>
@@ -48,7 +47,7 @@
 
     <footer>
         <div class="container">
-            <p>&copy; {{.config.SiteName}} - <a href="https://github.com/birabittoh/go-forum" target="_blank">Source Code</a></p>
+            &copy; {{.config.SiteName}} - <a href="https://github.com/birabittoh/go-forum" target="_blank">Source Code</a>
         </div>
     </footer>
 </body>

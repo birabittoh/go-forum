@@ -46,7 +46,7 @@ func main() {
 	}
 
 	// Initialize handlers
-	h := handlers.New(db, authService, cfg, c.Themes)
+	h := handlers.New(db, authService, cfg)
 
 	// Setup Gin router
 	if cfg.Environment == "production" {
@@ -82,6 +82,7 @@ func setupRoutes(r *gin.Engine, h *handlers.Handler) {
 	r.GET("/category/:id", h.CategoryView)
 	r.GET("/topic/:id", h.TopicView)
 	r.GET("/profile/:username", h.ProfileView)
+	r.GET("/favicon.svg", h.Favicon)
 
 	// Auth routes
 	auth := r.Group("/auth")

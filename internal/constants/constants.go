@@ -91,20 +91,7 @@ var (
 		"safeHTML": func(s string) template.HTML { return template.HTML(s) },
 
 		"validateTheme": func(theme string) string {
-			for _, t := range Themes {
-				if t.ID == theme {
-					return theme
-				}
-			}
-			return "default"
-		},
-		"getIconColor": func(theme string) string {
-			for _, t := range Themes {
-				if t.ID == theme {
-					return t.Color
-				}
-			}
-			return "white"
+			return ValidateTheme(theme).ID
 		},
 		"until": func(count int) []int {
 			var i []int
@@ -119,7 +106,7 @@ var (
 
 	Tmpl = make(map[string]*template.Template)
 
-	Themes        []models.Theme
+	Themes        map[string]models.Theme
 	UsernameRegex = `^[a-zA-Z0-9][a-zA-Z0-9_.-]{3,19}$` // 4-20 chars, letters, numbers, _ and - .
 )
 
@@ -128,6 +115,8 @@ func SeedThemes() {
 	if err != nil {
 		log.Fatal("Failed to read themes directory:", err)
 	}
+
+	Themes = make(map[string]models.Theme) // Initialize the map
 	for _, file := range cssFiles {
 		_, fileName := filepath.Split(file)
 		themeID := fileName[:len(fileName)-4] // remove .css extension
@@ -155,10 +144,18 @@ func SeedThemes() {
 			log.Printf("Warning: No icon color specified for theme %s, defaulting to white", themeID)
 		}
 
-		Themes = append(Themes, models.Theme{
+		Themes[themeID] = models.Theme{
 			ID:          themeID,
 			DisplayName: displayName,
 			Color:       iconColor,
-		})
+		}
 	}
+}
+
+func ValidateTheme(theme string) models.Theme {
+	t, ok := Themes[theme]
+	if ok {
+		return t
+	}
+	return Themes["default"]
 }

@@ -32,7 +32,7 @@ type Handler struct {
 	markdown    goldmark.Markdown
 }
 
-func New(db *gorm.DB, authService *auth.Service, cfg *config.Config, themes []models.Theme) *Handler {
+func New(db *gorm.DB, authService *auth.Service, cfg *config.Config) *Handler {
 	// Configure Markdown parser
 	md := goldmark.New(
 		goldmark.WithExtensions(
@@ -487,12 +487,7 @@ func (h *Handler) ProfileUpdate(c *gin.Context) {
 		return
 	}
 
-	for _, t := range C.Themes {
-		if t.ID == theme {
-			user.Theme = theme
-			break
-		}
-	}
+	user.Theme = C.ValidateTheme(theme).ID
 
 	// Validate and set profile picture URL
 	if profilePicURL != "" {
@@ -592,11 +587,12 @@ func (h *Handler) CreatePost(c *gin.Context) {
 		return
 	}
 
-	topicID, err := strconv.Atoi(c.Param("id"))
+	topicID64, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
 		renderError(c, "Invalid topic ID", http.StatusBadRequest)
 		return
 	}
+	topicID := uint(topicID64)
 
 	var topic models.Topic
 	if err := h.db.First(&topic, topicID).Error; err != nil {
@@ -631,7 +627,7 @@ func (h *Handler) CreatePost(c *gin.Context) {
 	}
 
 	post := &models.Post{
-		TopicID:  uint(topicID),
+		TopicID:  topicID,
 		AuthorID: user.ID,
 		Content:  strings.TrimSpace(content),
 	}
@@ -661,12 +657,27 @@ func (h *Handler) CreatePost(c *gin.Context) {
 
 	// Invalidate relevant caches
 	C.Cache.InvalidatePostsInTopic(uint(topicID))
-	C.Cache.InvalidateCountsForTopic(h.db, uint(topicID))
+	C.Cache.InvalidateCountsForTopic(h.db, topicID)
 	C.Cache.InvalidateCountsForUser(h.db, user.ID)
 	C.Cache.InvalidateTopicsInCategory(topic.CategoryID)
 
 	// Redirect to the new post
 
-	pageRedirect := getPageRedirect(h, topicID, int(post.ID))
+	pageRedirect := getPageRedirect(h, topicID, post.ID)
 	c.Redirect(http.StatusFound, pageRedirect)
+}
+
+func (h *Handler) Favicon(c *gin.Context) {
+	user := h.getCurrentUser(c)
+	color := "white"
+
+	if user != nil {
+		color = C.ValidateTheme(user.Theme).Color
+	}
+
+	svg := fmt.Sprintf(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="80" fill="%s">🗫</text></svg>`, color)
+
+	c.Header("Content-Type", "image/svg+xml")
+	c.Header("Cache-Control", "no-cache")
+	c.String(http.StatusOK, svg)
 }
