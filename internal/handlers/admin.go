@@ -3,6 +3,7 @@ package handlers
 import (
 	"bytes"
 	C "goforum/internal/constants"
+	"goforum/internal/database"
 	"io"
 	"net/http"
 	"strconv"
@@ -26,13 +27,17 @@ func renderError(c *gin.Context, message string, status int) error {
 }
 
 func renderTemplateStatus(c *gin.Context, data map[string]any, templatePath string, status int) error {
+	t, ok := C.Tmpl[templatePath]
+	if !ok {
+		return renderError(c, "Template not found: "+templatePath, http.StatusInternalServerError)
+	}
+
 	buf := new(bytes.Buffer)
-	err := C.Tmpl[templatePath].Execute(buf, data)
-	if err != nil {
+	if err := t.Execute(buf, data); err != nil {
 		return renderError(c, err.Error(), http.StatusInternalServerError)
 	}
 
-	_, err = io.Copy(c.Writer, buf)
+	_, err := io.Copy(c.Writer, buf)
 	c.Status(status)
 	return err
 }
@@ -71,6 +76,60 @@ func (h *Handler) AdminPanel(c *gin.Context) {
 		"replies": replies,
 	}
 	renderTemplate(c, data, C.AdminPanelPath)
+}
+
+func (h *Handler) Backup(c *gin.Context) {
+	user := h.getCurrentUser(c)
+
+	data := map[string]any{
+		"title":     "Import/Export Data",
+		"user":      user,
+		"config":    h.config,
+		"timestamp": time.Now().Format(time.RFC3339),
+	}
+	renderTemplate(c, data, C.BackupPath)
+}
+
+func (h *Handler) ExportBackup(c *gin.Context) {
+	data, err := database.ExportJSON(h.db)
+	if err != nil {
+		renderError(c, "Failed to export data: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	siteName := strings.ReplaceAll(strings.ToLower(h.config.SiteName), " ", "-")
+	filename := siteName + "_" + time.Now().Format("20060102150405") + ".json"
+
+	c.Header("Content-Disposition", "attachment; filename="+filename)
+	c.Data(http.StatusOK, "application/json", data)
+}
+
+func (h *Handler) ImportBackup(c *gin.Context) {
+	file, err := c.FormFile("backup_file")
+	if err != nil {
+		renderError(c, "Failed to read uploaded file: "+err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	f, err := file.Open()
+	if err != nil {
+		renderError(c, "Failed to open uploaded file: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+	defer f.Close()
+
+	data, err := io.ReadAll(f)
+	if err != nil {
+		renderError(c, "Failed to read uploaded file: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if err := database.ImportJSON(h.db, data); err != nil {
+		renderError(c, "Failed to import data: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	c.Redirect(http.StatusFound, "/admin")
 }
 
 // User management

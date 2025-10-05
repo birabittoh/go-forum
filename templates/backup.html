@@ -1,0 +1,41 @@
+{{define "content"}}
+<div class="content-wrapper">
+    <div class="content-header">
+        <h1>Import/Export</h1>
+        <div class="breadcrumb">
+            <a href="/">Home</a> &rsaquo; 
+            <a href="/admin">Admin Panel</a> &rsaquo; 
+            Import/Export
+        </div>
+    </div>
+    
+    <div class="content-body">
+    <!-- Export button -->
+        <div class="generic-container">
+            <h3 class="mb-15">Export</h3>
+            <p>You can export all forum data into a JSON file. This is useful for backups or migrating to another instance.</p>
+            <p>Click the button below to download the export file.</p>
+            <a class="btn btn-primary" href="/admin/backup/export">Export</a>
+        </div>
+
+        <!-- Import Form -->
+        <div class="generic-container">
+            <h3 class="mb-15">Import</h3>
+            <form method="post" action="/admin/backup/import" enctype="multipart/form-data">
+                <div id="new-category-grid">
+                    <div class="form-group mb-0">
+                        <label for="backup_file">Backup File (JSON):</label>
+                        <input type="file" id="backup_file" name="backup_file" accept=".json" required>
+                    </div>
+                    <button type="submit" class="btn btn-success">Import</button>
+                </div>
+            </form>
+
+            <div class="warning-box">
+                <h4 class="tips-title">💡 Warning</h4>
+                <p>Importing a backup will overwrite existing data. Make sure to back up your current data before proceeding.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{{end}}

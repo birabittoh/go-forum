@@ -22,6 +22,7 @@ const (
 	BasePath = "templates" + ps + Base + ".html"
 
 	AdminPanelPath          = templates + "admin_panel.html"
+	BackupPath              = templates + "backup.html"
 	CategoryListPath        = templates + "category_list.html"
 	CategoryPath            = templates + "category.html"
 	EditPostPath            = templates + "edit_post.html"
@@ -45,6 +46,7 @@ const (
 var (
 	TemplatePaths = []string{
 		AdminPanelPath,
+		BackupPath,
 		CategoryListPath,
 		CategoryPath,
 		EditPostPath,

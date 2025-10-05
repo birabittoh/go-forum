@@ -119,6 +119,9 @@ func setupRoutes(r *gin.Engine, h *handlers.Handler) {
 	moderation.Use(middleware.RequireAuth(), middleware.RequireModerator())
 	{
 		moderation.GET("/", h.AdminPanel)
+		moderation.GET("/backup", h.Backup)
+		moderation.GET("/backup/export", h.ExportBackup)
+		moderation.POST("/backup/import", h.ImportBackup)
 		moderation.GET("/users", h.UserList)
 		moderation.GET("/sections", h.SectionList)
 		moderation.POST("/sections", h.CreateSection)
