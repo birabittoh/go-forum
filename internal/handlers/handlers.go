@@ -86,8 +86,12 @@ func (h *Handler) renderMarkdown(content string) string {
 // Home page
 func (h *Handler) Home(c *gin.Context) {
 	var sections []models.Section
-	if err := h.db.Preload("Categories").Order("\"order\" ASC").Find(&sections).Error; err != nil {
-		// Manual render error template
+	err := h.db.
+		Preload("Categories", func(db *gorm.DB) *gorm.DB { return db.Order("\"order\" ASC") }).
+		//Preload("Categories").
+		Order("\"order\" ASC").
+		Find(&sections).Error
+	if err != nil {
 		renderError(c, "Internal server error", http.StatusInternalServerError)
 		return
 	}

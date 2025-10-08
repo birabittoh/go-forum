@@ -13,6 +13,7 @@ import (
 	"goforum/internal/models"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 func renderError(c *gin.Context, message string, status int) error {
@@ -341,39 +342,55 @@ func (h *Handler) ChangeUserType(c *gin.Context) {
 	c.Redirect(http.StatusFound, "/admin/users")
 }
 
-// Section management
-func (h *Handler) SectionList(c *gin.Context) {
+// Unified Sections & Categories management
+func (h *Handler) AdminSections(c *gin.Context) {
 	user := h.getCurrentUser(c)
 
 	var sections []models.Section
-	if err := h.db.Order("\"order\" ASC").Find(&sections).Error; err != nil {
+	if err := h.db.Preload("Categories", func(db *gorm.DB) *gorm.DB {
+		return db.Order("\"order\" ASC")
+	}).Order("\"order\" ASC").Find(&sections).Error; err != nil {
 		renderError(c, "Failed to load sections", http.StatusInternalServerError)
 		return
 	}
 
-	data := map[string]any{
-		"title":    "Section Management",
-		"sections": sections,
-		"user":     user,
-		"config":   h.config,
+	var categories []models.Category
+	if err := h.db.Preload("Section").Order("section_id ASC, \"order\" ASC").Find(&categories).Error; err != nil {
+		renderError(c, "Failed to load categories", http.StatusInternalServerError)
+		return
 	}
-	renderTemplate(c, data, C.SectionListPath)
+
+	data := map[string]any{
+		"title":      "Sections & Categories Management",
+		"sections":   sections,
+		"categories": categories,
+		"user":       user,
+		"config":     h.config,
+	}
+	renderTemplate(c, data, "templates/sections.html")
 }
 
 func (h *Handler) CreateSection(c *gin.Context) {
 	name := c.PostForm("name")
 	description := c.PostForm("description")
-	order, _ := strconv.Atoi(c.PostForm("order"))
 
 	if name == "" {
 		renderError(c, "Section name is required", http.StatusBadRequest)
 		return
 	}
 
+	// Find max order value among sections
+	var maxOrder int
+	err := h.db.Model(&models.Section{}).Select("COALESCE(MAX(\"order\"), 0)").Scan(&maxOrder).Error
+	if err != nil {
+		renderError(c, "Failed to create section", http.StatusInternalServerError)
+		return
+	}
+
 	section := &models.Section{
 		Name:        name,
 		Description: description,
-		Order:       order,
+		Order:       maxOrder + 1,
 	}
 
 	if err := h.db.Create(section).Error; err != nil {
@@ -384,6 +401,78 @@ func (h *Handler) CreateSection(c *gin.Context) {
 	c.Redirect(http.StatusFound, "/admin/sections")
 }
 
+func (h *Handler) UpdateSection(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		renderError(c, "Invalid section ID", http.StatusBadRequest)
+		return
+	}
+	name := c.PostForm("name")
+	description := c.PostForm("description")
+	if name == "" {
+		renderError(c, "Section name is required", http.StatusBadRequest)
+		return
+	}
+	var section models.Section
+	if err := h.db.First(&section, id).Error; err != nil {
+		renderError(c, "Section not found", http.StatusNotFound)
+		return
+	}
+	section.Name = name
+	section.Description = description
+	if err := h.db.Save(&section).Error; err != nil {
+		renderError(c, "Failed to update section", http.StatusInternalServerError)
+		return
+	}
+	c.Redirect(http.StatusFound, "/admin/sections")
+}
+
+// Move section to a specific order (handles soft deletion)
+func (h *Handler) MoveSection(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		renderError(c, "Invalid section ID", http.StatusBadRequest)
+		return
+	}
+	newOrder, err := strconv.Atoi(c.Param("order"))
+	if err != nil {
+		renderError(c, "Invalid order value", http.StatusBadRequest)
+		return
+	}
+	var section models.Section
+	if err := h.db.First(&section, id).Error; err != nil {
+		renderError(c, "Section not found", http.StatusNotFound)
+		return
+	}
+
+	tx := h.db.Begin()
+
+	var target models.Section
+	err = h.db.Where("\"order\" = ?", newOrder).First(&target).Error
+	if err == nil {
+		// Swap order values
+		section.Order, target.Order = target.Order, section.Order
+		err = h.db.Save(&target).Error
+		if err != nil {
+			tx.Rollback()
+			renderError(c, "Failed to move section", http.StatusInternalServerError)
+			return
+		}
+	} else {
+		section.Order = newOrder
+	}
+
+	err = tx.Save(&section).Error
+	if err != nil {
+		tx.Rollback()
+		renderError(c, "Failed to move section", http.StatusInternalServerError)
+		return
+	}
+
+	tx.Commit()
+	c.Redirect(http.StatusFound, "/admin/sections")
+}
+
 func (h *Handler) DeleteSection(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -391,68 +480,50 @@ func (h *Handler) DeleteSection(c *gin.Context) {
 		return
 	}
 
-	if err := h.db.Delete(&models.Section{}, id).Error; err != nil {
+	section := models.Section{}
+	if err := h.db.Where("deleted_at IS NULL").First(&section, id).Error; err != nil {
+		renderError(c, "Section not found", http.StatusNotFound)
+		return
+	}
+
+	tx := h.db.Begin()
+
+	section.Order = 0
+	err = tx.Save(&section).Error
+	if err != nil {
+		tx.Rollback()
 		renderError(c, "Failed to delete section", http.StatusInternalServerError)
 		return
 	}
 
-	C.Cache.InvalidateCountsForUser(h.db, uint(id))
+	if err := tx.Delete(&models.Section{}, id).Error; err != nil {
+		tx.Rollback()
+		renderError(c, "Failed to delete section", http.StatusInternalServerError)
+		return
+	}
+
+	tx.Commit()
 
 	c.Redirect(http.StatusFound, "/admin/sections")
 }
 
 // Category management
-func (h *Handler) CategoryList(c *gin.Context) {
-	user := h.getCurrentUser(c)
-
-	// Pagination
-	pageSize := 20
-	pageStr := c.DefaultQuery("page", "1")
-	page, err := strconv.Atoi(pageStr)
-	if err != nil || page < 1 {
-		page = 1
-	}
-
-	var totalCategories int64
-	h.db.Model(&models.Category{}).Count(&totalCategories)
-	totalPages := int((totalCategories + int64(pageSize) - 1) / int64(pageSize))
-
-	var categories []models.Category
-	if err := h.db.Preload("Section").
-		Order("section_id ASC, \"order\" ASC").
-		Limit(pageSize).
-		Offset((page - 1) * pageSize).
-		Find(&categories).Error; err != nil {
-		renderError(c, "Failed to load categories", http.StatusInternalServerError)
-		return
-	}
-
-	var sections []models.Section
-	if err := h.db.Order("\"order\" ASC").Find(&sections).Error; err != nil {
-		renderError(c, "Failed to load sections", http.StatusInternalServerError)
-		return
-	}
-
-	data := map[string]any{
-		"title":      "Category Management",
-		"categories": categories,
-		"sections":   sections,
-		"user":       user,
-		"page":       page,
-		"totalPages": totalPages,
-		"config":     h.config,
-	}
-	renderTemplate(c, data, C.CategoryListPath)
-}
 
 func (h *Handler) CreateCategory(c *gin.Context) {
 	name := c.PostForm("name")
 	description := c.PostForm("description")
 	sectionID, _ := strconv.Atoi(c.PostForm("section_id"))
-	order, _ := strconv.Atoi(c.PostForm("order"))
 
 	if name == "" || sectionID == 0 {
 		renderError(c, "Category name and section are required", http.StatusBadRequest)
+		return
+	}
+
+	// Find max order value among categories in the selected section
+	var maxOrder int
+	err := h.db.Model(&models.Category{}).Where("section_id = ?", sectionID).Select("COALESCE(MAX(\"order\"), 0)").Scan(&maxOrder).Error
+	if err != nil {
+		renderError(c, "Failed to create category", http.StatusInternalServerError)
 		return
 	}
 
@@ -460,7 +531,7 @@ func (h *Handler) CreateCategory(c *gin.Context) {
 		SectionID:   uint(sectionID),
 		Name:        name,
 		Description: description,
-		Order:       order,
+		Order:       maxOrder + 1,
 	}
 
 	if err := h.db.Create(category).Error; err != nil {
@@ -468,7 +539,77 @@ func (h *Handler) CreateCategory(c *gin.Context) {
 		return
 	}
 
-	c.Redirect(http.StatusFound, "/admin/categories")
+	c.Redirect(http.StatusFound, "/admin/sections")
+}
+
+func (h *Handler) UpdateCategory(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		renderError(c, "Invalid category ID", http.StatusBadRequest)
+		return
+	}
+	name := c.PostForm("name")
+	description := c.PostForm("description")
+	if name == "" {
+		renderError(c, "Category name is required", http.StatusBadRequest)
+		return
+	}
+	var category models.Category
+	if err := h.db.First(&category, id).Error; err != nil {
+		renderError(c, "Category not found", http.StatusNotFound)
+		return
+	}
+	category.Name = name
+	category.Description = description
+	if err := h.db.Save(&category).Error; err != nil {
+		renderError(c, "Failed to update category", http.StatusInternalServerError)
+		return
+	}
+	c.Redirect(http.StatusFound, "/admin/sections")
+}
+
+// Move category to a specific order (handles soft deletion)
+func (h *Handler) MoveCategory(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		renderError(c, "Invalid category ID", http.StatusBadRequest)
+		return
+	}
+	newOrder, err := strconv.Atoi(c.Param("order"))
+	if err != nil {
+		renderError(c, "Invalid order value", http.StatusBadRequest)
+		return
+	}
+	var category models.Category
+	if err := h.db.Where("deleted_at IS NULL").First(&category, id).Error; err != nil {
+		renderError(c, "Category not found", http.StatusNotFound)
+		return
+	}
+
+	tx := h.db.Begin()
+	// Find target category at newOrder in same section (not deleted)
+	var target models.Category
+	if err := h.db.Where("section_id = ? AND \"order\" = ? AND deleted_at IS NULL", category.SectionID, newOrder).First(&target).Error; err == nil {
+		category.Order, target.Order = target.Order, category.Order
+		err := tx.Save(&target).Error
+		if err != nil {
+			tx.Rollback()
+			renderError(c, "Failed to move category", http.StatusInternalServerError)
+			return
+		}
+	} else {
+		category.Order = newOrder
+	}
+
+	err = tx.Save(&category).Error
+	if err != nil {
+		tx.Rollback()
+		renderError(c, "Failed to move category", http.StatusInternalServerError)
+		return
+	}
+
+	tx.Commit()
+	c.Redirect(http.StatusFound, "/admin/sections")
 }
 
 func (h *Handler) DeleteCategory(c *gin.Context) {
@@ -478,14 +619,31 @@ func (h *Handler) DeleteCategory(c *gin.Context) {
 		return
 	}
 
-	if err := h.db.Delete(&models.Category{}, id).Error; err != nil {
+	var category models.Category
+	if err := h.db.First(&category, id).Error; err != nil {
+		renderError(c, "Category not found", http.StatusNotFound)
+		return
+	}
+
+	tx := h.db.Begin()
+
+	category.Order = 0
+	if err := tx.Save(&category).Error; err != nil {
+		tx.Rollback()
 		renderError(c, "Failed to delete category", http.StatusInternalServerError)
 		return
 	}
+
+	if err := tx.Delete(&models.Category{}, id).Error; err != nil {
+		renderError(c, "Failed to delete category", http.StatusInternalServerError)
+		return
+	}
+
+	tx.Commit()
 
 	// Invalidate relevant caches
 	C.Cache.InvalidateTopicsInCategory(uint(id))
 	C.Cache.InvalidateCountsForCategory(h.db, uint(id))
 
-	c.Redirect(http.StatusFound, "/admin/categories")
+	c.Redirect(http.StatusFound, "/admin/sections")
 }

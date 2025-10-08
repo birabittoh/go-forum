@@ -23,7 +23,6 @@ const (
 
 	AdminPanelPath          = templates + "admin_panel.html"
 	BackupPath              = templates + "backup.html"
-	CategoryListPath        = templates + "category_list.html"
 	CategoryPath            = templates + "category.html"
 	EditPostPath            = templates + "edit_post.html"
 	EditTopicPath           = templates + "edit_topic.html"
@@ -35,7 +34,7 @@ const (
 	NewTopicPath            = templates + "new_topic.html"
 	ProfileEditPath         = templates + "profile_edit.html"
 	ProfilePath             = templates + "profile.html"
-	SectionListPath         = templates + "section_list.html"
+	SectionsPath            = templates + "sections.html"
 	SignupSuccessPath       = templates + "signup_success.html"
 	SignupPath              = templates + "signup.html"
 	TopicPath               = templates + "topic.html"
@@ -47,7 +46,6 @@ var (
 	TemplatePaths = []string{
 		AdminPanelPath,
 		BackupPath,
-		CategoryListPath,
 		CategoryPath,
 		EditPostPath,
 		EditTopicPath,
@@ -59,7 +57,7 @@ var (
 		NewTopicPath,
 		ProfileEditPath,
 		ProfilePath,
-		SectionListPath,
+		SectionsPath,
 		SignupSuccessPath,
 		SignupPath,
 		TopicPath,

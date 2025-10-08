@@ -1,0 +1,153 @@
+{{define "content"}}
+<div class="content-wrapper">
+    <div class="content-header">
+        <h1>Categories Management</h1>
+        <div class="breadcrumb">
+            <a href="/">Home</a> &rsaquo; 
+            <a href="/admin">Admin Panel</a> &rsaquo; 
+            Sections & Categories
+        </div>
+    </div>
+    <div class="content-body">
+        <!-- Sections & Categories Table -->
+        <h3 class="mb-15">Sections & Categories</h3>
+        {{if .sections}}
+        <table>
+            <thead>
+                <tr>
+                    <th>Section/Category</th>
+                    <th></th>
+                    <th>Topics</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{range $section := .sections}}
+                <!-- Section row -->
+        <tr>
+            <td colspan="2">
+                <form method="post" action="/admin/sections/{{$section.ID}}/update" class="form-actions">
+                    <input type="text" name="name" value="{{$section.Name}}" placeholder="Name" required>
+                    <input type="text" name="description" value="{{$section.Description}}" placeholder="Description">
+                    <button type="submit" class="btn btn-sm btn-primary">💾</button>
+                </form>
+            </td>
+            <td></td>
+            <td>
+                <div class="actions-container">
+                    {{if gt $section.Order 2}}
+                    <form method="post" action="/admin/sections/{{$section.ID}}/move/{{sub $section.Order 1}}" class="inline-form">
+                        <button type="submit" class="btn btn-sm btn-primary">&#8593;</button>
+                    </form>
+                    {{end}}
+                    {{if lt $section.Order (add (len $.sections) 1)}}
+                    <form method="post" action="/admin/sections/{{$section.ID}}/move/{{add $section.Order 1}}" class="inline-form">
+                        <button type="submit" class="btn btn-sm btn-primary">&#8595;</button>
+                    </form>
+                    {{end}}
+                    <form method="post" action="/admin/sections/{{$section.ID}}/delete" class="inline-form"
+                          onsubmit="return confirm('Are you sure? This will delete the section and all its categories!')">
+                        <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                    </form>
+                </div>
+            </td>
+        </tr>
+        <!-- Category rows for this section -->
+        {{range $cat := $section.Categories}}
+        <tr>
+            <td></td>
+            <td>
+                <form method="post" action="/admin/categories/{{$cat.ID}}/update" class="form-actions">
+                    <input type="text" name="name" value="{{$cat.Name}}" placeholder="Name" required>
+                    <input type="text" name="description" value="{{$cat.Description}}" placeholder="Description">
+                    <button type="submit" class="btn btn-sm btn-primary">💾</button>
+                </form>
+            </td>
+            <td class="text-center">{{len $cat.Topics}}</td>
+            <td>
+                <div class="actions-container">
+                    {{if gt $cat.Order 1}}
+                    <form method="post" action="/admin/categories/{{$cat.ID}}/move/{{sub $cat.Order 1}}" class="inline-form">
+                        <button type="submit" class="btn btn-sm btn-secondary">&#8593;</button>
+                    </form>
+                    {{end}}
+                    {{if lt $cat.Order (len $section.Categories)}}
+                    <form method="post" action="/admin/categories/{{$cat.ID}}/move/{{add $cat.Order 1}}" class="inline-form">
+                        <button type="submit" class="btn btn-sm btn-secondary">&#8595;</button>
+                    </form>
+                    {{end}}
+                    <form method="post" action="/admin/categories/{{$cat.ID}}/delete" class="inline-form"
+                          onsubmit="return confirm('Are you sure? This will delete the category and all its topics!')">
+                        <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                    </form>
+                </div>
+            </td>
+        </tr>
+                {{end}}
+                {{end}}
+            </tbody>
+        </table>
+        {{else}}
+        <div class="alert alert-info">
+            No sections created yet. Create your first section above.
+        </div>
+        {{end}}
+        <!-- New Section Form -->
+        <div class="generic-container">
+            <h3 class="mb-15">New Section</h3>
+            <form method="post" action="/admin/sections/create">
+                <div class="new-section-grid">
+                    <div class="form-group mb-0">
+                        <label for="section_name">Section Name:</label>
+                        <input type="text" id="section_name" name="name" required placeholder="e.g., General Discussion">
+                    </div>
+                    <div class="form-group mb-0">
+                        <label for="section_description">Description:</label>
+                        <input type="text" id="section_description" name="description" placeholder="Brief description of this section">
+                    </div>
+                    <button type="submit" class="btn btn-success">Create Section</button>
+                </div>
+            </form>
+        </div>
+        <!-- New Category Form -->
+        <div class="generic-container">
+            <h3 class="mb-15">New Category</h3>
+            <form method="post" action="/admin/categories/create">
+                <div id="new-category-grid">
+                    <div class="form-group mb-0">
+                        <label for="category_section_id">Section:</label>
+                        <select id="category_section_id" name="section_id" required>
+                            <option value="">Select Section</option>
+                            {{range .sections}}
+                            <option value="{{.ID}}">{{.Name}}</option>
+                            {{end}}
+                        </select>
+                    </div>
+                    <div class="form-group mb-0">
+                        <label for="category_name">Category Name:</label>
+                        <input type="text" id="category_name" name="name" required placeholder="e.g., Announcements">
+                    </div>
+                    <div class="form-group mb-0">
+                        <label for="category_description">Description:</label>
+                        <input type="text" id="category_description" name="description" placeholder="What this category is for">
+                    </div>
+                    <button type="submit" class="btn btn-success">Create Category</button>
+                </div>
+            </form>
+        </div>
+        <!-- Tips Section -->
+        <div class="warning-box">
+            <h4 class="tips-title">💡 Tips</h4>
+            <ul class="tips-list">
+                <li>Sections group related categories together.</li>
+                <li>Categories contain topics and posts - they're where discussions happen.</li>
+                <li>Each category must belong to a section.</li>
+                <li>Use the arrow buttons to control how sections and categories appear.</li>
+                <li>Deleting a section will also delete all categories within it.</li>
+                <li>Deleting a category will also delete all topics and posts within it.</li>
+                <li>Choose descriptive names for sections and categories.</li>
+            </ul>
+        </div>
+    </div>
+</div>
+{{end}}
