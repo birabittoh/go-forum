@@ -116,6 +116,14 @@ var (
 
 	Themes        map[string]models.Theme
 	UsernameRegex = `^[a-zA-Z0-9][a-zA-Z0-9_.-]{3,19}$` // 4-20 chars, letters, numbers, _ and - .
+
+	jsonReplacer = strings.NewReplacer(
+		`'`, `\'`,
+		`"`, `\"`,
+		`\`, `\\`,
+		"\n", `\n`,
+		"\r", `\r`,
+	)
 )
 
 func SeedThemes() {
@@ -166,4 +174,8 @@ func ValidateTheme(theme string) models.Theme {
 		return t
 	}
 	return Themes["default"]
+}
+
+func EscapeJSON(s string) string {
+	return jsonReplacer.Replace(s)
 }

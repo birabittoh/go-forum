@@ -872,6 +872,30 @@ func (h *Handler) ConfirmPrompt(c *gin.Context) {
 	renderTemplate(c, data, "templates/confirm.html")
 }
 
+func (h *Handler) Manifest(c *gin.Context) {
+	manifest := fmt.Sprintf(`{
+  "name": "%s",
+  "short_name": "%s",
+  "description": "%s",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1976d2",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
+`, C.EscapeJSON(h.config.SiteName), C.EscapeJSON(h.config.SiteName), C.EscapeJSON(h.config.SiteMotto))
+
+	c.Header("Content-Type", "application/manifest+json")
+	c.Header("Cache-Control", "public, max-age=3600") // 1 hour
+	c.String(http.StatusOK, manifest)
+}
+
 func (h *Handler) Favicon(c *gin.Context) {
 	user := h.getCurrentUser(c)
 	color := "white"
@@ -883,6 +907,6 @@ func (h *Handler) Favicon(c *gin.Context) {
 	svg := fmt.Sprintf(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="80" fill="%s">🗫</text></svg>`, color)
 
 	c.Header("Content-Type", "image/svg+xml")
-	c.Header("Cache-Control", "no-cache")
+	c.Header("Cache-Control", "public, max-age=3600") // 1 hour
 	c.String(http.StatusOK, svg)
 }

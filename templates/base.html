@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{if .title}}{{.title}} - {{end}}{{.config.SiteName}}</title>
     <link rel="icon" href="/favicon.svg">
+    <link rel="manifest" href="/manifest.json">
     <link rel="stylesheet" href="/static/common.css">
     <link rel="stylesheet" href="/static/themes/{{if .user}}{{validateTheme .user.Theme}}{{else}}default{{end}}.css">
 </head>
