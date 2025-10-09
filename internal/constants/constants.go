@@ -101,6 +101,9 @@ var (
 		"validateTheme": func(theme string) string {
 			return ValidateTheme(theme).ID
 		},
+		"getColor": func(theme string) string {
+			return strings.TrimPrefix(ValidateTheme(theme).Color, "#")
+		},
 		"until": func(count int) []int {
 			var i []int
 			for j := range count {
@@ -179,3 +182,26 @@ func ValidateTheme(theme string) models.Theme {
 func EscapeJSON(s string) string {
 	return jsonReplacer.Replace(s)
 }
+
+const (
+	ManifestTemplate = `{
+  "name": "%s",
+  "short_name": "%s",
+  "description": "%s",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1976d2",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
+`
+
+	// Also update base.html if this changes
+	FaviconTemplate = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="80" fill="%s">🗫</text></svg>`
+)

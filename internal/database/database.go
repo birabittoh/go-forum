@@ -26,7 +26,7 @@ func Initialize(cfg *config.Config) (*gorm.DB, error) {
 	path, isPG := cfg.GetDB()
 
 	var l logger.LogLevel
-	if cfg.Environment == "development" {
+	if cfg.Environment != "production" {
 		l = logger.Info
 	} else {
 		l = logger.Silent
