@@ -38,6 +38,7 @@ const (
 	ResetPasswordPath       = templates + "reset_password.html"
 	SectionsPath            = templates + "sections.html"
 	SetNewPasswordPath      = templates + "set_new_password.html"
+	SettingsPath            = templates + "settings.html"
 	SignupSuccessPath       = templates + "signup_success.html"
 	SignupPath              = templates + "signup.html"
 	TopicPath               = templates + "topic.html"
@@ -64,6 +65,7 @@ var (
 		ResetPasswordPath,
 		SectionsPath,
 		SetNewPasswordPath,
+		SettingsPath,
 		SignupSuccessPath,
 		SignupPath,
 		TopicPath,

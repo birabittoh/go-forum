@@ -1,0 +1,65 @@
+{{define "content"}}
+<div class="content-wrapper">
+    <div class="content-header">
+        <h1>Site Settings</h1>
+        <div class="breadcrumb">
+            <a href="/">Home</a> &rsaquo; 
+            <a href="/admin">Admin Panel</a> &rsaquo; 
+            Settings
+        </div>
+    </div>
+    <div class="content-body">
+        {{if .error}}
+        <div class="alert alert-error">
+            {{.error}}
+        </div>
+        {{end}}
+        <form method="post" action="/admin/settings">
+            <div class="form-group">
+                <label for="SiteURL">Site URL:</label>
+                <input type="url" id="SiteURL" name="SiteURL" value="{{.settings.SiteURL}}" required>
+            </div>
+            <div class="form-group">
+                <label for="SiteName">Site Name:</label>
+                <input type="text" id="SiteName" name="SiteName" value="{{.settings.SiteName}}" required>
+            </div>
+            <div class="form-group">
+                <label for="SiteMotto">Site Motto:</label>
+                <input type="text" id="SiteMotto" name="SiteMotto" value="{{.settings.SiteMotto}}" maxlength="{{.settings.MaxMottoLength}}">
+            </div>
+            <div class="form-group">
+                <label for="ProfilePicsWebsite">Profile Pics Website:</label>
+                <input type="text" id="ProfilePicsWebsite" name="ProfilePicsWebsite" value="{{.settings.ProfilePicsWebsite}}">
+            </div>
+            <div class="form-group">
+                <label for="ProfilePicsBaseURL">Profile Pics Base URL:</label>
+                <input type="url" id="ProfilePicsBaseURL" name="ProfilePicsBaseURL" value="{{.settings.ProfilePicsBaseURL}}">
+            </div>
+            <div class="form-group">
+                <label for="ProfilePicsLinkURL">Profile Pics Link URL:</label>
+                <input type="url" id="ProfilePicsLinkURL" name="ProfilePicsLinkURL" value="{{.settings.ProfilePicsLinkURL}}">
+            </div>
+            <div class="form-group">
+                <label for="MaxPostLength">Max Post Length:</label>
+                <input type="number" id="MaxPostLength" name="MaxPostLength" value="{{.settings.MaxPostLength}}" min="1">
+            </div>
+            <div class="form-group">
+                <label for="MaxMottoLength">Max Motto Length:</label>
+                <input type="number" id="MaxMottoLength" name="MaxMottoLength" value="{{.settings.MaxMottoLength}}" min="1">
+            </div>
+            <div class="form-group">
+                <label for="MaxSignatureLength">Max Signature Length:</label>
+                <input type="number" id="MaxSignatureLength" name="MaxSignatureLength" value="{{.settings.MaxSignatureLength}}" min="1">
+            </div>
+            <div class="form-group">
+                <label for="TopicPageSize">Topic Page Size:</label>
+                <input type="number" id="TopicPageSize" name="TopicPageSize" value="{{.settings.TopicPageSize}}" min="1">
+            </div>
+            <div class="form-group">
+                <button type="submit" class="btn btn-success">Save Settings</button>
+                <a href="/admin" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{{end}}

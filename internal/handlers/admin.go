@@ -47,6 +47,66 @@ func renderTemplate(c *gin.Context, data map[string]any, templatePath string) er
 	return renderTemplateStatus(c, data, templatePath, http.StatusOK)
 }
 
+func (h *Handler) AdminSettingsForm(c *gin.Context) {
+	user := h.getCurrentUser(c)
+	if !user.IsAdmin() {
+		renderError(c, "Access denied", http.StatusForbidden)
+		return
+	}
+	var settings models.Settings
+	if err := h.db.First(&settings, 1).Error; err != nil {
+		renderError(c, "Failed to load settings", http.StatusInternalServerError)
+		return
+	}
+	data := map[string]any{
+		"title":    "Site Settings",
+		"user":     user,
+		"settings": settings,
+		"config":   h.config,
+	}
+	renderTemplate(c, data, "templates/settings.html")
+}
+
+func (h *Handler) AdminSettingsUpdate(c *gin.Context) {
+	user := h.getCurrentUser(c)
+	if !user.IsAdmin() {
+		renderError(c, "Access denied", http.StatusForbidden)
+		return
+	}
+	var settings models.Settings
+	if err := h.db.First(&settings, 1).Error; err != nil {
+		renderError(c, "Failed to load settings", http.StatusInternalServerError)
+		return
+	}
+
+	settings.SiteURL = c.PostForm("SiteURL")
+	settings.SiteName = c.PostForm("SiteName")
+	settings.SiteMotto = c.PostForm("SiteMotto")
+	settings.ProfilePicsWebsite = c.PostForm("ProfilePicsWebsite")
+	settings.ProfilePicsBaseURL = c.PostForm("ProfilePicsBaseURL")
+	settings.ProfilePicsLinkURL = c.PostForm("ProfilePicsLinkURL")
+	settings.MaxPostLength, _ = strconv.Atoi(c.PostForm("MaxPostLength"))
+	settings.MaxMottoLength, _ = strconv.Atoi(c.PostForm("MaxMottoLength"))
+	settings.MaxSignatureLength, _ = strconv.Atoi(c.PostForm("MaxSignatureLength"))
+	settings.TopicPageSize, _ = strconv.Atoi(c.PostForm("TopicPageSize"))
+
+	if err := h.db.Save(&settings).Error; err != nil {
+		data := map[string]any{
+			"title":    "Site Settings",
+			"user":     user,
+			"settings": settings,
+			"error":    "Failed to update settings",
+			"config":   h.config,
+		}
+		renderTemplate(c, data, "templates/settings.html")
+		return
+	}
+
+	h.config.LoadSettings(&settings)
+
+	c.Redirect(http.StatusFound, "/admin/settings")
+}
+
 // Admin panel
 func (h *Handler) AdminPanel(c *gin.Context) {
 	user := h.getCurrentUser(c)

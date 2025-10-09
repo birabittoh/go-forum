@@ -10,6 +10,7 @@ import (
 	"goforum/internal/database"
 	"goforum/internal/handlers"
 	"goforum/internal/middleware"
+	"goforum/internal/models"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -30,6 +31,12 @@ func main() {
 	db, err := database.Initialize(cfg)
 	if err != nil {
 		log.Fatal("Failed to initialize database:", err)
+	}
+
+	// Load settings from DB and overwrite config fields
+	var settings models.Settings
+	if err := db.First(&settings, 1).Error; err == nil {
+		cfg.LoadSettings(&settings)
 	}
 
 	// Seed themes
@@ -147,6 +154,8 @@ func setupRoutes(r *gin.Engine, h *handlers.Handler) {
 	admin := r.Group("/admin")
 	admin.Use(middleware.RequireAuth(), middleware.RequireAdmin())
 	{
+		admin.GET("/settings", h.AdminSettingsForm)
+		admin.POST("/settings", h.AdminSettingsUpdate)
 		admin.POST("/user/:id/type", h.ChangeUserType)
 	}
 }

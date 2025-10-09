@@ -19,6 +19,7 @@ type BackupData struct {
 	Categories []models.Category `json:"categories"`
 	Topics     []models.Topic    `json:"topics"`
 	Posts      []models.Post     `json:"posts"`
+	Settings   models.Settings   `json:"settings"`
 }
 
 func Initialize(cfg *config.Config) (*gorm.DB, error) {
@@ -54,6 +55,7 @@ func Initialize(cfg *config.Config) (*gorm.DB, error) {
 		&models.Category{},
 		&models.Topic{},
 		&models.Post{},
+		&models.Settings{},
 	)
 	if err != nil {
 		log.Fatal("Failed to migrate database:", err)
@@ -66,6 +68,28 @@ func Initialize(cfg *config.Config) (*gorm.DB, error) {
 		log.Printf("⚠ Not connected to ReadySet")
 	} else {
 		log.Printf("✓ Connected to ReadySet")
+	}
+
+	var settings models.Settings
+	result := db.First(&settings, 1)
+	if result.Error != nil {
+		// Create initial settings row from config if not present
+		initial := models.Settings{
+			ID:                 1,
+			SiteURL:            cfg.SiteURL,
+			SiteName:           cfg.SiteName,
+			SiteMotto:          cfg.SiteMotto,
+			ProfilePicsWebsite: cfg.ProfilePicsWebsite,
+			ProfilePicsBaseURL: cfg.ProfilePicsBaseURL,
+			ProfilePicsLinkURL: cfg.ProfilePicsLinkURL,
+			MaxPostLength:      cfg.MaxPostLength,
+			MaxMottoLength:     cfg.MaxMottoLength,
+			MaxSignatureLength: cfg.MaxSignatureLength,
+			TopicPageSize:      cfg.TopicPageSize,
+		}
+		if err := db.Create(&initial).Error; err != nil {
+			log.Fatal("Failed to create initial settings row:", err)
+		}
 	}
 
 	return db, nil
@@ -88,6 +112,9 @@ func ExportJSON(db *gorm.DB) ([]byte, error) {
 	}
 	if err := db.Find(&data.Posts).Error; err != nil {
 		return nil, fmt.Errorf("failed to fetch posts: %w", err)
+	}
+	if err := db.First(&data.Settings, 1).Error; err != nil {
+		return nil, fmt.Errorf("failed to fetch settings: %w", err)
 	}
 
 	jsonData, err := json.MarshalIndent(data, "", "  ")
@@ -123,6 +150,9 @@ func ImportJSON(db *gorm.DB, jsonData []byte) error {
 			return fmt.Errorf("failed to clear users: %w", err)
 		}
 
+		if err := tx.Save(&data.Settings).Error; err != nil {
+			return fmt.Errorf("failed to import settings: %w", err)
+		}
 		if err := tx.Create(&data.Users).Error; err != nil {
 			return fmt.Errorf("failed to import users: %w", err)
 		}

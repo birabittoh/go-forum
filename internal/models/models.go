@@ -144,6 +144,21 @@ type Theme struct {
 	Color       string `gorm:"size:20"`
 }
 
+// Settings model for site-wide configuration
+type Settings struct {
+	ID                 uint   `gorm:"primaryKey;default:1"`
+	SiteURL            string `gorm:"not null"`
+	SiteName           string `gorm:"not null"`
+	SiteMotto          string `gorm:"not null"`
+	ProfilePicsWebsite string `gorm:"not null"`
+	ProfilePicsBaseURL string `gorm:"not null"`
+	ProfilePicsLinkURL string `gorm:"not null"`
+	MaxPostLength      int    `gorm:"not null"`
+	MaxMottoLength     int    `gorm:"not null"`
+	MaxSignatureLength int    `gorm:"not null"`
+	TopicPageSize      int    `gorm:"not null"`
+}
+
 // Helper methods for permissions
 func (u *User) CanModerate() bool {
 	return u.UserType == UserTypeModerator || u.UserType == UserTypeAdmin

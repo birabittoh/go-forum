@@ -1,6 +1,7 @@
 package config
 
 import (
+	"goforum/internal/models"
 	"log"
 	"os"
 	"path/filepath"
@@ -30,7 +31,7 @@ type Config struct {
 	SMTPPassword string
 	FromEmail    string
 
-	// App configuration
+	// App settings
 	SiteURL            string
 	SiteName           string
 	SiteMotto          string
@@ -118,4 +119,17 @@ func (c *Config) GetDB() (string, bool) {
 		log.Fatal("Failed to create database directory:", err)
 	}
 	return c.DatabasePath + "?_pragma=foreign_keys(1)", false
+}
+
+func (c *Config) LoadSettings(settings *models.Settings) {
+	c.SiteURL = settings.SiteURL
+	c.SiteName = settings.SiteName
+	c.SiteMotto = settings.SiteMotto
+	c.ProfilePicsWebsite = settings.ProfilePicsWebsite
+	c.ProfilePicsBaseURL = settings.ProfilePicsBaseURL
+	c.ProfilePicsLinkURL = settings.ProfilePicsLinkURL
+	c.MaxPostLength = settings.MaxPostLength
+	c.MaxMottoLength = settings.MaxMottoLength
+	c.MaxSignatureLength = settings.MaxSignatureLength
+	c.TopicPageSize = settings.TopicPageSize
 }
