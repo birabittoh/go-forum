@@ -82,6 +82,7 @@ func setupRoutes(r *gin.Engine, h *handlers.Handler) {
 	r.GET("/topic/:id", h.TopicView)
 	r.GET("/profile/:username", h.ProfileView)
 	r.GET("/favicon.svg", h.Favicon)
+	r.GET("/confirm", h.ConfirmPrompt)
 
 	// Auth routes
 	auth := r.Group("/auth")

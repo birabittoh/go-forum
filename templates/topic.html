@@ -18,8 +18,11 @@
         <div class="mb-20">
             <a href="/topic/{{.topic.ID}}/edit" class="btn btn-sm btn-secondary">Edit Topic</a>
             {{if .user.CanDeleteTopic .topic}}
-                <form method="post" action="/topic/{{.topic.ID}}/delete" class="inline-form"
-                      onsubmit="return confirm('Are you sure you want to delete this topic and all its posts?')">
+                <form method="get" action="/confirm" class="inline-form">
+                    <input type="hidden" name="message" value="Are you sure you want to delete this topic and all of its posts?">
+                    <input type="hidden" name="action" value="/topic/{{.topic.ID}}/delete">
+                    <input type="hidden" name="method" value="post">
+                    <input type="hidden" name="cancel_url" value="/topic/{{.topic.ID}}">
                     <button type="submit" class="btn btn-sm btn-danger">Delete Topic</button>
                 </form>
             {{end}}
@@ -76,8 +79,11 @@
                             <a href="/post/{{$post.ID}}/edit" class="btn btn-sm btn-secondary">Edit</a>
                         {{end}}
                         {{if and ($.user.CanDeletePost $post) (ne $post.ID $.topic.FirstPostID)}}
-                            <form method="post" action="/post/{{$post.ID}}/delete" class="inline-form"
-                                  onsubmit="return confirm('Are you sure you want to delete this post?')">
+                            <form method="get" action="/confirm" class="inline-form">
+                                <input type="hidden" name="message" value="Are you sure you want to delete this post?">
+                                <input type="hidden" name="action" value="/post/{{$post.ID}}/delete">
+                                <input type="hidden" name="method" value="post">
+                                <input type="hidden" name="cancel_url" value="/topic/{{$.topic.ID}}">
                                 <button type="submit" class="btn btn-sm btn-danger">Delete</button>
                             </form>
                         {{end}}

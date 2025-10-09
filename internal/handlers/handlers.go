@@ -854,6 +854,24 @@ func (h *Handler) CreatePost(c *gin.Context) {
 	c.Redirect(http.StatusFound, pageRedirect)
 }
 
+func (h *Handler) ConfirmPrompt(c *gin.Context) {
+	message := c.Query("message")
+	action := c.Query("action")
+	method := c.Query("method")
+	cancelURL := c.Query("cancel_url")
+
+	data := map[string]any{
+		"Message":   message,
+		"Action":    action,
+		"Method":    method,
+		"CancelURL": cancelURL,
+		"title":     "Confirm Action",
+		"config":    h.config,
+		"user":      h.getCurrentUser(c),
+	}
+	renderTemplate(c, data, "templates/confirm.html")
+}
+
 func (h *Handler) Favicon(c *gin.Context) {
 	user := h.getCurrentUser(c)
 	color := "white"

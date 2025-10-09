@@ -24,6 +24,7 @@ const (
 	AdminPanelPath          = templates + "admin_panel.html"
 	BackupPath              = templates + "backup.html"
 	CategoryPath            = templates + "category.html"
+	ConfirmPath             = templates + "confirm.html"
 	EditPostPath            = templates + "edit_post.html"
 	EditTopicPath           = templates + "edit_topic.html"
 	EditUserPath            = templates + "edit_user.html"
@@ -49,6 +50,7 @@ var (
 		AdminPanelPath,
 		BackupPath,
 		CategoryPath,
+		ConfirmPath,
 		EditPostPath,
 		EditTopicPath,
 		EditUserPath,
