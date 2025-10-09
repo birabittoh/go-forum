@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"log"
 	"strings"
 	"time"
 
@@ -132,7 +133,7 @@ func (s *Service) Register(username, email, password string) (*models.User, erro
 	if userCount > 0 {
 		if err := s.SendVerificationEmail(user); err != nil {
 			// Log error but don't fail registration
-			fmt.Printf("Failed to send verification email: %v\n", err)
+			log.Printf("Failed to send verification email: %v\n", err)
 		}
 	}
 
@@ -186,7 +187,40 @@ func (s *Service) VerifyEmail(token string) error {
 	return s.db.Save(&user).Error
 }
 
+func (s *Service) SendResetPasswordEmail(user *models.User) error {
+	if s.Config.SMTPHost == "" || s.Config.SMTPUsername == "" {
+		return errors.New("email configuration not set")
+	}
+	if user.ResetToken == "" || user.ResetTokenExpiry == nil {
+		return errors.New("reset token not set")
+	}
+	resetURL := fmt.Sprintf("%s/auth/set-password/%s", s.Config.SiteURL, user.ResetToken)
+	subject := fmt.Sprintf("Reset your password - %s", s.Config.SiteName)
+	body := fmt.Sprintf(`
+Hello %s,
+
+You requested a password reset. Please click the following link to set a new password (valid for 1 hour):
+%s
+
+If you didn't request this, you can ignore this email.
+
+Best regards,
+%s Team
+`, user.Username, resetURL, s.Config.SiteName)
+
+	m := gomail.NewMessage()
+	m.SetHeader("From", s.Config.FromEmail)
+	m.SetHeader("To", user.Email)
+	m.SetHeader("Subject", subject)
+	m.SetBody("text/plain", body)
+
+	d := gomail.NewDialer(s.Config.SMTPHost, s.Config.SMTPPort, s.Config.SMTPUsername, s.Config.SMTPPassword)
+
+	return d.DialAndSend(m)
+}
+
 func (s *Service) SendVerificationEmail(user *models.User) error {
+	//return nil // disable email sending
 	if s.Config.SMTPHost == "" || s.Config.SMTPUsername == "" {
 		return errors.New("email configuration not set")
 	}

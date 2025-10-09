@@ -8,12 +8,24 @@
     </div>
     
     <div class="content-body">
+        {{if .user}}
         <div class="alert alert-success">
             <h3 class="mb-15">🎉 Welcome to our community!</h3>
-            <p>{{.message}}</p>
+            <p>{{ .message }}</p>
         </div>
+            {{if eq .user.UserType 0}}
+            <form method="POST" action="/auth/resend-verification" class="mt-15">
+                <button type="submit" class="btn btn-danger">Resend Verification Email</button>
+            </form>
+            {{end}}
+        {{end}}
+        {{if .error}}
+        <div class="warning-box mt-10">
+            <p>{{.error}}</p>
+        </div>
+        {{end}}
         
-        <div class="generic-container">
+        <div class="generic-container mt-20">
             <h4 class="generic-title">What's Next?</h4>
             <ol class="text-left generic-subtitle main-container">
                 <li class="mb-10">Check your email for a verification link</li>
@@ -24,8 +36,7 @@
         </div>
 
         <div class="mt-30">
-            <a href="/auth/login" class="btn">Go to Login</a>
-            <a href="/" class="btn btn-secondary">Browse Forum</a>
+            <a href="/" class="btn btn-primary">Browse Forum</a>
         </div>
     </div>
 </div>

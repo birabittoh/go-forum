@@ -6,6 +6,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	treeblood "github.com/wyatt915/goldmark-treeblood"
@@ -144,6 +145,151 @@ func (h *Handler) Home(c *gin.Context) {
 		"config":   h.config,
 	}
 	renderTemplate(c, data, C.HomePath)
+}
+
+/**
+ * Password reset handlers
+ */
+func (h *Handler) SetNewPasswordForm(c *gin.Context) {
+	token := c.Param("token")
+	data := map[string]any{
+		"title":  "Set New Password",
+		"config": h.config,
+	}
+
+	var user models.User
+	if err := h.db.Where("reset_token = ?", token).First(&user).Error; err != nil || user.ResetTokenExpiry == nil || time.Now().After(*user.ResetTokenExpiry) {
+		data["error"] = "Invalid or expired reset link."
+		renderTemplateStatus(c, data, C.SetNewPasswordPath, http.StatusBadRequest)
+		return
+	}
+
+	renderTemplate(c, data, C.SetNewPasswordPath)
+}
+
+func (h *Handler) SetNewPassword(c *gin.Context) {
+	token := c.Param("token")
+	password := c.PostForm("password")
+	confirm := c.PostForm("confirm_password")
+	data := map[string]any{
+		"title":  "Set New Password",
+		"config": h.config,
+	}
+
+	var user models.User
+	if err := h.db.Where("reset_token = ?", token).First(&user).Error; err != nil || user.ResetTokenExpiry == nil || time.Now().After(*user.ResetTokenExpiry) {
+		data["error"] = "Invalid or expired reset link."
+		renderTemplateStatus(c, data, "templates/set_new_password.html", http.StatusBadRequest)
+		return
+	}
+
+	if password == "" || confirm == "" {
+		data["error"] = "Password and confirmation are required."
+		renderTemplateStatus(c, data, "templates/set_new_password.html", http.StatusBadRequest)
+		return
+	}
+	if password != confirm {
+		data["error"] = "Passwords do not match."
+		renderTemplateStatus(c, data, "templates/set_new_password.html", http.StatusBadRequest)
+		return
+	}
+	if len(password) < 6 {
+		data["error"] = "Password must be at least 6 characters."
+		renderTemplateStatus(c, data, "templates/set_new_password.html", http.StatusBadRequest)
+		return
+	}
+
+	hash, err := h.authService.HashPassword(password)
+	if err != nil {
+		data["error"] = "Failed to set password."
+		renderTemplateStatus(c, data, "templates/set_new_password.html", http.StatusInternalServerError)
+		return
+	}
+
+	user.PasswordHash = hash
+	user.ResetToken = ""
+	user.ResetTokenExpiry = nil
+
+	if err := h.db.Save(&user).Error; err != nil {
+		data["error"] = "Failed to update password."
+		renderTemplateStatus(c, data, "templates/set_new_password.html", http.StatusInternalServerError)
+		return
+	}
+
+	data["message"] = "Your password has been updated. You may now log in."
+	renderTemplate(c, data, "templates/set_new_password.html")
+}
+
+func (h *Handler) ResetPasswordForm(c *gin.Context) {
+	data := map[string]any{
+		"title":  "Reset Password",
+		"config": h.config,
+	}
+	renderTemplate(c, data, C.ResetPasswordPath)
+}
+
+func (h *Handler) ResetPassword(c *gin.Context) {
+	email := strings.ToLower(strings.TrimSpace(c.PostForm("email")))
+	data := map[string]any{
+		"title":  "Reset Password",
+		"config": h.config,
+	}
+
+	if email == "" {
+		data["error"] = "Email is required."
+		renderTemplateStatus(c, data, C.ResetPasswordPath, http.StatusBadRequest)
+		return
+	}
+
+	var user models.User
+	if err := h.db.Where("LOWER(email) = ?", email).First(&user).Error; err != nil {
+		data["error"] = "No account found with that email."
+		renderTemplateStatus(c, data, C.ResetPasswordPath, http.StatusBadRequest)
+		return
+	}
+
+	if !user.IsVerified() {
+		data["error"] = "Account is not verified."
+		renderTemplateStatus(c, data, C.ResetPasswordPath, http.StatusBadRequest)
+		return
+	}
+
+	// Rate limiting: 15 min cooldown
+	now := time.Now()
+	if user.LastResetRequest != nil && now.Sub(*user.LastResetRequest) < 15*time.Minute {
+		data["error"] = "You can request a password reset only once every 15 minutes."
+		renderTemplateStatus(c, data, C.ResetPasswordPath, http.StatusTooManyRequests)
+		return
+	}
+
+	// Generate token and expiry
+	token, err := h.authService.GenerateToken(user.ID)
+	if err != nil {
+		data["error"] = "Failed to generate reset token."
+		renderTemplateStatus(c, data, C.ResetPasswordPath, http.StatusInternalServerError)
+		return
+	}
+	expiry := now.Add(1 * time.Hour)
+
+	user.ResetToken = token
+	user.ResetTokenExpiry = &expiry
+	user.LastResetRequest = &now
+
+	if err := h.db.Save(&user).Error; err != nil {
+		data["error"] = "Failed to save reset token."
+		renderTemplateStatus(c, data, C.ResetPasswordPath, http.StatusInternalServerError)
+		return
+	}
+
+	err = h.authService.SendResetPasswordEmail(&user)
+	if err != nil {
+		data["error"] = "Failed to send reset email."
+		renderTemplateStatus(c, data, C.ResetPasswordPath, http.StatusInternalServerError)
+		return
+	}
+
+	data["message"] = "If an account with that email exists, a reset link has been sent."
+	renderTemplate(c, data, C.ResetPasswordPath)
 }
 
 // Auth handlers
@@ -297,8 +443,9 @@ func (h *Handler) Signup(c *gin.Context) {
 
 	data := map[string]any{
 		"title":   "Registration Successful",
-		"message": "Please check your email for verification instructions.",
 		"config":  h.config,
+		"user":    user,
+		"message": "Please check your email for verification instructions.",
 	}
 	renderTemplate(c, data, C.SignupSuccessPath)
 }
@@ -306,6 +453,47 @@ func (h *Handler) Signup(c *gin.Context) {
 func (h *Handler) Logout(c *gin.Context) {
 	c.SetCookie("auth_token", "", -1, "/", "", false, true)
 	c.Redirect(http.StatusFound, "/")
+}
+
+func (h *Handler) ResendVerificationEmail(c *gin.Context) {
+	user := h.getCurrentUser(c)
+	data := map[string]any{
+		"title":   "Resend Verification Email",
+		"config":  h.config,
+		"message": "Verification email sent. Please check your inbox.",
+	}
+	if user == nil {
+		data["error"] = "You must be logged in to request a verification email."
+		renderTemplateStatus(c, data, C.SignupSuccessPath, http.StatusUnauthorized)
+		return
+	}
+	data["user"] = user
+	if user.IsVerified() {
+		data["error"] = "Your email is already verified."
+		renderTemplateStatus(c, data, C.SignupSuccessPath, http.StatusBadRequest)
+		return
+	}
+	now := time.Now()
+	cooldown := 5 * time.Minute
+	if user.LastVerificationEmailSent != nil && now.Sub(*user.LastVerificationEmailSent) < cooldown {
+		wait := cooldown - now.Sub(*user.LastVerificationEmailSent)
+		data["error"] = fmt.Sprintf("Please wait %d minutes before requesting another verification email.", int(wait.Minutes())+1)
+		renderTemplateStatus(c, data, C.SignupSuccessPath, http.StatusTooManyRequests)
+		return
+	}
+	err := h.authService.SendVerificationEmail(user)
+	if err != nil {
+		data["error"] = "Failed to send verification email."
+		renderTemplateStatus(c, data, C.SignupSuccessPath, http.StatusInternalServerError)
+		return
+	}
+	user.LastVerificationEmailSent = &now
+	if err := h.db.Save(user).Error; err != nil {
+		data["error"] = "Failed to update verification timestamp."
+		renderTemplateStatus(c, data, C.SignupSuccessPath, http.StatusInternalServerError)
+		return
+	}
+	renderTemplate(c, data, C.SignupSuccessPath)
 }
 
 func (h *Handler) VerifyEmail(c *gin.Context) {

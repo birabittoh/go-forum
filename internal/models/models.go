@@ -44,7 +44,13 @@ type User struct {
 	Theme         string `gorm:"size:20"`
 
 	// Email verification
-	VerificationToken string `gorm:"size:64"`
+	VerificationToken         string `gorm:"size:64"`
+	LastVerificationEmailSent *time.Time
+
+	// Password reset
+	ResetToken       string `gorm:"size:64"`
+	ResetTokenExpiry *time.Time
+	LastResetRequest *time.Time
 
 	// Ban management
 	IsBanned    bool `gorm:"default:false"`

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"html/template"
 	"log"
 
@@ -70,7 +69,7 @@ func main() {
 	// Setup routes
 	setupRoutes(r, h)
 
-	fmt.Printf("Starting forum server on %s\n", cfg.Address)
+	log.Printf("Starting forum server on %s\n", cfg.Address)
 	if err := r.Run(cfg.Address); err != nil {
 		log.Fatal("Failed to start server:", err)
 	}
@@ -93,6 +92,11 @@ func setupRoutes(r *gin.Engine, h *handlers.Handler) {
 		auth.POST("/signup", h.Signup)
 		auth.POST("/logout", h.Logout)
 		auth.GET("/verify/:token", h.VerifyEmail)
+		auth.POST("/resend-verification", h.ResendVerificationEmail)
+		auth.GET("/reset-password", h.ResetPasswordForm)
+		auth.POST("/reset-password", h.ResetPassword)
+		auth.GET("/set-password/:token", h.SetNewPasswordForm)
+		auth.POST("/set-password/:token", h.SetNewPassword)
 	}
 
 	// Protected routes

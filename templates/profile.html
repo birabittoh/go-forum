@@ -58,6 +58,14 @@
                 <div class="mt-30">
                     <a href="/profile/edit" class="btn">Edit Profile</a>
                 </div>
+                {{if eq .profileUser.UserType 0}}
+                <div class="mt-15 alert alert-warning">
+                    <strong>Reminder:</strong> Your email is not verified.
+                    <form method="POST" action="/auth/resend-verification" style="display:inline;">
+                        <button type="submit" class="btn btn-warning btn-sm ml-10">Resend Verification Email</button>
+                    </form>
+                </div>
+                {{end}}
                 {{end}}
             </div>
         </div>
