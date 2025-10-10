@@ -6,6 +6,8 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+
+	C "goforum/internal/constants"
 )
 
 type Config struct {
@@ -132,4 +134,8 @@ func (c *Config) LoadSettings(settings *models.Settings) {
 	c.MaxMottoLength = settings.MaxMottoLength
 	c.MaxSignatureLength = settings.MaxSignatureLength
 	c.TopicPageSize = settings.TopicPageSize
+
+	C.Manifest["name"] = c.SiteName
+	C.Manifest["short_name"] = c.SiteName
+	C.Manifest["description"] = c.SiteMotto
 }

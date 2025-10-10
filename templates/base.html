@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{if .title}}{{.title}} - {{end}}{{.config.SiteName}}</title>
-    <link rel="icon" href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="80" fill="%23{{if .user}}{{getColor .user.Theme}}{{else}}ffffff{{end}}">🗫</text></svg>'>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
     <link rel="manifest" href="/manifest.json">
     <link rel="stylesheet" href="/static/common.css">
     <link rel="stylesheet" href="/static/themes/{{if .user}}{{validateTheme .user.Theme}}{{else}}default{{end}}.css">

@@ -44,6 +44,8 @@ const (
 	TopicPath               = templates + "topic.html"
 	UserListPath            = templates + "user_list.html"
 	VerificationSuccessPath = templates + "verification_success.html"
+
+	FaviconTemplate = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\"><text y=\".9em\" font-size=\"80\" fill=\"%s\">🗫</text></svg>"
 )
 
 var (
@@ -127,6 +129,24 @@ var (
 		"\n", `\n`,
 		"\r", `\r`,
 	)
+
+	Manifest = map[string]any{
+		"name":             "",
+		"short_name":       "",
+		"description":      "",
+		"start_url":        "/",
+		"display":          "standalone",
+		"background_color": "#ffffff",
+		"theme_color":      "#1976d2",
+		"icons": []map[string]string{
+			{
+
+				"src":   "/favicon.svg",
+				"sizes": "any",
+				"type":  "image/svg+xml",
+			},
+		},
+	}
 )
 
 func SeedThemes() {
@@ -182,26 +202,3 @@ func ValidateTheme(theme string) models.Theme {
 func EscapeJSON(s string) string {
 	return jsonReplacer.Replace(s)
 }
-
-const (
-	ManifestTemplate = `{
-  "name": "%s",
-  "short_name": "%s",
-  "description": "%s",
-  "start_url": "/",
-  "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#1976d2",
-  "icons": [
-    {
-      "src": "/favicon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml"
-    }
-  ]
-}
-`
-
-	// Also update base.html if this changes
-	FaviconTemplate = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="80" fill="%s">🗫</text></svg>`
-)

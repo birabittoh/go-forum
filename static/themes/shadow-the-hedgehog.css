@@ -44,7 +44,7 @@
 }
 
 /* Dark theme overrides */
-.nav a, footer, .btn, a.btn, a.btn:visited, .no-avatar, h1, h2, h3, h4, h5, h6, th {
+.nav a, footer, .btn, a.btn, a.btn:visited, .no-avatar, h1, h2, h3, h4, h5, h6, th, label {
   color: var(--text-primary) !important;
 }
 

@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"regexp"
@@ -869,15 +870,14 @@ func (h *Handler) ConfirmPrompt(c *gin.Context) {
 		"config":    h.config,
 		"user":      h.getCurrentUser(c),
 	}
-	renderTemplate(c, data, "templates/confirm.html")
+	renderTemplate(c, data, C.ConfirmPath)
 }
 
 func (h *Handler) Manifest(c *gin.Context) {
-	manifest := fmt.Sprintf(C.ManifestTemplate, C.EscapeJSON(h.config.SiteName), C.EscapeJSON(h.config.SiteName), C.EscapeJSON(h.config.SiteMotto))
-
 	c.Header("Content-Type", "application/manifest+json")
 	c.Header("Cache-Control", "public, max-age=300") // 5 minutes
-	c.String(http.StatusOK, manifest)
+	c.Status(http.StatusOK)
+	json.NewEncoder(c.Writer).Encode(C.Manifest)
 }
 
 func (h *Handler) Favicon(c *gin.Context) {
@@ -887,9 +887,7 @@ func (h *Handler) Favicon(c *gin.Context) {
 		color = C.ValidateTheme(user.Theme).Color
 	}
 
-	svg := fmt.Sprintf(C.FaviconTemplate, color)
-
 	c.Header("Content-Type", "image/svg+xml")
-	c.Header("Cache-Control", "no-store, must-revalidate")
-	c.String(http.StatusOK, svg)
+	c.Header("Cache-Control", "no-cache")
+	c.String(http.StatusOK, fmt.Sprintf(C.FaviconTemplate, color))
 }
