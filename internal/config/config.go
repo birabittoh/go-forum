@@ -12,7 +12,7 @@ import (
 
 type Config struct {
 	// SQLite
-	DatabasePath string
+	DataDir string
 
 	// PostgreSQL
 	DBHost     string
@@ -48,7 +48,7 @@ type Config struct {
 
 func Load() *Config {
 	cfg := &Config{
-		DatabasePath: getEnv("DATABASE_PATH", "data/forum.db"),
+		DataDir: getEnv("DATA_DIR", "data"),
 
 		DBHost:     getEnv("DB_HOST", ""),
 		DBPort:     getEnvInt("DB_PORT", 5432),
@@ -116,11 +116,10 @@ func (c *Config) GetDB() (string, bool) {
 	}
 
 	// SQLite
-	dbDir := filepath.Dir(c.DatabasePath)
-	if err := os.MkdirAll(dbDir, 0755); err != nil {
+	if err := os.MkdirAll(c.DataDir, 0755); err != nil {
 		log.Fatal("Failed to create database directory:", err)
 	}
-	return c.DatabasePath + "?_pragma=foreign_keys(1)", false
+	return filepath.Join(c.DataDir, "forum.db?_pragma=foreign_keys(1)"), false
 }
 
 func (c *Config) LoadSettings(settings *models.Settings) {

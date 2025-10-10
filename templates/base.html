@@ -24,7 +24,7 @@
                         {{end}}
                         <div class="user-info">
                             {{if .user.ProfilePicURL}}
-                                <a href="/profile/{{.user.Username}}" class="avatar-link"><img src="{{.config.ProfilePicsLinkURL}}{{.user.ProfilePicURL}}" alt="Avatar" class="user-avatar"></a>
+                                <a href="/profile/{{.user.Username}}" class="avatar-link"><img src="/assets/{{.user.ProfilePicURL}}" alt="Avatar" class="user-avatar"></a>
                             {{end}}
                             <span><a href="/profile/{{.user.Username}}">{{.user.Username}}</a></span>
                             <form method="post" action="/auth/logout">

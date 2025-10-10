@@ -149,6 +149,15 @@ var (
 	}
 )
 
+type PaginatedResponse struct {
+	Items  any `json:"items"`
+	Total  int `json:"total"`
+	Limit  int `json:"limit"`
+	Offset int `json:"offset"`
+	Page   int `json:"page"`
+	Pages  int `json:"pages"`
+}
+
 func SeedThemes() {
 	cssFiles, err := filepath.Glob(filepath.Join("static", "themes", "*.css"))
 	if err != nil {

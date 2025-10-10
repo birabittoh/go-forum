@@ -52,7 +52,10 @@ func main() {
 	}
 
 	// Initialize handlers
-	h := handlers.New(db, authService, cfg)
+	h, err := handlers.New(db, authService, cfg)
+	if err != nil {
+		log.Fatal("Failed to initialize handlers:", err)
+	}
 
 	// Setup Gin router
 	if cfg.Environment == "production" {
@@ -91,6 +94,7 @@ func setupRoutes(r *gin.Engine, h *handlers.Handler) {
 	r.GET("/confirm", h.ConfirmPrompt)
 	r.GET("/favicon.svg", h.Favicon)
 	r.GET("/manifest.json", h.Manifest)
+	r.GET("/assets/:id/:picture", h.TitlesService.ServePicture)
 
 	// Auth routes
 	auth := r.Group("/auth")
@@ -125,6 +129,7 @@ func setupRoutes(r *gin.Engine, h *handlers.Handler) {
 		protected.GET("/topic/:id/edit", h.EditTopicForm)
 		protected.POST("/topic/:id/edit", h.UpdateTopic)
 		protected.POST("/topic/:id/delete", h.DeleteTopic)
+		//protected.GET("/profile/edit/picture", h.TitlesService.GetTitles)
 	}
 
 	// Admin/Moderator routes

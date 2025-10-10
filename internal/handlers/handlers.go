@@ -25,16 +25,18 @@ import (
 	C "goforum/internal/constants"
 	"goforum/internal/models"
 	"goforum/internal/renderers"
+	"goforum/internal/titles"
 )
 
 type Handler struct {
-	db          *gorm.DB
-	authService *auth.Service
-	config      *config.Config
-	markdown    goldmark.Markdown
+	db            *gorm.DB
+	authService   *auth.Service
+	TitlesService *titles.TitlesService
+	config        *config.Config
+	markdown      goldmark.Markdown
 }
 
-func New(db *gorm.DB, authService *auth.Service, cfg *config.Config) *Handler {
+func New(db *gorm.DB, authService *auth.Service, cfg *config.Config) (*Handler, error) {
 	// Configure Markdown parser
 	md := goldmark.New(
 		goldmark.WithExtensions(
@@ -62,12 +64,18 @@ func New(db *gorm.DB, authService *auth.Service, cfg *config.Config) *Handler {
 		util.Prioritized(renderers.NewCustomLinkRenderer(), 100),
 	))
 
-	return &Handler{
-		db:          db,
-		authService: authService,
-		config:      cfg,
-		markdown:    md,
+	titlesService, err := titles.New(cfg)
+	if err != nil {
+		return nil, fmt.Errorf("failed to initialize titles service: %w", err)
 	}
+
+	return &Handler{
+		db:            db,
+		authService:   authService,
+		TitlesService: titlesService,
+		config:        cfg,
+		markdown:      md,
+	}, nil
 }
 
 func (h *Handler) getCurrentUser(c *gin.Context) *models.User {
