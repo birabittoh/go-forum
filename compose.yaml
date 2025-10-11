@@ -49,6 +49,8 @@ services:
       - 8080:8080
     env_file:
       - .env
+    volumes:
+      - ./xtitles:/app/xtitles
     depends_on:
       readyset:
         condition: service_healthy

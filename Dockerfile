@@ -26,7 +26,6 @@ WORKDIR /app
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY templates ./templates
 COPY static ./static
-COPY xtitles ./xtitles
 COPY --from=builder /dist .
 
 ENTRYPOINT ["./go-forum"]

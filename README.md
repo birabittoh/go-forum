@@ -6,7 +6,7 @@ A modern, lightweight forum built with Go, Gin, and SQLite. Features a clean int
 
 First, clone the project:
 ```bash
-git clone https://github.com/birabittoh/go-forum
+git clone --recurse-submodules https://github.com/birabittoh/go-forum
 cd go-forum
 cp .env.example .env
 ```
