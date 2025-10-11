@@ -51,30 +51,23 @@
                 {{end}}
             </tbody>
         </table>
-        <!-- Pagination Controls -->
+        <!-- Pagination Controls  -->
         <div class="pagination">
-            {{with .totalPages}}
-                {{if gt . 1}}
-                    {{if gt $.page 1}}
-                        <a href="/category/{{$.category.ID}}?page={{sub $.page 1}}" class="btn btn-sm">Prev</a>
-                    {{else}}
-                        <span class="btn btn-sm btn-disabled">Prev</span>
-                    {{end}}
-                    {{range $i := until .}}
-                        {{ $pageNum := add $i 1 }}
-                        {{if eq $.page $pageNum}}
-                            <span class="btn btn-sm btn-secondary">{{$pageNum}}</span>
-                        {{else}}
-                            <a href="/category/{{$.category.ID}}?page={{$pageNum}}" class="btn btn-sm">{{$pageNum}}</a>
-                        {{end}}
-                    {{end}}
-                    {{if lt $.page .}}
-                        <a href="/category/{{$.category.ID}}?page={{add $.page 1}}" class="btn btn-sm">Next</a>
-                    {{else}}
-                        <span class="btn btn-sm btn-disabled">Next</span>
-                    {{end}}
-                {{end}}
+          {{if gt .totalPages 1}}
+            {{if gt .page 1}}
+              <a href="/category/{{.category.ID}}?page=1" class="btn btn-sm">&laquo;</a>
             {{end}}
+            {{if gt .page 1}}
+              <a href="/category/{{.category.ID}}?page={{sub .page 1}}" class="btn btn-sm">&lsaquo;</a>
+            {{end}}
+            <span class="btn btn-sm btn-secondary">{{.page}}</span>
+            {{if lt .page .totalPages}}
+              <a href="/category/{{.category.ID}}?page={{add .page 1}}" class="btn btn-sm">&rsaquo;</a>
+            {{end}}
+            {{if lt .page .totalPages}}
+              <a href="/category/{{.category.ID}}?page={{.totalPages}}" class="btn btn-sm">&raquo;</a>
+            {{end}}
+          {{end}}
         </div>
         {{else}}
         <div class="alert alert-info">

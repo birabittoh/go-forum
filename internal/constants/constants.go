@@ -32,6 +32,7 @@ const (
 	HomePath                = templates + "home.html"
 	LoginPath               = templates + "login.html"
 	NewPostPath             = templates + "new_post.html"
+	PicturePath             = templates + "picture.html"
 	NewTopicPath            = templates + "new_topic.html"
 	ProfileEditPath         = templates + "profile_edit.html"
 	ProfilePath             = templates + "profile.html"
@@ -62,6 +63,7 @@ var (
 		LoginPath,
 		NewPostPath,
 		NewTopicPath,
+		PicturePath,
 		ProfileEditPath,
 		ProfilePath,
 		ResetPasswordPath,

@@ -64,7 +64,7 @@ func (h *Handler) AdminSettingsForm(c *gin.Context) {
 		"settings": settings,
 		"config":   h.config,
 	}
-	renderTemplate(c, data, "templates/settings.html")
+	renderTemplate(c, data, C.SettingsPath)
 }
 
 func (h *Handler) AdminSettingsUpdate(c *gin.Context) {
@@ -82,9 +82,6 @@ func (h *Handler) AdminSettingsUpdate(c *gin.Context) {
 	settings.SiteURL = c.PostForm("SiteURL")
 	settings.SiteName = c.PostForm("SiteName")
 	settings.SiteMotto = c.PostForm("SiteMotto")
-	settings.ProfilePicsWebsite = c.PostForm("ProfilePicsWebsite")
-	settings.ProfilePicsBaseURL = c.PostForm("ProfilePicsBaseURL")
-	settings.ProfilePicsLinkURL = c.PostForm("ProfilePicsLinkURL")
 	settings.MaxPostLength, _ = strconv.Atoi(c.PostForm("MaxPostLength"))
 	settings.MaxMottoLength, _ = strconv.Atoi(c.PostForm("MaxMottoLength"))
 	settings.MaxSignatureLength, _ = strconv.Atoi(c.PostForm("MaxSignatureLength"))
@@ -98,7 +95,7 @@ func (h *Handler) AdminSettingsUpdate(c *gin.Context) {
 			"error":    "Failed to update settings",
 			"config":   h.config,
 		}
-		renderTemplate(c, data, "templates/settings.html")
+		renderTemplate(c, data, C.SettingsPath)
 		return
 	}
 
@@ -290,7 +287,6 @@ func (h *Handler) UpdateUser(c *gin.Context) {
 
 	// Update fields
 	targetUser.Motto = c.PostForm("motto")
-	targetUser.ProfilePicURL, _ = strings.CutPrefix(c.PostForm("profile_pic_url"), h.config.ProfilePicsBaseURL)
 	targetUser.Signature = c.PostForm("signature")
 
 	if err := h.db.Save(&targetUser).Error; err != nil {

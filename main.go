@@ -91,7 +91,7 @@ func setupRoutes(r *gin.Engine, h *handlers.Handler) {
 	r.GET("/category/:id", h.CategoryView)
 	r.GET("/topic/:id", h.TopicView)
 	r.GET("/profile/:username", h.ProfileView)
-	r.GET("/confirm", h.ConfirmPrompt)
+	r.POST("/confirm", h.ConfirmPrompt)
 	r.GET("/favicon.svg", h.Favicon)
 	r.GET("/manifest.json", h.Manifest)
 	r.GET("/assets/:id/:picture", h.TitlesService.ServePicture)
@@ -119,6 +119,9 @@ func setupRoutes(r *gin.Engine, h *handlers.Handler) {
 		// User routes
 		protected.GET("/profile/edit", h.ProfileEdit)
 		protected.POST("/profile/edit", h.ProfileUpdate)
+		protected.GET("/profile/picture", h.ProfilePictureForm)
+		protected.POST("/profile/picture", h.ProfilePictureUpdate)
+		protected.POST("/profile/picture/delete", h.ProfilePictureDelete)
 		protected.GET("/topic/:id/new-post", h.NewPostForm)
 		protected.POST("/topic/:id/new-post", h.CreatePost)
 		protected.GET("/category/:id/new-topic", h.NewTopicForm)
@@ -129,7 +132,6 @@ func setupRoutes(r *gin.Engine, h *handlers.Handler) {
 		protected.GET("/topic/:id/edit", h.EditTopicForm)
 		protected.POST("/topic/:id/edit", h.UpdateTopic)
 		protected.POST("/topic/:id/delete", h.DeleteTopic)
-		//protected.GET("/profile/edit/picture", h.TitlesService.GetTitles)
 	}
 
 	// Admin/Moderator routes

@@ -77,99 +77,92 @@
         <div class="pagination">
             {{if gt .totalPages 1}}
                 {{if gt .page 1}}
-                    <a href="/admin/users?sort={{.sortBy}}&order={{.order}}&page={{sub .page 1}}" class="btn btn-sm">Prev</a>
-                {{else}}
-                    <span class="btn btn-sm btn-disabled">Prev</span>
+                    <a href="/admin/users?page=1" class="btn btn-sm">&laquo;</a>
                 {{end}}
-                {{range $i := until .totalPages}}
-                    {{ $pageNum := add $i 1 }}
-                    {{if eq $.page $pageNum}}
-                        <span class="btn btn-sm btn-secondary">{{$pageNum}}</span>
-                    {{else}}
-                        <a href="/admin/users?sort={{$.sortBy}}&order={{$.order}}&page={{$pageNum}}" class="btn btn-sm">{{$pageNum}}</a>
-                    {{end}}
+                {{if gt .page 1}}
+                    <a href="/admin/users?page={{sub .page 1}}" class="btn btn-sm">&lsaquo;</a>
+                {{end}}
+                <span class="btn btn-sm btn-secondary">{{.page}}</span>
+                {{if lt .page .totalPages}}
+                    <a href="/admin/users?page={{add .page 1}}" class="btn btn-sm">&rsaquo;</a>
                 {{end}}
                 {{if lt .page .totalPages}}
-                    <a href="/admin/users?sort={{.sortBy}}&order={{.order}}&page={{add .page 1}}" class="btn btn-sm">Next</a>
-                {{else}}
-                    <span class="btn btn-sm btn-disabled">Next</span>
+                    <a href="/admin/users?page={{.totalPages}}" class="btn btn-sm">&raquo;</a>
                 {{end}}
             {{end}}
         </div>
-    </div>
-</div>
 
-<!-- Ban Modal -->
-<div id="banModal">
-    <div id="banModalContainer">
-        <h3 class="mb-20">Ban User</h3>
-        <form id="banForm" method="post">
-            <div class="form-group">
-                <label for="reason">Reason:</label>
-                <textarea id="reason" name="reason" placeholder="Enter ban reason..." required></textarea>
+        <!-- Ban Modal -->
+        <div id="banModal">
+            <div id="banModalContainer">
+                <h3 class="mb-20">Ban User</h3>
+                <form id="banForm" method="post">
+                    <div class="form-group">
+                        <label for="reason">Reason:</label>
+                        <textarea id="reason" name="reason" placeholder="Enter ban reason..." required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="duration">Duration:</label>
+                        <select id="duration" name="duration">
+                            <option value="1">1 Day</option>
+                            <option value="7">1 Week</option>
+                            <option value="30">1 Month</option>
+                            <option value="permanent">Permanent</option>
+                        </select>
+                    </div>
+                    <div class="actions-container">
+                        <button type="button" onclick="hideBanModal()" class="btn btn-secondary">Cancel</button>
+                        <button type="submit" class="btn btn-danger">Ban User</button>
+                    </div>
+                </form>
             </div>
-            <div class="form-group">
-                <label for="duration">Duration:</label>
-                <select id="duration" name="duration">
-                    <option value="1">1 Day</option>
-                    <option value="7">1 Week</option>
-                    <option value="30">1 Month</option>
-                    <option value="permanent">Permanent</option>
-                </select>
+        </div>
+
+        <!-- User Type Modal -->
+        <div id="userTypeModal">
+            <div id="userTypeModalContainer">
+                <h3 class="mb-20">Change User Type</h3>
+                <form id="userTypeForm" method="post">
+                    <div class="form-group">
+                        <label for="user_type">New Type:</label>
+                        <select id="user_type" name="user_type">
+                            <option value="user">User</option>
+                            <option value="moderator">Moderator</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                    </div>
+                    <div class="actions-container">
+                        <button type="button" onclick="hideUserTypeModal()" class="btn btn-secondary">Cancel</button>
+                        <button type="submit" class="btn btn-success">Change</button>
+                    </div>
+                </form>
             </div>
-            <div class="actions-container">
-                <button type="button" onclick="hideBanModal()" class="btn btn-secondary">Cancel</button>
-                <button type="submit" class="btn btn-danger">Ban User</button>
-            </div>
-        </form>
-    </div>
-</div>
+        </div>
 
-<!-- User Type Modal -->
-<div id="userTypeModal">
-    <div id="userTypeModalContainer">
-        <h3 class="mb-20">Change User Type</h3>
-        <form id="userTypeForm" method="post">
-            <div class="form-group">
-                <label for="user_type">New Type:</label>
-                <select id="user_type" name="user_type">
-                    <option value="user">User</option>
-                    <option value="moderator">Moderator</option>
-                    <option value="admin">Admin</option>
-                </select>
-            </div>
-            <div class="actions-container">
-                <button type="button" onclick="hideUserTypeModal()" class="btn btn-secondary">Cancel</button>
-                <button type="submit" class="btn btn-success">Change</button>
-            </div>
-        </form>
-    </div>
-</div>
+    <script>
+        // Scripts are allowed here since this is an admin-only page
+        function showBanModal(userId, username) {
+            document.getElementById('banForm').action = '/admin/user/' + userId + '/ban';
+            document.getElementById('banModal').style.display = 'block';
+        }
 
-<script>
-// Scripts are allowed here since this is an admin-only page
-function showBanModal(userId, username) {
-    document.getElementById('banForm').action = '/admin/user/' + userId + '/ban';
-    document.getElementById('banModal').style.display = 'block';
-}
+        function hideBanModal() {
+            document.getElementById('banModal').style.display = 'none';
+        }
 
-function hideBanModal() {
-    document.getElementById('banModal').style.display = 'none';
-}
+        function showUserTypeModal(userId, username, currentType) {
+            document.getElementById('userTypeForm').action = '/admin/user/' + userId + '/type';
+            document.getElementById('userTypeModal').style.display = 'block';
+        }
 
-function showUserTypeModal(userId, username, currentType) {
-    document.getElementById('userTypeForm').action = '/admin/user/' + userId + '/type';
-    document.getElementById('userTypeModal').style.display = 'block';
-}
+        function hideUserTypeModal() {
+            document.getElementById('userTypeModal').style.display = 'none';
+        }
 
-function hideUserTypeModal() {
-    document.getElementById('userTypeModal').style.display = 'none';
-}
-
-// Close modals when clicking outside
-window.onclick = function(event) {
-    if (event.target.id === 'banModal') hideBanModal();
-    if (event.target.id === 'userTypeModal') hideUserTypeModal();
-}
-</script>
+        // Close modals when clicking outside
+        window.onclick = function(event) {
+            if (event.target.id === 'banModal') hideBanModal();
+            if (event.target.id === 'userTypeModal') hideUserTypeModal();
+        }
+    </script>
 {{end}}

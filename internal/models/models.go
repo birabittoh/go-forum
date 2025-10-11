@@ -150,9 +150,6 @@ type Settings struct {
 	SiteURL            string `gorm:"not null"`
 	SiteName           string `gorm:"not null"`
 	SiteMotto          string `gorm:"not null"`
-	ProfilePicsWebsite string `gorm:"not null"`
-	ProfilePicsBaseURL string `gorm:"not null"`
-	ProfilePicsLinkURL string `gorm:"not null"`
 	MaxPostLength      int    `gorm:"not null"`
 	MaxMottoLength     int    `gorm:"not null"`
 	MaxSignatureLength int    `gorm:"not null"`

@@ -3,6 +3,12 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
+	"goforum/internal/auth"
+	"goforum/internal/config"
+	C "goforum/internal/constants"
+	"goforum/internal/models"
+	"goforum/internal/renderers"
+	"goforum/internal/titles"
 	"net/http"
 	"regexp"
 	"strconv"
@@ -19,13 +25,6 @@ import (
 	"github.com/yuin/goldmark/renderer/html"
 	"github.com/yuin/goldmark/util"
 	"gorm.io/gorm"
-
-	"goforum/internal/auth"
-	"goforum/internal/config"
-	C "goforum/internal/constants"
-	"goforum/internal/models"
-	"goforum/internal/renderers"
-	"goforum/internal/titles"
 )
 
 type Handler struct {
@@ -188,30 +187,30 @@ func (h *Handler) SetNewPassword(c *gin.Context) {
 	var user models.User
 	if err := h.db.Where("reset_token = ?", token).First(&user).Error; err != nil || user.ResetTokenExpiry == nil || time.Now().After(*user.ResetTokenExpiry) {
 		data["error"] = "Invalid or expired reset link."
-		renderTemplateStatus(c, data, "templates/set_new_password.html", http.StatusBadRequest)
+		renderTemplateStatus(c, data, C.SetNewPasswordPath, http.StatusBadRequest)
 		return
 	}
 
 	if password == "" || confirm == "" {
 		data["error"] = "Password and confirmation are required."
-		renderTemplateStatus(c, data, "templates/set_new_password.html", http.StatusBadRequest)
+		renderTemplateStatus(c, data, C.SetNewPasswordPath, http.StatusBadRequest)
 		return
 	}
 	if password != confirm {
 		data["error"] = "Passwords do not match."
-		renderTemplateStatus(c, data, "templates/set_new_password.html", http.StatusBadRequest)
+		renderTemplateStatus(c, data, C.SetNewPasswordPath, http.StatusBadRequest)
 		return
 	}
 	if len(password) < 6 {
 		data["error"] = "Password must be at least 6 characters."
-		renderTemplateStatus(c, data, "templates/set_new_password.html", http.StatusBadRequest)
+		renderTemplateStatus(c, data, C.SetNewPasswordPath, http.StatusBadRequest)
 		return
 	}
 
 	hash, err := h.authService.HashPassword(password)
 	if err != nil {
 		data["error"] = "Failed to set password."
-		renderTemplateStatus(c, data, "templates/set_new_password.html", http.StatusInternalServerError)
+		renderTemplateStatus(c, data, C.SetNewPasswordPath, http.StatusInternalServerError)
 		return
 	}
 
@@ -221,12 +220,12 @@ func (h *Handler) SetNewPassword(c *gin.Context) {
 
 	if err := h.db.Save(&user).Error; err != nil {
 		data["error"] = "Failed to update password."
-		renderTemplateStatus(c, data, "templates/set_new_password.html", http.StatusInternalServerError)
+		renderTemplateStatus(c, data, C.SetNewPasswordPath, http.StatusInternalServerError)
 		return
 	}
 
 	data["message"] = "Your password has been updated. You may now log in."
-	renderTemplate(c, data, "templates/set_new_password.html")
+	renderTemplate(c, data, C.SetNewPasswordPath)
 }
 
 func (h *Handler) ResetPasswordForm(c *gin.Context) {
@@ -552,11 +551,12 @@ func (h *Handler) CategoryView(c *gin.Context) {
 	}
 
 	data := map[string]any{
-		"title":    category.Name,
-		"category": category,
-		"topics":   topics,
-		"user":     h.getCurrentUser(c),
-		"config":   h.config,
+		"title":      category.Name,
+		"category":   category,
+		"topics":     topics,
+		"totalPages": 1, // TODO: implement pagination
+		"user":       h.getCurrentUser(c),
+		"config":     h.config,
 	}
 	renderTemplate(c, data, C.CategoryPath)
 }
@@ -664,7 +664,6 @@ func (h *Handler) ProfileUpdate(c *gin.Context) {
 	}
 
 	motto := c.PostForm("motto")
-	profilePicURL := c.PostForm("profile_pic_url")
 	signature := c.PostForm("signature")
 	theme := c.PostForm("theme")
 
@@ -688,31 +687,6 @@ func (h *Handler) ProfileUpdate(c *gin.Context) {
 		return
 	}
 
-	// Validate and set profile picture URL
-	if profilePicURL != "" {
-		if !strings.HasPrefix(profilePicURL, h.config.ProfilePicsBaseURL) {
-			data["error"] = "Profile picture URL must start with " + h.config.ProfilePicsBaseURL
-			renderTemplateStatus(c, data, C.ProfileEditPath, http.StatusBadRequest)
-			return
-		}
-
-		/* TODO: Uncomment this when pictures are hosted from this application
-		// Check if the full URL actually points to an image
-		r, err := http.DefaultClient.Get(profilePicURL)
-		if err != nil || r.StatusCode != http.StatusOK || !strings.HasPrefix(r.Header.Get("Content-Type"), "image/") {
-			data["error"] = "Profile picture URL must point to a valid image"
-			renderTemplateStatus(c, data, C.ProfileEditPath, http.StatusBadRequest)
-			return
-		}
-		r.Body.Close()
-		*/
-
-		// Store only the path relative to base URL
-		user.ProfilePicURL = strings.TrimPrefix(profilePicURL, h.config.ProfilePicsBaseURL)
-	} else {
-		user.ProfilePicURL = ""
-	}
-
 	// Update user
 	user.Motto = motto
 	user.Signature = signature
@@ -727,7 +701,76 @@ func (h *Handler) ProfileUpdate(c *gin.Context) {
 	c.Redirect(http.StatusFound, "/profile/"+user.Username)
 }
 
-// Continue with post and topic handlers...
+func (h *Handler) ProfilePictureForm(c *gin.Context) {
+	user := h.getCurrentUser(c)
+	if user == nil {
+		c.Redirect(http.StatusFound, "/auth/login")
+		return
+	}
+
+	query := c.Query("q")
+	pageStr := c.DefaultQuery("page", "1")
+	page, err := strconv.Atoi(pageStr)
+	if err != nil || page < 1 {
+		c.Redirect(http.StatusFound, fmt.Sprintf("/profile/picture?q=%s", query))
+	}
+
+	result := h.TitlesService.GetTitles(page, 20, query)
+	if page > result.Pages && result.Pages > 0 {
+		c.Redirect(http.StatusFound, fmt.Sprintf("/profile/picture?q=%s&page=%d", query, result.Pages))
+		return
+	}
+
+	data := map[string]any{
+		"title":  "Set Profile Picture",
+		"user":   user,
+		"config": h.config,
+		"Titles": result,
+		"Query":  query,
+	}
+	renderTemplate(c, data, C.PicturePath)
+}
+
+func (h *Handler) ProfilePictureUpdate(c *gin.Context) {
+	user := h.getCurrentUser(c)
+	if user == nil {
+		c.Redirect(http.StatusFound, "/auth/login")
+		return
+	}
+
+	picture := strings.ToLower(c.PostForm("picture"))
+
+	if !h.TitlesService.ValidatePicture(picture) {
+		renderError(c, "Invalid picture selection", http.StatusBadRequest)
+		return
+	}
+
+	user.ProfilePicURL = picture
+	if err := h.db.Save(user).Error; err != nil {
+		renderError(c, "Failed to update profile picture", http.StatusInternalServerError)
+		return
+	}
+
+	c.Redirect(http.StatusFound, "/profile/"+user.Username)
+}
+
+func (h *Handler) ProfilePictureDelete(c *gin.Context) {
+	user := h.getCurrentUser(c)
+	if user == nil {
+		c.Redirect(http.StatusFound, "/auth/login")
+		return
+	}
+
+	user.ProfilePicURL = ""
+	if err := h.db.Save(user).Error; err != nil {
+		renderError(c, "Failed to remove profile picture", http.StatusInternalServerError)
+		return
+	}
+
+	c.Redirect(http.StatusFound, "/profile/"+user.Username)
+}
+
+// Post and topic handlers
 func (h *Handler) NewPostForm(c *gin.Context) {
 	user := h.getCurrentUser(c)
 	if user == nil || !user.CanPost() {
@@ -868,12 +911,14 @@ func (h *Handler) ConfirmPrompt(c *gin.Context) {
 	action := c.Query("action")
 	method := c.Query("method")
 	cancelURL := c.Query("cancel_url")
+	warning, _ := strconv.ParseBool(c.Query("warning"))
 
 	data := map[string]any{
 		"Message":   message,
 		"Action":    action,
 		"Method":    method,
 		"CancelURL": cancelURL,
+		"Warning":   warning,
 		"title":     "Confirm Action",
 		"config":    h.config,
 		"user":      h.getCurrentUser(c),

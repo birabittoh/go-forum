@@ -11,13 +11,20 @@
     <div class="content-body">
         <div class="profile-header">
             <div class="propic-container">
-                {{if .profileUser.ProfilePicURL}}
-                    <img src="/assets/{{.profileUser.ProfilePicURL}}" alt="{{.profileUser.Username}}'s avatar" class="avatar">
-                {{else}}
-                    <div class="no-avatar">
-                        {{substr .profileUser.Username 0 1 | upper}}
-                    </div>
-                {{end}}
+                <a href="/profile/picture" title="Change Profile Picture">
+                    {{if .profileUser.ProfilePicURL}}
+                        <img src="/assets/{{.profileUser.ProfilePicURL}}" alt="{{.profileUser.Username}}'s avatar" class="avatar">
+                        {{if and .user (eq .user.ID .profileUser.ID)}}
+                        <form method="POST" action="/profile/picture/delete" class="mt-10">
+                            <button type="submit" class="btn btn-sm btn-danger">Remove Picture</button>
+                        </form>
+                        {{end}}
+                    {{else}}
+                        <div class="no-avatar">
+                            {{substr .profileUser.Username 0 1 | upper}}
+                        </div>
+                    {{end}}
+                </a>
             </div>
             
             <div class="profile-container">

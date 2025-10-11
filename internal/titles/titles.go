@@ -7,6 +7,7 @@ import (
 	"goforum/internal/config"
 	C "goforum/internal/constants"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -18,9 +19,11 @@ import (
 )
 
 const (
-	titlesURL   = "https://raw.githubusercontent.com/birabittoh/xtitles/refs/heads/main/titles.filtered.min.json"
-	picturesURL = "https://raw.githubusercontent.com/birabittoh/xtitles/refs/heads/main/titles/%s/%s.png"
-	filename    = "titles.json"
+	titlesURL     = "https://raw.githubusercontent.com/birabittoh/xtitles/refs/heads/main/"
+	picturesExt   = ".png"
+	picturesURL   = "titles/%s/%s" + picturesExt
+	submoduleDir  = "xtitles"
+	submoduleFile = "titles.filtered.json"
 )
 
 type Title struct {
@@ -30,41 +33,57 @@ type Title struct {
 }
 
 type TitlesService struct {
+	config    *config.Config
 	data      []Title
 	names     []string
 	total     int
 	validPics map[string]bool
+	dataMap   map[string]Title
 }
 
-func getKey(id, pic string) string {
-	return id + ":" + pic
+func getKey(id, pic string) string { // expects lowercase id and pic
+	return id + "/" + pic
 }
 
-func (s *TitlesService) afterLoad() {
-	s.total = len(s.data)
+func (s *TitlesService) LoadTitles() error {
+	defer func() {
+		s.total = len(s.data)
+		s.names = make([]string, s.total)
+		s.dataMap = make(map[string]Title, s.total)
+		s.validPics = make(map[string]bool)
 
-	s.names = make([]string, s.total)
-	s.validPics = make(map[string]bool)
-	for i, title := range s.data {
-		s.names[i] = title.Name
+		for i, title := range s.data {
+			s.names[i] = title.Name
+			lowerID := strings.ToLower(title.ID)
+			s.dataMap[lowerID] = title
 
-		for _, pic := range title.Pictures {
-			s.validPics[getKey(title.ID, pic)] = true
+			for _, pic := range title.Pictures {
+				s.validPics[getKey(lowerID, strings.ToLower(pic))] = true
+			}
 		}
+	}()
+
+	submoduleFile := filepath.Join(submoduleDir, submoduleFile)
+
+	var cacheFile string
+	_, err := os.Stat(submoduleFile)
+	if err == nil {
+		s.config.LocalTitles = true
+		cacheFile = submoduleFile
+		log.Println("Using local xtitles submodule")
+	} else {
+		s.config.LocalTitles = false
+		cacheFile = filepath.Join(s.config.DataDir, submoduleFile)
+		log.Println("Using xtitles from GitHub")
 	}
-}
 
-func (s *TitlesService) LoadTitles(config *config.Config) error {
-	defer s.afterLoad()
-
-	cacheFile := filepath.Join(config.DataDir, filename)
 	if data, err := os.ReadFile(cacheFile); err == nil {
 		if err := json.Unmarshal(data, &s.data); err == nil {
 			return nil
 		}
 	}
 
-	r, err := http.Get(titlesURL)
+	r, err := http.Get(titlesURL + submoduleFile)
 	if err != nil {
 		return fmt.Errorf("failed to fetch titles: %w", err)
 	}
@@ -81,8 +100,7 @@ func (s *TitlesService) LoadTitles(config *config.Config) error {
 		return fmt.Errorf("failed to decode titles JSON: %w", err)
 	}
 
-	// Save to cache file
-	if err := os.MkdirAll(config.DataDir, 0755); err == nil {
+	if err := os.MkdirAll(s.config.DataDir, 0755); err == nil {
 		os.WriteFile(cacheFile, buf.Bytes(), 0644)
 	}
 
@@ -90,13 +108,8 @@ func (s *TitlesService) LoadTitles(config *config.Config) error {
 }
 
 func New(cfg *config.Config) (*TitlesService, error) {
-	s := &TitlesService{}
-
-	if err := s.LoadTitles(cfg); err != nil {
-		return nil, fmt.Errorf("failed to load titles: %w", err)
-	}
-
-	return s, nil
+	s := &TitlesService{config: cfg}
+	return s, s.LoadTitles()
 }
 
 func (s *TitlesService) GetTitles(page, limit int, query string) *C.PaginatedResponse {
@@ -149,15 +162,25 @@ func (s *TitlesService) GetTitles(page, limit int, query string) *C.PaginatedRes
 	}
 }
 
+func (s *TitlesService) ValidatePicture(picture string) bool {
+	return s.validPics[strings.ToLower(picture)]
+}
+
 func (s *TitlesService) ServePicture(c *gin.Context) {
-	id := c.Param("id")
-	picture := strings.TrimSuffix(c.Param("picture"), ".png")
+	id := strings.ToLower(c.Param("id"))
+	picture := strings.ToLower(strings.TrimSuffix(c.Param("picture"), picturesExt))
 
 	if !s.validPics[getKey(id, picture)] {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Picture not found"})
 		return
 	}
 
-	url := fmt.Sprintf(picturesURL, strings.ToLower(id), strings.ToLower(picture))
-	c.Redirect(http.StatusMovedPermanently, url)
+	pictureURL := fmt.Sprintf(picturesURL, id, picture)
+
+	if s.config.LocalTitles {
+		c.File(filepath.Join(submoduleDir, pictureURL))
+		return
+	}
+
+	c.Redirect(http.StatusFound, titlesURL+pictureURL)
 }

@@ -18,11 +18,12 @@
         <div class="mb-20">
             <a href="/topic/{{.topic.ID}}/edit" class="btn btn-sm btn-secondary">Edit Topic</a>
             {{if .user.CanDeleteTopic .topic}}
-                <form method="get" action="/confirm" class="inline-form">
+                <form method="post" action="/confirm" class="inline-form">
                     <input type="hidden" name="message" value="Are you sure you want to delete this topic and all of its posts?">
                     <input type="hidden" name="action" value="/topic/{{.topic.ID}}/delete">
                     <input type="hidden" name="method" value="post">
                     <input type="hidden" name="cancel_url" value="/topic/{{.topic.ID}}">
+                    <input type="hidden" name="warning" value="true">
                     <button type="submit" class="btn btn-sm btn-danger">Delete Topic</button>
                 </form>
             {{end}}
@@ -79,11 +80,12 @@
                             <a href="/post/{{$post.ID}}/edit" class="btn btn-sm btn-secondary">Edit</a>
                         {{end}}
                         {{if and ($.user.CanDeletePost $post) (ne $post.ID $.topic.FirstPostID)}}
-                            <form method="get" action="/confirm" class="inline-form">
+                            <form method="post" action="/confirm" class="inline-form">
                                 <input type="hidden" name="message" value="Are you sure you want to delete this post?">
                                 <input type="hidden" name="action" value="/post/{{$post.ID}}/delete">
                                 <input type="hidden" name="method" value="post">
                                 <input type="hidden" name="cancel_url" value="/topic/{{$.topic.ID}}">
+                                <input type="hidden" name="warning" value="true">
                                 <button type="submit" class="btn btn-sm btn-danger">Delete</button>
                             </form>
                         {{end}}
@@ -96,24 +98,17 @@
         <!-- Pagination Controls -->
         <div class="pagination">
             {{if gt .totalPages 1}}
-                {{if and (gt .page 2)}}
+                {{if gt .page 1}}
                     <a href="/topic/{{.topic.ID}}?page=1" class="btn btn-sm">&laquo;</a>
                 {{end}}
                 {{if gt .page 1}}
                     <a href="/topic/{{.topic.ID}}?page={{sub .page 1}}" class="btn btn-sm">&lsaquo;</a>
                 {{end}}
-                {{range $i := until .totalPages}}
-                    {{ $pageNum := add $i 1 }}
-                    {{if eq $.page $pageNum}}
-                        <span class="btn btn-sm btn-secondary">{{$pageNum}}</span>
-                    {{else}}
-                        <a href="/topic/{{$.topic.ID}}?page={{$pageNum}}" class="btn btn-sm">{{$pageNum}}</a>
-                    {{end}}
-                {{end}}
+                <span class="btn btn-sm btn-secondary">{{.page}}</span>
                 {{if lt .page .totalPages}}
                     <a href="/topic/{{.topic.ID}}?page={{add .page 1}}" class="btn btn-sm">&rsaquo;</a>
                 {{end}}
-                {{if and (lt .page (sub .totalPages 1)) (gt .totalPages 2)}}
+                {{if lt .page .totalPages}}
                     <a href="/topic/{{.topic.ID}}?page={{.totalPages}}" class="btn btn-sm">&raquo;</a>
                 {{end}}
             {{end}}

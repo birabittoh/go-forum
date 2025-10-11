@@ -45,10 +45,11 @@
                         <button type="submit" class="btn btn-sm btn-primary">&#8595;</button>
                     </form>
                     {{end}}
-                    <form method="get" action="/confirm" class="inline-form">
+                    <form method="post" action="/confirm" class="inline-form">
                         <input type="hidden" name="message" value="Are you sure? This will delete the {{$section.Name}} section and all its categories!">
                         <input type="hidden" name="action" value="/admin/sections/{{$section.ID}}/delete">
                         <input type="hidden" name="method" value="post">
+                        <input type="hidden" name="warning" value="true">
                         <input type="hidden" name="cancel_url" value="/admin/sections">
                         <button type="submit" class="btn btn-sm btn-danger">Delete</button>
                     </form>
@@ -79,11 +80,12 @@
                         <button type="submit" class="btn btn-sm btn-secondary">&#8595;</button>
                     </form>
                     {{end}}
-                    <form method="get" action="/confirm" class="inline-form">
+                    <form method="post" action="/confirm" class="inline-form">
                         <input type="hidden" name="message" value="Are you sure? This will delete the {{$cat.Name}} category and all its topics!">
                         <input type="hidden" name="action" value="/admin/categories/{{$cat.ID}}/delete">
                         <input type="hidden" name="method" value="post">
                         <input type="hidden" name="cancel_url" value="/admin/sections">
+                        <input type="hidden" name="warning" value="true">
                         <button type="submit" class="btn btn-sm btn-danger">Delete</button>
                     </form>
                 </div>

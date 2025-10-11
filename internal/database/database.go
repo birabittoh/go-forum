@@ -67,6 +67,7 @@ func Initialize(cfg *config.Config) (*gorm.DB, error) {
 	if err != nil {
 		log.Printf("⚠ Not connected to ReadySet")
 	} else {
+		cfg.ReadySetEnabled = true
 		log.Printf("✓ Connected to ReadySet")
 	}
 
@@ -79,9 +80,6 @@ func Initialize(cfg *config.Config) (*gorm.DB, error) {
 			SiteURL:            cfg.SiteURL,
 			SiteName:           cfg.SiteName,
 			SiteMotto:          cfg.SiteMotto,
-			ProfilePicsWebsite: cfg.ProfilePicsWebsite,
-			ProfilePicsBaseURL: cfg.ProfilePicsBaseURL,
-			ProfilePicsLinkURL: cfg.ProfilePicsLinkURL,
 			MaxPostLength:      cfg.MaxPostLength,
 			MaxMottoLength:     cfg.MaxMottoLength,
 			MaxSignatureLength: cfg.MaxSignatureLength,

@@ -37,13 +37,14 @@ type Config struct {
 	SiteURL            string
 	SiteName           string
 	SiteMotto          string
-	ProfilePicsWebsite string
-	ProfilePicsBaseURL string
-	ProfilePicsLinkURL string
 	MaxPostLength      int
 	MaxMottoLength     int
 	MaxSignatureLength int
 	TopicPageSize      int
+
+	// Set automatically
+	ReadySetEnabled bool
+	LocalTitles     bool
 }
 
 func Load() *Config {
@@ -69,9 +70,6 @@ func Load() *Config {
 		SiteURL:            getEnv("SITE_URL", "http://localhost:8080"),
 		SiteName:           getEnv("SITE_NAME", "Go Forum"),
 		SiteMotto:          getEnv("SITE_MOTTO", ""),
-		ProfilePicsWebsite: getEnv("PROFILE_PICS_WEBSITE", "xboxgamer.pics"),
-		ProfilePicsBaseURL: getEnv("PROFILE_PICS_BASE_URL", "https://download.xboxgamer.pics/titles/"),
-		ProfilePicsLinkURL: getEnv("PROFILE_PICS_LINK_URL", "https://assets.xboxgamer.pics/titles/"),
 		MaxPostLength:      getEnvInt("MAX_POST_LENGTH", 10000),
 		MaxMottoLength:     getEnvInt("MAX_MOTTO_LENGTH", 255),
 		MaxSignatureLength: getEnvInt("MAX_SIGNATURE_LENGTH", 500),
@@ -126,9 +124,6 @@ func (c *Config) LoadSettings(settings *models.Settings) {
 	c.SiteURL = settings.SiteURL
 	c.SiteName = settings.SiteName
 	c.SiteMotto = settings.SiteMotto
-	c.ProfilePicsWebsite = settings.ProfilePicsWebsite
-	c.ProfilePicsBaseURL = settings.ProfilePicsBaseURL
-	c.ProfilePicsLinkURL = settings.ProfilePicsLinkURL
 	c.MaxPostLength = settings.MaxPostLength
 	c.MaxMottoLength = settings.MaxMottoLength
 	c.MaxSignatureLength = settings.MaxSignatureLength

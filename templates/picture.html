@@ -1,0 +1,48 @@
+{{define "content"}}
+<div class="content-wrapper">
+    <div class="content-body">
+        <div class="main-container">
+            <form method="GET" action="/profile/picture" class="form-group mb-20">
+                <input type="text" name="q" placeholder="Search pictures..." required />
+                <button type="submit" class="btn btn-primary">Search</button>
+            </form>
+            {{range .Titles.Items}}
+            <div class="generic-container mb-30">
+                <div class="profile-header mb-15">
+                    <form method="POST" action="/profile/picture" class="m-0">
+                        <input type="hidden" name="picture" value="{{.ID}}/8000" />
+                        <input type="image" src="/assets/{{.ID}}/8000.png" alt="8000" class="avatar" />
+                    </form>
+                    <h3>{{.Name}}</h3>
+                </div>
+                <div class="picture-grid">
+                    {{ $titleID := .ID }} {{range .Pictures}}
+                    {{ if eq . "8000" }}{{continue}}{{end}}
+                    <form method="POST" action="/profile/picture" class="m-0">
+                        <input type="hidden" name="picture" value="{{$titleID}}/{{.}}" />
+                        <input type="image" src="/assets/{{$titleID}}/{{.}}.png" alt="{{.}}" class="avatar" />
+                    </form>
+                    {{end}}
+                </div>
+            </div>
+            {{end}}
+            <div class="pagination">
+                {{if gt .Titles.Pages 1}}
+                    {{if gt .Titles.Page 1}}
+                        <a href="/profile/picture?page=1{{if $.Query}}&q={{$.Query}}{{end}}" class="btn btn-sm" >&laquo;</a>
+                    {{end}}
+                    {{if gt .Titles.Page 1}}
+                        <a href="/profile/picture?page={{sub .Titles.Page 1}}{{if $.Query}}&q={{$.Query}}{{end}}" class="btn btn-sm">&lsaquo;</a>
+                    {{end}}
+                    <span class="btn btn-sm btn-secondary">{{.Titles.Page}}</span>
+                    {{if lt .Titles.Page .Titles.Pages}}
+                        <a href="/profile/picture?page={{add .Titles.Page 1}}{{if $.Query}}&q={{$.Query}}{{end}}" class="btn btn-sm" >&rsaquo;</a>
+                    {{end}} {{if lt .Titles.Page .Titles.Pages}}
+                        <a href="/profile/picture?page={{.Titles.Pages}}{{if $.Query}}&q={{$.Query}}{{end}}" class="btn btn-sm" >&raquo;</a>
+                    {{end}}
+                {{end}}
+            </div>
+        </div>
+    </div>
+</div>
+{{end}}
