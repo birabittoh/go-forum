@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"slices"
 	"sort"
 	"strings"
 
@@ -47,6 +48,10 @@ func getKey(id, pic string) string { // expects lowercase id and pic
 
 func (s *TitlesService) LoadTitles() error {
 	defer func() {
+		slices.SortFunc(s.data, func(a, b Title) int {
+			return strings.Compare(b.ID, a.ID) // reverse order
+		})
+
 		s.total = len(s.data)
 		s.names = make([]string, s.total)
 		s.dataMap = make(map[string]Title, s.total)

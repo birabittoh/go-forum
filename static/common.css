@@ -709,9 +709,8 @@ blockquote {
 
 .profile-header {
   display: flex;
-  gap: 15px;
+  gap: 30px;
   flex-wrap: wrap;
-  align-items: center;
 }
 
 .propic-container {
@@ -754,4 +753,10 @@ blockquote {
   flex-wrap: wrap;
   justify-content: center;
   gap: 15px;
+}
+
+.search-form {
+  display: flex;
+  gap: 5px;
+  align-items: center;
 }

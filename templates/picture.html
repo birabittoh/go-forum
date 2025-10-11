@@ -2,13 +2,13 @@
 <div class="content-wrapper">
     <div class="content-body">
         <div class="main-container">
-            <form method="GET" action="/profile/picture" class="form-group mb-20">
-                <input type="text" name="q" placeholder="Search pictures..." required />
+            <form method="GET" action="/profile/picture" class="search-form">
+                <input type="text" name="q" placeholder="Search gamerpics..." />
                 <button type="submit" class="btn btn-primary">Search</button>
             </form>
             {{range .Titles.Items}}
             <div class="generic-container mb-30">
-                <div class="profile-header mb-15">
+                <div class="search-form mb-15">
                     <form method="POST" action="/profile/picture" class="m-0">
                         <input type="hidden" name="picture" value="{{.ID}}/8000" />
                         <input type="image" src="/assets/{{.ID}}/8000.png" alt="8000" class="avatar" />
