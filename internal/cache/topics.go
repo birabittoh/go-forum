@@ -19,9 +19,13 @@ func (c *Cache) TopicsInCategory(db *gorm.DB, categoryID uint) ([]models.Topic, 
 		return topics, nil
 	}
 
-	err := db.Preload("Author").Where("category_id = ?", categoryID).Order("is_pinned DESC, replied_at DESC").Find(&topics).Error
+	err := db.Where("category_id = ?", categoryID).Order("is_pinned DESC, replied_at DESC").Find(&topics).Error
 	if err != nil {
 		return nil, err
+	}
+
+	for i := range topics {
+		topics[i].Author, _ = c.GetUserByID(topics[i].AuthorID)
 	}
 
 	c.topics.Add(key, topics)

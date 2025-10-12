@@ -79,7 +79,8 @@ func New(db *gorm.DB, authService *auth.Service, cfg *config.Config) (*Handler, 
 
 func (h *Handler) getCurrentUser(c *gin.Context) *models.User {
 	if user, exists := c.Get("user"); exists {
-		return user.(*models.User)
+		u := user.(models.User)
+		return &u
 	}
 	return nil
 }
@@ -218,7 +219,7 @@ func (h *Handler) SetNewPassword(c *gin.Context) {
 	user.ResetToken = ""
 	user.ResetTokenExpiry = nil
 
-	if err := h.db.Save(&user).Error; err != nil {
+	if err := C.Cache.UpdateUser(&user); err != nil {
 		data["error"] = "Failed to update password."
 		renderTemplateStatus(c, data, C.SetNewPasswordPath, http.StatusInternalServerError)
 		return
@@ -249,8 +250,8 @@ func (h *Handler) ResetPassword(c *gin.Context) {
 		return
 	}
 
-	var user models.User
-	if err := h.db.Where("LOWER(email) = ?", email).First(&user).Error; err != nil {
+	user, ok := C.Cache.GetUserByEmail(email)
+	if !ok {
 		data["error"] = "No account found with that email."
 		renderTemplateStatus(c, data, C.ResetPasswordPath, http.StatusBadRequest)
 		return
@@ -283,7 +284,7 @@ func (h *Handler) ResetPassword(c *gin.Context) {
 	user.ResetTokenExpiry = &expiry
 	user.LastResetRequest = &now
 
-	if err := h.db.Save(&user).Error; err != nil {
+	if err := C.Cache.UpdateUser(&user); err != nil {
 		data["error"] = "Failed to save reset token."
 		renderTemplateStatus(c, data, C.ResetPasswordPath, http.StatusInternalServerError)
 		return
@@ -496,7 +497,7 @@ func (h *Handler) ResendVerificationEmail(c *gin.Context) {
 		return
 	}
 	user.LastVerificationEmailSent = &now
-	if err := h.db.Save(user).Error; err != nil {
+	if err := C.Cache.UpdateUser(user); err != nil {
 		data["error"] = "Failed to update verification timestamp."
 		renderTemplateStatus(c, data, C.SignupSuccessPath, http.StatusInternalServerError)
 		return
@@ -570,7 +571,7 @@ func (h *Handler) TopicView(c *gin.Context) {
 	}
 
 	var topic models.Topic
-	if err := h.db.Preload("Category").Preload("Author").First(&topic, id).Error; err != nil {
+	if err := h.db.Preload("Category").First(&topic, id).Error; err != nil {
 		renderError(c, "Topic not found", http.StatusNotFound)
 		return
 	}
@@ -590,7 +591,7 @@ func (h *Handler) TopicView(c *gin.Context) {
 	totalPages := int((repliesInTopic + int64(h.config.TopicPageSize)) / int64(h.config.TopicPageSize))
 
 	var posts []models.Post
-	if err := h.db.Preload("Author").
+	if err := h.db.
 		Where("topic_id = ?", id).
 		Order("created_at ASC").
 		Limit(h.config.TopicPageSize).
@@ -600,8 +601,9 @@ func (h *Handler) TopicView(c *gin.Context) {
 		return
 	}
 
-	// Render markdown for posts
+	// Load authors and render markdown for posts
 	for i := range posts {
+		posts[i].Author, _ = C.Cache.GetUserByID(posts[i].AuthorID)
 		posts[i].Content = h.renderMarkdown(posts[i].Content)
 		posts[i].Author.Signature = h.renderMarkdown(posts[i].Author.Signature)
 	}
@@ -622,13 +624,12 @@ func (h *Handler) TopicView(c *gin.Context) {
 func (h *Handler) ProfileView(c *gin.Context) {
 	username := c.Param("username")
 
-	var user models.User
-	if err := h.db.Where("username = ?", username).First(&user).Error; err != nil {
+	user, ok := C.Cache.GetUserByUsername(username)
+	if !ok {
 		renderError(c, "User not found", http.StatusNotFound)
 		return
 	}
 
-	// Render markdown for signature
 	user.Signature = h.renderMarkdown(user.Signature)
 
 	data := map[string]any{
@@ -692,7 +693,7 @@ func (h *Handler) ProfileUpdate(c *gin.Context) {
 	user.Signature = signature
 	user.Theme = C.ValidateTheme(theme).ID
 
-	if err := h.db.Save(user).Error; err != nil {
+	if err := C.Cache.UpdateUser(user); err != nil {
 		data["error"] = "Failed to update profile"
 		renderTemplateStatus(c, data, C.ProfileEditPath, http.StatusInternalServerError)
 		return
@@ -746,7 +747,7 @@ func (h *Handler) ProfilePictureUpdate(c *gin.Context) {
 	}
 
 	user.ProfilePicURL = picture
-	if err := h.db.Save(user).Error; err != nil {
+	if err := C.Cache.UpdateUser(user); err != nil {
 		renderError(c, "Failed to update profile picture", http.StatusInternalServerError)
 		return
 	}
@@ -762,7 +763,7 @@ func (h *Handler) ProfilePictureDelete(c *gin.Context) {
 	}
 
 	user.ProfilePicURL = ""
-	if err := h.db.Save(user).Error; err != nil {
+	if err := C.Cache.UpdateUser(user); err != nil {
 		renderError(c, "Failed to remove profile picture", http.StatusInternalServerError)
 		return
 	}
@@ -802,7 +803,7 @@ func (h *Handler) NewPostForm(c *gin.Context) {
 		quoteID, err := strconv.Atoi(quoteIDStr)
 		if err == nil {
 			var quotePost models.Post
-			if err := h.db.Preload("Author").First(&quotePost, quoteID).Error; err == nil && quotePost.TopicID == topic.ID {
+			if err := h.db.First(&quotePost, quoteID).Error; err == nil && quotePost.TopicID == topic.ID {
 				quote = fmt.Sprintf("> %s\n\n", strings.ReplaceAll(quotePost.Content, "\n", "\n> "))
 			}
 		}

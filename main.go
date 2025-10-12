@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"goforum/internal/auth"
+	"goforum/internal/cache"
 	"goforum/internal/config"
 	c "goforum/internal/constants"
 	"goforum/internal/database"
@@ -38,6 +39,9 @@ func main() {
 	if err := db.First(&settings, 1).Error; err == nil {
 		cfg.LoadSettings(&settings)
 	}
+
+	// Initialize cache
+	c.Cache = cache.New(db)
 
 	// Seed themes
 	c.SeedThemes()

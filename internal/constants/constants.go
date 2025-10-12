@@ -117,7 +117,7 @@ var (
 		},
 	}
 
-	Cache = cache.New()
+	Cache *cache.Cache
 
 	Tmpl = make(map[string]*template.Template)
 

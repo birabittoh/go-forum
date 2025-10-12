@@ -117,7 +117,7 @@ type Topic struct {
 
 	// Relations
 	Category *Category `gorm:"foreignKey:CategoryID"`
-	Author   *User     `gorm:"foreignKey:AuthorID"`
+	Author   User      `gorm:"foreignKey:AuthorID"`
 	Posts    []Post    `gorm:"foreignKey:TopicID"`
 
 	RepliesCount int64 `gorm:"-"` // ignore for migrations
@@ -134,8 +134,8 @@ type Post struct {
 	DeletedAt gorm.DeletedAt `gorm:"index"`
 
 	// Relations
-	Topic  *Topic `gorm:"foreignKey:TopicID"`
-	Author *User  `gorm:"foreignKey:AuthorID"`
+	Topic  Topic `gorm:"foreignKey:TopicID"`
+	Author User  `gorm:"foreignKey:AuthorID"`
 }
 
 type Theme struct {

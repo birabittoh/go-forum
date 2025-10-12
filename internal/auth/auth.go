@@ -141,9 +141,8 @@ func (s *Service) Register(username, email, password string) (*models.User, erro
 }
 
 func (s *Service) Login(username, password string) (*models.User, string, error) {
-	lowerUsername := strings.ToLower(username)
-	var user models.User
-	if err := s.db.Where("LOWER(username) = ? OR LOWER(email) = ?", lowerUsername, lowerUsername).First(&user).Error; err != nil {
+	user, ok := constants.Cache.GetUserByName(username)
+	if !ok {
 		return nil, "", errors.New("invalid credentials")
 	}
 
@@ -163,14 +162,6 @@ func (s *Service) Login(username, password string) (*models.User, string, error)
 	return &user, token, nil
 }
 
-func (s *Service) GetUserByID(id uint) (*models.User, error) {
-	var user models.User
-	if err := s.db.First(&user, id).Error; err != nil {
-		return nil, err
-	}
-	return &user, nil
-}
-
 func (s *Service) VerifyEmail(token string) error {
 	var user models.User
 	if err := s.db.Where("verification_token = ?", token).First(&user).Error; err != nil {
@@ -184,7 +175,7 @@ func (s *Service) VerifyEmail(token string) error {
 	user.VerificationToken = ""
 	user.UserType = models.UserTypeUser // Promote to regular user
 
-	return s.db.Save(&user).Error
+	return constants.Cache.UpdateUser(&user)
 }
 
 func (s *Service) SendResetPasswordEmail(user *models.User) error {

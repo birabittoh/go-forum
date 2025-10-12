@@ -289,7 +289,7 @@ func (h *Handler) UpdateUser(c *gin.Context) {
 	targetUser.Motto = c.PostForm("motto")
 	targetUser.Signature = c.PostForm("signature")
 
-	if err := h.db.Save(&targetUser).Error; err != nil {
+	if err := C.Cache.UpdateUser(&targetUser); err != nil {
 		data := map[string]any{
 			"title":      "Edit User",
 			"user":       currentUser,
@@ -311,8 +311,8 @@ func (h *Handler) BanUser(c *gin.Context) {
 		return
 	}
 
-	var user models.User
-	if err := h.db.First(&user, id).Error; err != nil {
+	user, ok := C.Cache.GetUserByID(uint(id))
+	if !ok {
 		renderError(c, "User not found", http.StatusNotFound)
 		return
 	}
@@ -333,7 +333,7 @@ func (h *Handler) BanUser(c *gin.Context) {
 		}
 	}
 
-	if err := h.db.Save(&user).Error; err != nil {
+	if err := C.Cache.UpdateUser(&user); err != nil {
 		renderError(c, "Failed to ban user", http.StatusInternalServerError)
 		return
 	}
@@ -348,8 +348,8 @@ func (h *Handler) UnbanUser(c *gin.Context) {
 		return
 	}
 
-	var user models.User
-	if err := h.db.First(&user, id).Error; err != nil {
+	user, ok := C.Cache.GetUserByID(uint(id))
+	if !ok {
 		renderError(c, "User not found", http.StatusNotFound)
 		return
 	}
@@ -359,7 +359,7 @@ func (h *Handler) UnbanUser(c *gin.Context) {
 	user.BannedAt = nil
 	user.BannedUntil = nil
 
-	if err := h.db.Save(&user).Error; err != nil {
+	if err := C.Cache.UpdateUser(&user); err != nil {
 		renderError(c, "Failed to unban user", http.StatusInternalServerError)
 		return
 	}
@@ -374,8 +374,8 @@ func (h *Handler) ChangeUserType(c *gin.Context) {
 		return
 	}
 
-	var user models.User
-	if err := h.db.First(&user, id).Error; err != nil {
+	user, ok := C.Cache.GetUserByID(uint(id))
+	if !ok {
 		renderError(c, "User not found", http.StatusNotFound)
 		return
 	}
@@ -390,7 +390,7 @@ func (h *Handler) ChangeUserType(c *gin.Context) {
 		user.UserType = models.UserTypeAdmin
 	}
 
-	if err := h.db.Save(&user).Error; err != nil {
+	if err := C.Cache.UpdateUser(&user); err != nil {
 		renderError(c, "Failed to update user type", http.StatusInternalServerError)
 		return
 	}

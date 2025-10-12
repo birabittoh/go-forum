@@ -27,8 +27,8 @@ func Auth(authService *auth.Service) gin.HandlerFunc {
 			return
 		}
 
-		user, err := authService.GetUserByID(claims.UserID)
-		if err != nil {
+		user, ok := C.Cache.GetUserByID(claims.UserID)
+		if !ok {
 			// User not found, clear cookie and continue as anonymous
 			c.SetCookie("auth_token", "", -1, "/", "", false, true)
 			c.Next()
@@ -57,7 +57,7 @@ func RequireAdmin() gin.HandlerFunc {
 			return
 		}
 
-		u := user.(*models.User)
+		u := user.(models.User)
 		if !u.IsAdmin() {
 			config, _ := c.Get("config")
 			data := map[string]any{
@@ -84,7 +84,7 @@ func RequireModerator() gin.HandlerFunc {
 			return
 		}
 
-		u := user.(*models.User)
+		u := user.(models.User)
 		if !u.CanModerate() {
 			config, _ := c.Get("config")
 			data := map[string]any{
@@ -112,7 +112,7 @@ func RequireAuth() gin.HandlerFunc {
 		}
 
 		// Ensure user is verified
-		u := user.(*models.User)
+		u := user.(models.User)
 		if !u.IsVerified() {
 			config, _ := c.Get("config")
 			data := map[string]any{
