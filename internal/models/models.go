@@ -42,6 +42,7 @@ type User struct {
 	ProfilePicURL string `gorm:"size:20"`
 	Signature     string `gorm:"size:1000"`
 	Theme         string `gorm:"size:20"`
+	Timezone      string `gorm:"size:50;default:'UTC'"`
 
 	// Email verification
 	VerificationToken         string `gorm:"size:64"`

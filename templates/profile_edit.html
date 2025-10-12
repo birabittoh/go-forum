@@ -42,6 +42,16 @@
             </div>
 
             <div class="form-group">
+                <label for="timezone">Timezone:</label>
+                <select id="timezone" name="timezone">
+                    {{range .timezones}}
+                        <option value="{{.Value}}" {{if eq $.user.Timezone .Value}}selected{{end}}>{{.Name}}</option>
+                    {{end}}
+                </select>
+                <small class="generic-subtitle">Select your preferred timezone for displaying times.</small>
+            </div>
+
+            <div class="form-group">
                 <button type="submit" class="btn btn-success">Save Changes</button>
                 <a href="/profile/{{.user.Username}}" class="btn btn-secondary">Cancel</a>
             </div>

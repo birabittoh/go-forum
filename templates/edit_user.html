@@ -52,7 +52,7 @@
 
             <div class="form-group">
                 <label for="profile_pic_url">Profile Picture URL:</label>
-                <input type="url" id="profile_pic_url" name="profile_pic_url" maxlength="500" 
+                <input type="text" id="profile_pic_url" name="profile_pic_url" maxlength="500" 
                        value="{{if .targetUser.ProfilePicURL}}{{.targetUser.ProfilePicURL}}{{end}}" placeholder="fffe07d1/20006.png" />
             </div>
 
@@ -60,6 +60,16 @@
                 <label for="signature">Signature:</label>
                 <textarea id="signature" name="signature" maxlength="{{.config.MaxSignatureLength}}" 
                           placeholder="User's forum signature (Markdown supported)">{{.targetUser.Signature}}</textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="timezone">Timezone:</label>
+                <select id="timezone" name="timezone">
+                    {{range .timezones}}
+                        <option value="{{.Value}}" {{if eq $.user.Timezone .Value}}selected{{end}}>{{.Name}}</option>
+                    {{end}}
+                </select>
+                <small class="generic-subtitle">Select the user's preferred timezone for displaying times.</small>
             </div>
 
             <div class="form-group">

@@ -546,18 +546,35 @@ func (h *Handler) TopicView(c *gin.Context) {
 		return
 	}
 
-	// Load authors and render markdown for posts
+	// Get viewing user's timezone
+	viewer := h.getCurrentUser(c)
+	loc := time.UTC
+	if viewer != nil && viewer.Timezone != "" {
+		l, err := time.LoadLocation(viewer.Timezone)
+		if err == nil {
+			loc = l
+		}
+	}
+
+	// Convert topic times
+	topic.CreatedAt = topic.CreatedAt.In(loc)
+	topic.RepliedAt = topic.RepliedAt.In(loc)
+	topic.UpdatedAt = topic.UpdatedAt.In(loc)
+
+	// Load authors and render markdown for posts, convert post times
 	for i := range posts {
 		posts[i].Author, _ = C.Cache.GetUserByID(posts[i].AuthorID)
 		posts[i].Content = h.renderMarkdown(posts[i].Content)
 		posts[i].Author.Signature = h.renderMarkdown(posts[i].Author.Signature)
+		posts[i].CreatedAt = posts[i].CreatedAt.In(loc)
+		posts[i].UpdatedAt = posts[i].UpdatedAt.In(loc)
 	}
 
 	data := map[string]any{
 		"title":      topic.Title,
 		"topic":      &topic,
 		"posts":      posts,
-		"user":       h.getCurrentUser(c),
+		"user":       viewer,
 		"page":       page,
 		"totalPages": totalPages,
 		"config":     h.config,
@@ -577,6 +594,21 @@ func (h *Handler) ProfileView(c *gin.Context) {
 
 	user.Signature = h.renderMarkdown(user.Signature)
 
+	// Convert times to user's timezone
+	loc, err := time.LoadLocation(user.Timezone)
+	if err != nil || user.Timezone == "" {
+		loc = time.UTC
+	}
+	user.CreatedAt = user.CreatedAt.In(loc)
+	if user.BannedAt != nil {
+		t := user.BannedAt.In(loc)
+		user.BannedAt = &t
+	}
+	if user.BannedUntil != nil {
+		t := user.BannedUntil.In(loc)
+		user.BannedUntil = &t
+	}
+
 	data := map[string]any{
 		"title":       fmt.Sprintf("%s's Profile", user.Username),
 		"profileUser": user,
@@ -594,10 +626,11 @@ func (h *Handler) ProfileEdit(c *gin.Context) {
 	}
 
 	data := map[string]any{
-		"title":  "Edit Profile",
-		"user":   user,
-		"themes": C.Themes,
-		"config": h.config,
+		"title":     "Edit Profile",
+		"user":      user,
+		"themes":    C.Themes,
+		"config":    h.config,
+		"timezones": C.TimezonesList(),
 	}
 	renderTemplate(c, data, C.ProfileEditPath)
 }
@@ -637,6 +670,7 @@ func (h *Handler) ProfileUpdate(c *gin.Context) {
 	user.Motto = motto
 	user.Signature = signature
 	user.Theme = C.ValidateTheme(theme).ID
+	user.Timezone = c.PostForm("timezone")
 
 	if err := C.Cache.UpdateUser(user); err != nil {
 		data["error"] = "Failed to update profile"

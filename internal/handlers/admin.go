@@ -266,6 +266,7 @@ func (h *Handler) EditUser(c *gin.Context) {
 		"user":       currentUser,
 		"targetUser": targetUser,
 		"config":     h.config,
+		"timezones":  C.TimezonesList(),
 	}
 	renderTemplate(c, data, C.EditUserPath)
 }
@@ -288,6 +289,7 @@ func (h *Handler) UpdateUser(c *gin.Context) {
 	// Update fields
 	targetUser.Motto = c.PostForm("motto")
 	targetUser.Signature = c.PostForm("signature")
+	targetUser.Timezone = c.PostForm("timezone")
 
 	if err := C.Cache.UpdateUser(&targetUser); err != nil {
 		data := map[string]any{
