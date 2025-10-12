@@ -12,7 +12,10 @@ type Cache struct {
 	counts *lru.Cache[string, int64]
 	posts  *lru.Cache[string, []models.Post]
 	topics *lru.Cache[string, []models.Topic]
-	users  *lru.Cache[string, *models.User]
+	users  *lru.Cache[uint, *models.User]
+
+	usernameToID map[string]uint
+	emailToID    map[string]uint
 }
 
 func New(db *gorm.DB) *Cache {
@@ -31,7 +34,7 @@ func New(db *gorm.DB) *Cache {
 		panic(err)
 	}
 
-	users, err := lru.New[string, *models.User](128)
+	users, err := lru.New[uint, *models.User](128)
 	if err != nil {
 		panic(err)
 	}
@@ -42,5 +45,8 @@ func New(db *gorm.DB) *Cache {
 		posts:  posts,
 		topics: topics,
 		users:  users,
+
+		usernameToID: map[string]uint{},
+		emailToID:    map[string]uint{},
 	}
 }
