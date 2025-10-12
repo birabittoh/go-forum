@@ -699,7 +699,6 @@ func (h *Handler) DeleteCategory(c *gin.Context) {
 
 	// Invalidate relevant caches
 	C.Cache.InvalidateTopicsInCategory(uint(id))
-	C.Cache.InvalidateCountsForCategory(h.db, uint(id))
 
 	c.Redirect(http.StatusFound, "/admin/sections")
 }

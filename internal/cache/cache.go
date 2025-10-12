@@ -16,7 +16,7 @@ type Cache struct {
 }
 
 func New(db *gorm.DB) *Cache {
-	counts, err := lru.New[string, int64](128)
+	counts, err := lru.New[string, int64](3)
 	if err != nil {
 		panic(err)
 	}

@@ -49,7 +49,6 @@
                         <input type="hidden" name="message" value="Are you sure? This will delete the {{$section.Name}} section and all its categories!">
                         <input type="hidden" name="action" value="/admin/sections/{{$section.ID}}/delete">
                         <input type="hidden" name="method" value="post">
-                        <input type="hidden" name="warning" value="true">
                         <input type="hidden" name="cancel_url" value="/admin/sections">
                         <button type="submit" class="btn btn-sm btn-danger">Delete</button>
                     </form>
@@ -85,7 +84,6 @@
                         <input type="hidden" name="action" value="/admin/categories/{{$cat.ID}}/delete">
                         <input type="hidden" name="method" value="post">
                         <input type="hidden" name="cancel_url" value="/admin/sections">
-                        <input type="hidden" name="warning" value="true">
                         <button type="submit" class="btn btn-sm btn-danger">Delete</button>
                     </form>
                 </div>

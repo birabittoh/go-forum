@@ -94,6 +94,11 @@ func (c *Cache) CreateUser(user *models.User) error {
 		return err
 	}
 
+	countAllUsers, ok := c.counts.Get(CountsKeyAllUsers)
+	if ok {
+		c.counts.Add(CountsKeyAllUsers, countAllUsers+1)
+	}
+
 	updateUserCache(c, user)
 	return nil
 }
@@ -112,6 +117,11 @@ func (c *Cache) DeleteUser(user *models.User) error {
 	err := c.db.Delete(user).Error
 	if err != nil {
 		return err
+	}
+
+	countAllUsers, ok := c.counts.Get(CountsKeyAllUsers)
+	if ok {
+		c.counts.Add(CountsKeyAllUsers, countAllUsers-1)
 	}
 
 	c.users.Remove(fmt.Sprintf(UserIDKey, user.ID))

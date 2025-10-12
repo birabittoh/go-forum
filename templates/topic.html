@@ -23,7 +23,6 @@
                     <input type="hidden" name="action" value="/topic/{{.topic.ID}}/delete">
                     <input type="hidden" name="method" value="post">
                     <input type="hidden" name="cancel_url" value="/topic/{{.topic.ID}}">
-                    <input type="hidden" name="warning" value="true">
                     <button type="submit" class="btn btn-sm btn-danger">Delete Topic</button>
                 </form>
             {{end}}
@@ -85,7 +84,6 @@
                                 <input type="hidden" name="action" value="/post/{{$post.ID}}/delete">
                                 <input type="hidden" name="method" value="post">
                                 <input type="hidden" name="cancel_url" value="/topic/{{$.topic.ID}}">
-                                <input type="hidden" name="warning" value="true">
                                 <button type="submit" class="btn btn-sm btn-danger">Delete</button>
                             </form>
                         {{end}}

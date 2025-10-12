@@ -127,16 +127,19 @@ func (h *Handler) CreateTopic(c *gin.Context) {
 		return
 	}
 
-	// Commit transaction
+	// Update category counts
+	category.TopicsCount += 1
+	if err := tx.Save(&category).Error; err != nil {
+		tx.Rollback()
+		renderError(c, "Failed to update category", http.StatusInternalServerError)
+		return
+	}
 
 	tx.Commit()
 
 	// Invalidate relevant caches
 	C.Cache.InvalidateTopicsInCategory(uint(categoryID))
 	C.Cache.InvalidatePostsInTopic(uint(topic.ID))
-	C.Cache.InvalidateCountsForTopic(h.db, topic.ID)
-	C.Cache.InvalidateCountsForCategory(h.db, category.ID)
-	C.Cache.InvalidateCountsForUser(h.db, user.ID)
 
 	c.Redirect(http.StatusFound, fmt.Sprintf("/topic/%d", topic.ID))
 }
@@ -234,7 +237,7 @@ func (h *Handler) DeleteTopic(c *gin.Context) {
 	}
 
 	var topic models.Topic
-	if err := h.db.First(&topic, id).Error; err != nil {
+	if err := h.db.Preload("Category").First(&topic, id).Error; err != nil {
 		renderError(c, "Topic not found", http.StatusNotFound)
 		return
 	}
@@ -250,17 +253,27 @@ func (h *Handler) DeleteTopic(c *gin.Context) {
 		return
 	}
 
-	// Delete the topic
-	if err := h.db.Delete(&topic).Error; err != nil {
+	category := topic.Category
+	category.TopicsCount -= 1
+	category.RepliesCount -= topic.RepliesCount
+
+	tx := h.db.Begin()
+
+	if err := tx.Delete(&topic).Error; err != nil {
 		renderError(c, "Failed to delete topic", http.StatusInternalServerError)
 		return
 	}
 
+	if err := tx.Save(&category).Error; err != nil {
+		tx.Rollback()
+		renderError(c, "Failed to update category", http.StatusInternalServerError)
+		return
+	}
+
+	tx.Commit()
+
 	// Invalidate relevant caches
 	C.Cache.InvalidatePostsInTopic(uint(topic.ID))
-	C.Cache.InvalidateCountsForTopic(h.db, topic.ID)
-	C.Cache.InvalidateCountsForCategory(h.db, topic.CategoryID)
-	C.Cache.InvalidateCountsForUser(h.db, topic.AuthorID)
 	C.Cache.InvalidateTopicsInCategory(uint(topic.CategoryID))
 
 	c.Redirect(http.StatusFound, fmt.Sprintf("/category/%d", topic.CategoryID))
@@ -361,7 +374,7 @@ func (h *Handler) DeletePost(c *gin.Context) {
 	}
 
 	var post models.Post
-	if err := h.db.Preload("Topic").First(&post, id).Error; err != nil {
+	if err := h.db.Preload("Topic.Category").First(&post, id).Error; err != nil {
 		renderError(c, "Post not found", http.StatusNotFound)
 		return
 	}
@@ -391,16 +404,55 @@ func (h *Handler) DeletePost(c *gin.Context) {
 		return
 	}
 
-	if err := h.db.Delete(&post).Error; err != nil {
+	// Decrement topic's RepliesCount
+	topic := post.Topic
+	if topic.RepliesCount > 0 {
+		topic.RepliesCount -= 1
+	}
+
+	category := topic.Category
+
+	// Decrement category's RepliesCount
+	if category.RepliesCount > 0 {
+		category.RepliesCount -= 1
+	}
+
+	// Fix topic's RepliedAt if this post was the latest
+	if post.CreatedAt.Equal(topic.RepliedAt) {
+		var lastPost models.Post
+		err := h.db.Where("topic_id = ? AND id != ?", topic.ID, post.ID).
+			Order("created_at DESC").
+			First(&lastPost).Error
+		if err == nil {
+			topic.RepliedAt = lastPost.CreatedAt
+		} else {
+			topic.RepliedAt = topic.CreatedAt
+		}
+	}
+
+	tx := h.db.Begin()
+
+	if err := tx.Save(&category).Error; err != nil {
+		tx.Rollback()
+		renderError(c, "Failed to update category", http.StatusInternalServerError)
+		return
+	}
+
+	if err := tx.Save(&topic).Error; err != nil {
+		tx.Rollback()
+		renderError(c, "Failed to update topic", http.StatusInternalServerError)
+		return
+	}
+
+	if err := tx.Delete(&post).Error; err != nil {
 		renderError(c, "Failed to delete post", http.StatusInternalServerError)
 		return
 	}
 
+	tx.Commit()
+
 	// Invalidate relevant caches
 	C.Cache.InvalidatePostsInTopic(uint(post.TopicID))
-	C.Cache.InvalidateCountsForTopic(h.db, post.TopicID)
-	C.Cache.InvalidateCountsForCategory(h.db, post.Topic.CategoryID)
-	C.Cache.InvalidateCountsForUser(h.db, post.AuthorID)
 
 	pageRedirect := getPageRedirect(h, post.TopicID, post.ID)
 	c.Redirect(http.StatusFound, pageRedirect)

@@ -120,12 +120,7 @@ func (s *Service) Register(username, email, password string) (*models.User, erro
 		Theme:             "default",
 	}
 
-	if err := s.db.Create(user).Error; err != nil {
-		return nil, err
-	}
-
-	err = constants.Cache.InvalidateCountsForUser(s.db, user.ID)
-	if err != nil {
+	if err := constants.Cache.CreateUser(user); err != nil {
 		return nil, err
 	}
 

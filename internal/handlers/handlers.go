@@ -9,6 +9,7 @@ import (
 	"goforum/internal/models"
 	"goforum/internal/renderers"
 	"goforum/internal/titles"
+	"html/template"
 	"net/http"
 	"regexp"
 	"strconv"
@@ -98,53 +99,11 @@ func (h *Handler) Home(c *gin.Context) {
 	var sections []models.Section
 	err := h.db.
 		Preload("Categories", func(db *gorm.DB) *gorm.DB { return db.Order("\"order\" ASC") }).
-		//Preload("Categories").
 		Order("\"order\" ASC").
 		Find(&sections).Error
 	if err != nil {
 		renderError(c, "Internal server error", http.StatusInternalServerError)
 		return
-	}
-
-	// manually count topics and replies for each category
-	categoryIDs := []uint{}
-	for i := range sections {
-		for j := range sections[i].Categories {
-			categoryIDs = append(categoryIDs, sections[i].Categories[j].ID)
-		}
-	}
-
-	type CountResult struct {
-		CategoryID   uint
-		TopicsCount  int64
-		RepliesCount int64
-	}
-
-	var counts []CountResult
-	if len(categoryIDs) > 0 {
-		err := h.db.Model(&models.Topic{}).
-			Select("category_id, COUNT(*) AS topics_count, SUM((SELECT COUNT(*) - 1 FROM posts WHERE posts.topic_id = topics.id AND deleted_at IS NULL)) AS replies_count").
-			Where("category_id IN ?", categoryIDs).
-			Group("category_id").
-			Scan(&counts).Error
-		if err != nil {
-			renderError(c, "Internal server error", http.StatusInternalServerError)
-			return
-		}
-	}
-
-	countMap := make(map[uint]CountResult)
-	for _, count := range counts {
-		countMap[count.CategoryID] = count
-	}
-
-	for i := range sections {
-		for j := range sections[i].Categories {
-			if count, exists := countMap[sections[i].Categories[j].ID]; exists {
-				sections[i].Categories[j].TopicsCount = count.TopicsCount
-				sections[i].Categories[j].RepliesCount = count.RepliesCount
-			}
-		}
 	}
 
 	data := map[string]any{
@@ -542,15 +501,6 @@ func (h *Handler) CategoryView(c *gin.Context) {
 		return
 	}
 
-	// Assign replies count to each topic
-	for i := range topics {
-		topics[i].RepliesCount, err = C.Cache.CountRepliesInTopic(h.db, topics[i].ID) // default to DB count
-		if err != nil {
-			renderError(c, "Failed to load reply counts", http.StatusInternalServerError)
-			return
-		}
-	}
-
 	data := map[string]any{
 		"title":      category.Name,
 		"category":   category,
@@ -583,12 +533,7 @@ func (h *Handler) TopicView(c *gin.Context) {
 		page = 1
 	}
 
-	repliesInTopic, err := C.Cache.CountRepliesInTopic(h.db, uint(id)) // default to DB count
-	if err != nil {
-		renderError(c, "Failed to load reply counts", http.StatusInternalServerError)
-		return
-	}
-	totalPages := int((repliesInTopic + int64(h.config.TopicPageSize)) / int64(h.config.TopicPageSize))
+	totalPages := int((topic.RepliesCount + int64(h.config.TopicPageSize)) / int64(h.config.TopicPageSize))
 
 	var posts []models.Post
 	if err := h.db.
@@ -835,7 +780,7 @@ func (h *Handler) CreatePost(c *gin.Context) {
 	topicID := uint(topicID64)
 
 	var topic models.Topic
-	if err := h.db.First(&topic, topicID).Error; err != nil {
+	if err := h.db.Preload("Category").First(&topic, topicID).Error; err != nil {
 		renderError(c, "Topic not found", http.StatusNotFound)
 		return
 	}
@@ -872,6 +817,13 @@ func (h *Handler) CreatePost(c *gin.Context) {
 		Content:  strings.TrimSpace(content),
 	}
 
+	// Update topic's RepliedAt and RepliesCount
+	topic.RepliedAt = post.CreatedAt
+	topic.RepliesCount += 1
+
+	// Update category's RepliesCount
+	topic.Category.RepliesCount += 1
+
 	tx := h.db.Begin()
 
 	// Create post
@@ -881,24 +833,24 @@ func (h *Handler) CreatePost(c *gin.Context) {
 		return
 	}
 
-	// Update topic's RepliedAt
-	topic.RepliedAt = post.CreatedAt
+	// Save topic
 	if err := tx.Save(&topic).Error; err != nil {
 		tx.Rollback()
 		renderTemplateStatus(c, data, C.NewPostPath, http.StatusInternalServerError)
 		return
 	}
 
-	if err := tx.Commit().Error; err != nil {
+	// Save category
+	if err := tx.Save(&topic.Category).Error; err != nil {
 		tx.Rollback()
 		renderTemplateStatus(c, data, C.NewPostPath, http.StatusInternalServerError)
 		return
 	}
 
+	tx.Commit()
+
 	// Invalidate relevant caches
 	C.Cache.InvalidatePostsInTopic(uint(topicID))
-	C.Cache.InvalidateCountsForTopic(h.db, topicID)
-	C.Cache.InvalidateCountsForUser(h.db, user.ID)
 	C.Cache.InvalidateTopicsInCategory(topic.CategoryID)
 
 	// Redirect to the new post
@@ -908,18 +860,40 @@ func (h *Handler) CreatePost(c *gin.Context) {
 }
 
 func (h *Handler) ConfirmPrompt(c *gin.Context) {
-	message := c.Query("message")
-	action := c.Query("action")
-	method := c.Query("method")
-	cancelURL := c.Query("cancel_url")
-	warning, _ := strconv.ParseBool(c.Query("warning"))
+	message := c.PostForm("message")
+	action := c.PostForm("action")
+	method := strings.ToUpper(c.PostForm("method"))
+	cancelURL := c.PostForm("cancel_url")
 
+	// validate message, action, method, cancelURL
+	if message == "" || action == "" || method == "" || cancelURL == "" {
+		renderError(c, "Invalid confirmation parameters", http.StatusBadRequest)
+		return
+	}
+
+	if method != "POST" && method != "GET" {
+		renderError(c, "Invalid form method", http.StatusBadRequest)
+		return
+	}
+
+	// Basic URL validation
+	if !strings.HasPrefix(cancelURL, "/") || strings.Contains(cancelURL, " ") {
+		renderError(c, "Invalid cancel URL", http.StatusBadRequest)
+		return
+	}
+
+	// Prevent open redirects by ensuring cancelURL is relative
+	if matched, _ := regexp.MatchString(`://`, cancelURL); matched {
+		renderError(c, "Cancel URL must be a relative path", http.StatusBadRequest)
+		return
+	}
+
+	// Render confirmation template
 	data := map[string]any{
-		"Message":   message,
-		"Action":    action,
+		"Message":   template.HTMLEscapeString(message),
+		"Action":    template.HTMLEscapeString(action),
 		"Method":    method,
-		"CancelURL": cancelURL,
-		"Warning":   warning,
+		"CancelURL": template.HTMLEscapeString(cancelURL),
 		"title":     "Confirm Action",
 		"config":    h.config,
 		"user":      h.getCurrentUser(c),

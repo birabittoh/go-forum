@@ -83,11 +83,13 @@ type Section struct {
 }
 
 type Category struct {
-	ID          uint   `gorm:"primaryKey"`
-	SectionID   uint   `gorm:"not null"`
-	Name        string `gorm:"not null"`
-	Description string `gorm:"size:500"`
-	Order       int    `gorm:"default:0"`
+	ID           uint   `gorm:"primaryKey"`
+	SectionID    uint   `gorm:"not null"`
+	Name         string `gorm:"not null"`
+	Description  string `gorm:"size:500"`
+	Order        int    `gorm:"default:0"`
+	TopicsCount  int64  `gorm:"not null;default:0"`
+	RepliesCount int64  `gorm:"not null;default:0"` // does not include original posts
 
 	CreatedAt time.Time
 	UpdatedAt time.Time
@@ -96,20 +98,18 @@ type Category struct {
 	// Relations
 	Section *Section `gorm:"foreignKey:SectionID"`
 	Topics  []Topic  `gorm:"foreignKey:CategoryID"`
-
-	TopicsCount  int64 `gorm:"-"` // ignore for migrations
-	RepliesCount int64 `gorm:"-"` // ignore for migrations
 }
 
 type Topic struct {
-	ID          uint      `gorm:"primaryKey"`
-	CategoryID  uint      `gorm:"not null"`
-	AuthorID    uint      `gorm:"not null"`
-	Title       string    `gorm:"not null"`
-	IsPinned    bool      `gorm:"default:false"`
-	IsLocked    bool      `gorm:"default:false"`
-	FirstPostID uint      `gorm:"not null"`
-	RepliedAt   time.Time `gorm:"autoCreateTime"`
+	ID           uint      `gorm:"primaryKey"`
+	CategoryID   uint      `gorm:"not null"`
+	AuthorID     uint      `gorm:"not null"`
+	Title        string    `gorm:"not null"`
+	IsPinned     bool      `gorm:"default:false"`
+	IsLocked     bool      `gorm:"default:false"`
+	FirstPostID  uint      `gorm:"not null"`
+	RepliedAt    time.Time `gorm:"autoCreateTime"`
+	RepliesCount int64     `gorm:"not null;default:0"` // does not include the original post
 
 	CreatedAt time.Time
 	UpdatedAt time.Time
@@ -119,8 +119,6 @@ type Topic struct {
 	Category *Category `gorm:"foreignKey:CategoryID"`
 	Author   User      `gorm:"foreignKey:AuthorID"`
 	Posts    []Post    `gorm:"foreignKey:TopicID"`
-
-	RepliesCount int64 `gorm:"-"` // ignore for migrations
 }
 
 type Post struct {
