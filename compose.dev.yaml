@@ -42,5 +42,23 @@ services:
       timeout: 5s
       retries: 5
 
+  aide:
+    image: ghcr.io/birabittoh/aide:latest
+    container_name: aide
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - HF_HOME=/app/models
+    volumes:
+      - ./models:/app/models
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+        reservations:
+          memory: 2G
+
 volumes:
   postgres_data:

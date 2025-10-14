@@ -123,10 +123,11 @@ type Topic struct {
 }
 
 type Post struct {
-	ID       uint   `gorm:"primaryKey"`
-	TopicID  uint   `gorm:"not null"`
-	AuthorID uint   `gorm:"not null"`
-	Content  string `gorm:"type:text;not null"`
+	ID            uint     `gorm:"primaryKey"`
+	TopicID       uint     `gorm:"not null"`
+	AuthorID      uint     `gorm:"not null"`
+	Content       string   `gorm:"type:text;not null"`
+	AIProbability *float64 `gorm:"default:null"`
 
 	CreatedAt time.Time
 	UpdatedAt time.Time

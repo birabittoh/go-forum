@@ -54,7 +54,7 @@ func (c *Cache) PostsInCategory(db *gorm.DB, categoryID uint) ([]models.Post, er
 
 	err := db.Joins("JOIN topics ON posts.topic_id = topics.id").
 		Where("topics.category_id = ?", categoryID).
-		Order("posts.created_at DESC").
+		Order("posts.replied_at DESC").
 		Find(&posts).Error
 	if err != nil {
 		return nil, err

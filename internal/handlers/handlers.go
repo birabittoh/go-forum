@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
+	"goforum/internal/ai"
 	"goforum/internal/auth"
 	"goforum/internal/config"
 	C "goforum/internal/constants"
@@ -10,6 +11,7 @@ import (
 	"goforum/internal/renderers"
 	"goforum/internal/titles"
 	"html/template"
+	"log"
 	"net/http"
 	"regexp"
 	"strconv"
@@ -32,6 +34,7 @@ type Handler struct {
 	db            *gorm.DB
 	authService   *auth.Service
 	TitlesService *titles.TitlesService
+	aiService     *ai.AIService
 	config        *config.Config
 	markdown      goldmark.Markdown
 }
@@ -73,6 +76,7 @@ func New(db *gorm.DB, authService *auth.Service, cfg *config.Config) (*Handler, 
 		db:            db,
 		authService:   authService,
 		TitlesService: titlesService,
+		aiService:     ai.New(cfg),
 		config:        cfg,
 		markdown:      md,
 	}, nil
@@ -887,6 +891,12 @@ func (h *Handler) CreatePost(c *gin.Context) {
 	C.Cache.InvalidatePostsInTopic(uint(topicID))
 	C.Cache.InvalidateTopicsInCategory(topic.CategoryID)
 
+	// Enqueue AI detection
+	err = h.aiService.EnqueueDetection(post)
+	if err != nil {
+		log.Printf("Failed to enqueue AI detection: %v\n", err)
+	}
+
 	// Redirect to the new post
 
 	pageRedirect := getPageRedirect(h, topicID, post.ID)
@@ -952,4 +962,35 @@ func (h *Handler) Favicon(c *gin.Context) {
 	c.Header("Content-Type", "image/svg+xml")
 	c.Header("Cache-Control", "no-cache")
 	c.String(http.StatusOK, fmt.Sprintf(C.FaviconTemplate, color))
+}
+
+func (h *Handler) AICallback(c *gin.Context) {
+	var payload ai.CallbackPayload
+	if err := c.BindJSON(&payload); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid payload"})
+		return
+	}
+
+	postID, ok := h.aiService.GetPostID(payload.UUID)
+	if !ok {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Unknown UUID"})
+		return
+	}
+
+	var post models.Post
+	if err := h.db.First(&post, postID).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to find post"})
+		return
+	}
+
+	post.AIProbability = &payload.AIProbability
+	if err := h.db.Save(&post).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update post"})
+		return
+	}
+
+	// Invalidate post cache
+	C.Cache.InvalidatePostsInTopic(post.TopicID)
+
+	c.JSON(http.StatusOK, gin.H{"status": "success"})
 }

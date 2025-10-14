@@ -69,11 +69,11 @@
                         <a href="#{{$post.ID}}" class="ml-10">#{{$i | add 1}}</a><br />
                         Posted: {{$post.CreatedAt.Format "2006-01-02 15:04"}}
                         {{if ne $post.CreatedAt $post.UpdatedAt}}| Edited: {{$post.UpdatedAt.Format "2006-01-02 15:04"}}{{end}}
+                        <!--{{if $post.AIProbability}}| AI Probability: {{printf "%.2f" (mul $post.AIProbability 100)}}%{{end}}-->
                     </span>
                     
-                    
-                    {{if and $.user (or ($.user.CanEditPost $post) ($.user.CanDeletePost $post))}}
                     <div class="post-actions">
+                        {{if and $.user (or ($.user.CanEditPost $post) ($.user.CanDeletePost $post))}}
                         <a href="/topic/{{$.topic.ID}}/new-post?quote={{$post.ID}}" class="btn btn-sm btn-primary">Quote</a>
                         {{if ($.user.CanEditPost $post)}}
                             <a href="/post/{{$post.ID}}/edit" class="btn btn-sm btn-secondary">Edit</a>
@@ -87,8 +87,22 @@
                                 <button type="submit" class="btn btn-sm btn-danger">Delete</button>
                             </form>
                         {{end}}
+                        {{end}}
+
+                        {{if $post.AIProbability}}
+                        <div class="gauge-wrapper">
+                          <div class="gauge-title">AI Probability</div>
+                          <div class="gauge" style="--percentage: {{printf "%.0f" (mul $post.AIProbability 100)}}">
+                            <div class="gauge-background">
+                              <div class="gauge-segment"></div>
+                            </div>
+                            <div class="gauge-center"></div>
+                            <div class="needle"></div>
+                            <div class="percentage-display">{{printf "%.0f" (mul $post.AIProbability 100)}}<span>%</span></div>
+                          </div>
+                        </div>
+                        {{end}}
                     </div>
-                    {{end}}
                 </div>
             </div>
         </div>

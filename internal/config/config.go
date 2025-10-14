@@ -22,9 +22,10 @@ type Config struct {
 	DBName     string
 
 	// Common
-	JWTSecret   string
-	Environment string
-	Address     string
+	JWTSecret      string
+	Environment    string
+	Address        string
+	AIDetectionURL string
 
 	// Email configuration
 	SMTPHost     string
@@ -57,9 +58,10 @@ func Load() *Config {
 		DBPassword: getEnv("DB_PASSWORD", ""),
 		DBName:     getEnv("DB_NAME", ""),
 
-		JWTSecret:   getEnv("JWT_SECRET", "your-secret-key-change-in-production"),
-		Environment: getEnv("ENVIRONMENT", "development"),
-		Address:     getEnv("ADDRESS", ":8080"),
+		JWTSecret:      getEnv("JWT_SECRET", "your-secret-key-change-in-production"),
+		Environment:    getEnv("ENVIRONMENT", "development"),
+		Address:        getEnv("ADDRESS", ":8080"),
+		AIDetectionURL: getEnv("AI_DETECTION_URL", ""),
 
 		SMTPHost:     getEnv("SMTP_HOST", "smtp.gmail.com"),
 		SMTPPort:     getEnvInt("SMTP_PORT", 587),

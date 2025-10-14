@@ -2,3 +2,4 @@ __debug_bin*
 data
 .env
 pics
+models

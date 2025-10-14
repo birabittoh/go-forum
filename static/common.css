@@ -760,3 +760,92 @@ blockquote {
   gap: 5px;
   align-items: center;
 }
+
+/* Gauge styles */
+.gauge-wrapper {
+    background: var(--background-card);
+    text-align: center;
+    width: 112px;
+    display: inline-block;
+}
+.gauge-title {
+    font-size: 7px;
+    color: var(--text-secondary);
+    margin-bottom: 3px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.gauge {
+    position: relative;
+    width: 100px;
+    height: 50px;
+    margin: 0 auto;
+}
+.gauge-background {
+    width: 100px;
+    height: 50px;
+    border-radius: 100px 100px 0 0;
+    overflow: hidden;
+    position: relative;
+}
+.gauge-segment {
+    width: 100px;
+    height: 50px;
+    top: 0;
+    left: 0;
+    background: linear-gradient(90deg, #90d80a 0%, #d8b90a 50%, #d8520a 100%);
+}
+.gauge-center {
+    position: absolute;
+    width: 80px;
+    height: 40px;
+    background: var(--background-card);
+    border-radius: 80px 80px 0 0;
+    bottom: 0px;
+    left: 10px;
+    z-index: 2;
+}
+.needle {
+    position: absolute;
+    width: 1.5px;
+    height: 45px;
+    background: var(--text-primary);
+    bottom: 0;
+    left: 50%;
+    transform-origin: bottom center;
+    transform: translateX(-50%) rotate(-90deg);
+    z-index: 3;
+    border-radius: 1.5px 1.5px 0 0;
+    animation: sweepNeedle 1.5s cubic-bezier(0.4, 0, 0.2, 1) 0.3s forwards;
+}
+@keyframes sweepNeedle {
+    to {
+        transform: translateX(-50%) rotate(calc((var(--percentage) * 1.8deg) - 90deg));
+    }
+}
+.needle::before {
+    content: '';
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    background: var(--text-primary);
+    border: 1.5px solid var(--text-secondary);
+    border-radius: 50%;
+    bottom: -3px;
+    left: 50%;
+    transform: translateX(-50%);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+}
+.percentage-display {
+    position: absolute;
+    bottom: 7px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 14px;
+    font-weight: bold;
+    color: var(--text-primary);
+    z-index: 4;
+}
+.percentage-display span {
+    font-size: 9px;
+}

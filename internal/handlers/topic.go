@@ -3,6 +3,7 @@ package handlers
 import (
 	"fmt"
 	C "goforum/internal/constants"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -338,9 +339,16 @@ func (h *Handler) UpdatePost(c *gin.Context) {
 		return
 	}
 
-	content := c.PostForm("content")
+	content := strings.TrimSpace(c.PostForm("content"))
 	if content == "" {
 		renderError(c, "Content cannot be empty", http.StatusBadRequest)
+		return
+	}
+
+	if content == post.Content {
+		// No changes made
+		pageRedirect := getPageRedirect(h, post.TopicID, post.ID)
+		c.Redirect(http.StatusFound, pageRedirect)
 		return
 	}
 
@@ -350,10 +358,20 @@ func (h *Handler) UpdatePost(c *gin.Context) {
 	}
 
 	post.Content = strings.TrimSpace(content)
+	post.AIProbability = nil // Reset AI probability on edit
 
 	if err := h.db.Save(&post).Error; err != nil {
 		renderError(c, "Failed to update post", http.StatusInternalServerError)
 		return
+	}
+
+	// Invalidate relevant caches
+	C.Cache.InvalidatePostsInTopic(uint(post.TopicID))
+
+	// Enqueue AI detection
+	err = h.aiService.EnqueueDetection(&post)
+	if err != nil {
+		log.Printf("Failed to enqueue AI detection: %v\n", err)
 	}
 
 	pageRedirect := getPageRedirect(h, post.TopicID, post.ID)
@@ -388,15 +406,6 @@ func (h *Handler) DeletePost(c *gin.Context) {
 	if post.ID == postsInTopic[0].ID {
 		renderError(c, "You cannot delete the first post in a topic.", http.StatusForbidden)
 		return
-	}
-
-	// Prevent deletion of the first post in the topic
-	var firstPost models.Post
-	if err := h.db.Where("topic_id = ?", post.TopicID).Order("id ASC").First(&firstPost).Error; err == nil {
-		if post.ID == firstPost.ID {
-			renderError(c, "You cannot delete the first post in a topic.", http.StatusForbidden)
-			return
-		}
 	}
 
 	if !user.CanDeletePost(&post) {

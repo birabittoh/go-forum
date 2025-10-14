@@ -99,6 +99,7 @@ func setupRoutes(r *gin.Engine, h *handlers.Handler) {
 	r.GET("/favicon.svg", h.Favicon)
 	r.GET("/manifest.json", h.Manifest)
 	r.GET("/assets/:id/:picture", h.TitlesService.ServePicture)
+	r.POST("/aide/callback", h.AICallback)
 
 	// Auth routes
 	auth := r.Group("/auth")

@@ -100,6 +100,7 @@ var (
 			return cases.Title(language.Und).String(s)
 		},
 		"add":      func(a, b int) int { return a + b },
+		"mul":      func(a float64, b float64) float64 { return a * b },
 		"safeHTML": func(s string) template.HTML { return template.HTML(s) },
 
 		"validateTheme": func(theme string) string {
