@@ -32,7 +32,21 @@
                 <h3>💾 Import/Export</h3>
                 <p>Backup or restore forum data</p>
                 <a href="/admin/backup" class="btn">Import/Export</a>
-            </div> 
+            </div>
+
+        </div>
+
+        <div id="admin-functions">
+
+            {{ if .config.AIEnabled }}
+            <div class="admin-section">
+                <h3>🤖 Compute AI</h3>
+                <p>Compute AI probabilities</p>
+                <form action="/admin/functions/compute-ai" method="post" class="inline-form">
+                    <button type="submit" class="btn">Run</button>
+                </form>
+            </div>
+            {{ end }}
 
         </div>
 

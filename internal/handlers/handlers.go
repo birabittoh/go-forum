@@ -30,6 +30,8 @@ import (
 	"gorm.io/gorm"
 )
 
+const CallbackPath = "/aide/callback"
+
 type Handler struct {
 	db            *gorm.DB
 	authService   *auth.Service
@@ -76,7 +78,7 @@ func New(db *gorm.DB, authService *auth.Service, cfg *config.Config) (*Handler, 
 		db:            db,
 		authService:   authService,
 		TitlesService: titlesService,
-		aiService:     ai.New(cfg),
+		aiService:     ai.New(cfg, CallbackPath),
 		config:        cfg,
 		markdown:      md,
 	}, nil

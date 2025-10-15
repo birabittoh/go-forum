@@ -400,6 +400,29 @@ func (h *Handler) ChangeUserType(c *gin.Context) {
 	c.Redirect(http.StatusFound, "/admin/users")
 }
 
+func (h *Handler) ComputeAI(c *gin.Context) {
+	if !h.config.AIEnabled {
+		renderError(c, "AI detection is not enabled", http.StatusBadRequest)
+		return
+	}
+
+	// get all posts that have not been processed yet (AIProbability is nil)
+	var posts []models.Post
+	if err := h.db.Where("ai_probability IS NULL").Find(&posts).Error; err != nil {
+		renderError(c, "Failed to load posts", http.StatusInternalServerError)
+		return
+	}
+
+	for _, post := range posts {
+		if err := h.aiService.EnqueueDetection(&post); err != nil {
+			renderError(c, "Failed to enqueue post ID "+strconv.Itoa(int(post.ID))+": "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
+
+	c.Redirect(http.StatusFound, "/admin")
+}
+
 // Unified Sections & Categories management
 func (h *Handler) AdminSections(c *gin.Context) {
 	user := h.getCurrentUser(c)

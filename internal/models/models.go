@@ -127,7 +127,7 @@ type Post struct {
 	TopicID       uint     `gorm:"not null"`
 	AuthorID      uint     `gorm:"not null"`
 	Content       string   `gorm:"type:text;not null"`
-	AIProbability *float64 `gorm:"default:null"`
+	AIProbability *float64 `gorm:"column:ai_probability;default:null"`
 
 	CreatedAt time.Time
 	UpdatedAt time.Time

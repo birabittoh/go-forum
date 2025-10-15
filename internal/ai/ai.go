@@ -10,6 +10,12 @@ import (
 	"strconv"
 )
 
+const (
+	debugEndpoint   = "/debug"
+	enqueueEndpoint = "/enqueue"
+	queueEndpoint   = "/queue"
+)
+
 type EnqueueRequest struct {
 	ID          string `json:"id"`
 	Content     string `json:"content"`
@@ -18,6 +24,11 @@ type EnqueueRequest struct {
 
 type EnqueueResponse struct {
 	UUID string `json:"uuid"`
+}
+
+type QueueStatus struct {
+	IsProcessing bool     `json:"is_processing"`
+	QueuedIDs    []string `json:"queued_ids"`
 }
 
 type CallbackPayload struct {
@@ -29,65 +40,104 @@ type CallbackPayload struct {
 }
 
 type AIService struct {
-	config *config.Config
-	queue  map[string]uint // maps uuid to postID
-	client *http.Client
+	config      *config.Config
+	queue       map[string]uint // maps uuid to postID
+	client      *http.Client
+	callbackURL string
 }
 
-func New(cfg *config.Config) *AIService {
-	return &AIService{
-		config: cfg,
-		queue:  make(map[string]uint),
-		client: &http.Client{},
+func New(cfg *config.Config, callbackURL string) *AIService {
+	callbackBase := cfg.AICallbackURL
+	if callbackBase == "" {
+		callbackBase = cfg.SiteURL
 	}
+
+	s := &AIService{
+		config:      cfg,
+		queue:       make(map[string]uint),
+		client:      &http.Client{},
+		callbackURL: callbackBase + callbackURL,
+	}
+
+	if cfg.AIDetectionURL != "" && callbackBase != "" {
+		cfg.AIEnabled = true
+	}
+
+	go func() {
+		_, err := s.Queue()
+		if err != nil {
+			cfg.AIEnabled = false
+		}
+	}()
+
+	return s
 }
 
-func (s *AIService) EnqueueDetection(p *models.Post) (err error) {
-	if s.config.AIDetectionURL == "" {
-		return nil // AI detection not configured
+func doRequest[T any](s *AIService, method, url string, body any) (*T, error) {
+	if !s.config.AIEnabled {
+		return nil, nil // AI detection not configured
 	}
 
-	d := EnqueueRequest{
-		ID:          strconv.FormatUint(uint64(p.ID), 10),
-		Content:     p.Content,
-		CallbackURL: s.config.SiteURL + "/aide/callback",
+	var reqBody *bytes.Buffer
+	if body != nil {
+		b, err := json.Marshal(body)
+		if err != nil {
+			return nil, err
+		}
+		reqBody = bytes.NewBuffer(b)
+	} else {
+		reqBody = &bytes.Buffer{}
 	}
 
-	reqBody, err := json.Marshal(d)
+	req, err := http.NewRequest(method, s.config.AIDetectionURL+url, reqBody)
 	if err != nil {
-		log.Printf("Failed to marshal detection request: %v\n", err)
-		return
-	}
-
-	req, err := http.NewRequest("POST", s.config.AIDetectionURL+"/enqueue", bytes.NewBuffer(reqBody))
-	if err != nil {
-		log.Printf("Failed to create request: %v\n", err)
-		return
+		return nil, err
 	}
 	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := s.client.Do(req)
 	if err != nil {
-		log.Printf("Failed to send request: %v\n", err)
-		return
+		return nil, err
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		log.Printf("Non-OK HTTP status: %s\n", resp.Status)
-		return
+		return nil, err
 	}
 
-	var er EnqueueResponse
-	err = json.NewDecoder(resp.Body).Decode(&er)
+	var result T
+	err = json.NewDecoder(resp.Body).Decode(&result)
 	if err != nil {
-		log.Printf("Failed to decode response: %v\n", err)
-		return
+		return nil, err
 	}
 
-	s.queue[er.UUID] = p.ID
-	log.Printf("Enqueued post ID %d with UUID %s\n", p.ID, er.UUID)
+	return &result, nil
+}
+
+func (s *AIService) EnqueueDetection(p *models.Post) (err error) {
+	d := EnqueueRequest{
+		ID:          strconv.FormatUint(uint64(p.ID), 10),
+		Content:     p.Content,
+		CallbackURL: s.callbackURL,
+	}
+
+	resp, err := doRequest[EnqueueResponse](s, "POST", enqueueEndpoint, d)
+	if err != nil {
+		log.Printf("Failed to enqueue detection: %v\n", err)
+		return err
+	}
+
+	s.queue[resp.UUID] = p.ID
+	log.Printf("Enqueued post ID %d with UUID %s\n", p.ID, resp.UUID)
 	return
+}
+
+func (s *AIService) Queue() (*QueueStatus, error) {
+	return doRequest[QueueStatus](s, "GET", queueEndpoint, nil)
+}
+
+func (s *AIService) Debug() (*map[string]any, error) {
+	return doRequest[map[string]any](s, "POST", debugEndpoint, nil)
 }
 
 func (s *AIService) GetPostID(uuid string) (uint, bool) {

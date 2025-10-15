@@ -22,10 +22,13 @@ type Config struct {
 	DBName     string
 
 	// Common
-	JWTSecret      string
-	Environment    string
-	Address        string
+	JWTSecret   string
+	Environment string
+	Address     string
+
+	// AI Detection
 	AIDetectionURL string
+	AICallbackURL  string
 
 	// Email configuration
 	SMTPHost     string
@@ -46,10 +49,11 @@ type Config struct {
 	// Set automatically
 	ReadySetEnabled bool
 	LocalTitles     bool
+	AIEnabled       bool
 }
 
 func Load() *Config {
-	cfg := &Config{
+	return &Config{
 		DataDir: getEnv("DATA_DIR", "data"),
 
 		DBHost:     getEnv("DB_HOST", ""),
@@ -62,6 +66,7 @@ func Load() *Config {
 		Environment:    getEnv("ENVIRONMENT", "development"),
 		Address:        getEnv("ADDRESS", ":8080"),
 		AIDetectionURL: getEnv("AI_DETECTION_URL", ""),
+		AICallbackURL:  getEnv("AI_CALLBACK_URL", ""),
 
 		SMTPHost:     getEnv("SMTP_HOST", "smtp.gmail.com"),
 		SMTPPort:     getEnvInt("SMTP_PORT", 587),
@@ -77,8 +82,6 @@ func Load() *Config {
 		MaxSignatureLength: getEnvInt("MAX_SIGNATURE_LENGTH", 500),
 		TopicPageSize:      getEnvInt("TOPIC_PAGE_SIZE", 10),
 	}
-
-	return cfg
 }
 
 func getEnv(key, defaultValue string) string {
