@@ -171,5 +171,6 @@ func setupRoutes(r *gin.Engine, h *handlers.Handler) {
 		admin.POST("/settings", h.AdminSettingsUpdate)
 		admin.POST("/user/:id/type", h.ChangeUserType)
 		admin.POST("functions/compute-ai", h.ComputeAI)
+		admin.POST("functions/reset-ai", h.ResetAI)
 	}
 }

@@ -423,6 +423,21 @@ func (h *Handler) ComputeAI(c *gin.Context) {
 	c.Redirect(http.StatusFound, "/admin")
 }
 
+func (h *Handler) ResetAI(c *gin.Context) {
+	if !h.config.AIEnabled {
+		renderError(c, "AI detection is not enabled", http.StatusBadRequest)
+		return
+	}
+
+	err := h.db.Model(&models.Post{}).Where("ai_probability IS NOT NULL").Update("ai_probability", nil).Error
+	if err != nil {
+		renderError(c, "Failed to reset probabilities: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	c.Redirect(http.StatusFound, "/admin")
+}
+
 // Unified Sections & Categories management
 func (h *Handler) AdminSections(c *gin.Context) {
 	user := h.getCurrentUser(c)
