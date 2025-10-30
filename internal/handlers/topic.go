@@ -142,6 +142,12 @@ func (h *Handler) CreateTopic(c *gin.Context) {
 	C.Cache.InvalidateTopicsInCategory(uint(categoryID))
 	C.Cache.InvalidatePostsInTopic(uint(topic.ID))
 
+	// Enqueue AI detection
+	err = h.aiService.EnqueueDetection(post)
+	if err != nil {
+		log.Printf("Failed to enqueue AI detection: %v\n", err)
+	}
+
 	c.Redirect(http.StatusFound, fmt.Sprintf("/topic/%d", topic.ID))
 }
 

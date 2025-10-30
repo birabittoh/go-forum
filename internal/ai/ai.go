@@ -74,10 +74,6 @@ func New(cfg *config.Config, callbackURL string) *AIService {
 }
 
 func doRequest[T any](s *AIService, method, url string, body any) (*T, error) {
-	if !s.config.AIEnabled {
-		return nil, nil // AI detection not configured
-	}
-
 	var reqBody *bytes.Buffer
 	if body != nil {
 		b, err := json.Marshal(body)
@@ -115,6 +111,10 @@ func doRequest[T any](s *AIService, method, url string, body any) (*T, error) {
 }
 
 func (s *AIService) EnqueueDetection(p *models.Post) (err error) {
+	if !s.config.AIEnabled {
+		return nil
+	}
+
 	d := EnqueueRequest{
 		ID:          strconv.FormatUint(uint64(p.ID), 10),
 		Content:     p.Content,
@@ -133,10 +133,16 @@ func (s *AIService) EnqueueDetection(p *models.Post) (err error) {
 }
 
 func (s *AIService) Queue() (*QueueStatus, error) {
+	if !s.config.AIEnabled {
+		return &QueueStatus{IsProcessing: false, QueuedIDs: []string{}}, nil
+	}
 	return doRequest[QueueStatus](s, "GET", queueEndpoint, nil)
 }
 
 func (s *AIService) Debug() (*map[string]any, error) {
+	if !s.config.AIEnabled {
+		return nil, nil
+	}
 	return doRequest[map[string]any](s, "POST", debugEndpoint, nil)
 }
 
