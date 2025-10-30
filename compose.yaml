@@ -41,11 +41,8 @@ services:
       retries: 5
 
   aide:
-    image: ghcr.io/birabittoh/aide:latest
-    container_name: aide
-    environment:
-      - PYTHONUNBUFFERED=1
-      - HF_HOME=/app/models
+    image: ghcr.io/birabittoh/aide:main
+    container_name: go-forum-ai
     volumes:
       - ./models:/app/models
     restart: unless-stopped
@@ -55,6 +52,11 @@ services:
           memory: 4G
         reservations:
           memory: 2G
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8000/queue"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   go-forum:
     image: ghcr.io/birabittoh/go-forum:main
@@ -69,6 +71,8 @@ services:
       - ./xtitles:/app/xtitles
     depends_on:
       readyset:
+        condition: service_healthy
+      aide:
         condition: service_healthy
 
 volumes:
