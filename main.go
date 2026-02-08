@@ -92,6 +92,7 @@ func main() {
 func setupRoutes(r *gin.Engine, h *handlers.Handler) {
 	// Public routes
 	r.GET("/", h.Home)
+	r.GET("/search", h.Search)
 	r.GET("/category/:id", h.CategoryView)
 	r.GET("/topic/:id", h.TopicView)
 	r.GET("/profile/:username", h.ProfileView)

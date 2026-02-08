@@ -37,6 +37,7 @@ const (
 	ProfileEditPath         = templates + "profile_edit.html"
 	ProfilePath             = templates + "profile.html"
 	ResetPasswordPath       = templates + "reset_password.html"
+	SearchPath              = templates + "search.html"
 	SectionsPath            = templates + "sections.html"
 	SetNewPasswordPath      = templates + "set_new_password.html"
 	SettingsPath            = templates + "settings.html"
@@ -67,6 +68,7 @@ var (
 		ProfileEditPath,
 		ProfilePath,
 		ResetPasswordPath,
+		SearchPath,
 		SectionsPath,
 		SetNewPasswordPath,
 		SettingsPath,
