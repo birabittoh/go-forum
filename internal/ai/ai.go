@@ -8,6 +8,8 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+
+	lru "github.com/hashicorp/golang-lru/v2"
 )
 
 const (
@@ -41,7 +43,7 @@ type CallbackPayload struct {
 
 type AIService struct {
 	config      *config.Config
-	queue       map[string]uint // maps uuid to postID
+	queue       *lru.Cache[string, uint] // maps uuid to postID
 	client      *http.Client
 	callbackURL string
 }
@@ -52,9 +54,14 @@ func New(cfg *config.Config, callbackURL string) *AIService {
 		callbackBase = cfg.SiteURL
 	}
 
+	queue, err := lru.New[string, uint](128)
+	if err != nil {
+		panic(err)
+	}
+
 	s := &AIService{
 		config:      cfg,
-		queue:       make(map[string]uint),
+		queue:       queue,
 		client:      &http.Client{},
 		callbackURL: callbackBase + callbackURL,
 	}
@@ -127,7 +134,7 @@ func (s *AIService) EnqueueDetection(p *models.Post) (err error) {
 		return err
 	}
 
-	s.queue[resp.UUID] = p.ID
+	s.queue.Add(resp.UUID, p.ID)
 	log.Printf("Enqueued post ID %d with UUID %s\n", p.ID, resp.UUID)
 	return
 }
@@ -147,7 +154,9 @@ func (s *AIService) Debug() (*map[string]any, error) {
 }
 
 func (s *AIService) GetPostID(uuid string) (uint, bool) {
-	id, ok := s.queue[uuid]
-	delete(s.queue, uuid)
+	id, ok := s.queue.Get(uuid)
+	if ok {
+		s.queue.Remove(uuid)
+	}
 	return id, ok
 }

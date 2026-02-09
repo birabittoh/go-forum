@@ -1,6 +1,7 @@
 package cache
 
 import (
+	"fmt"
 	"goforum/internal/models"
 
 	"gorm.io/gorm"
@@ -14,7 +15,7 @@ const (
 )
 
 func (c *Cache) PostsInTopic(db *gorm.DB, topicID uint) ([]models.Post, error) {
-	key := PostsKeyInTopic + string(rune(topicID))
+	key := fmt.Sprintf("%s%d", PostsKeyInTopic, topicID)
 	posts, ok := c.posts.Get(key)
 	if ok {
 		return posts, nil
@@ -30,7 +31,7 @@ func (c *Cache) PostsInTopic(db *gorm.DB, topicID uint) ([]models.Post, error) {
 }
 
 func (c *Cache) PostsByUser(db *gorm.DB, userID uint) ([]models.Post, error) {
-	key := PostsKeyByUser + string(rune(userID))
+	key := fmt.Sprintf("%s%d", PostsKeyByUser, userID)
 	posts, ok := c.posts.Get(key)
 	if ok {
 		return posts, nil
@@ -46,7 +47,7 @@ func (c *Cache) PostsByUser(db *gorm.DB, userID uint) ([]models.Post, error) {
 }
 
 func (c *Cache) PostsInCategory(db *gorm.DB, categoryID uint) ([]models.Post, error) {
-	key := PostsKeyInCategory + string(rune(categoryID))
+	key := fmt.Sprintf("%s%d", PostsKeyInCategory, categoryID)
 	posts, ok := c.posts.Get(key)
 	if ok {
 		return posts, nil
@@ -65,17 +66,17 @@ func (c *Cache) PostsInCategory(db *gorm.DB, categoryID uint) ([]models.Post, er
 }
 
 func (c *Cache) InvalidatePostsInTopic(topicID uint) {
-	key := PostsKeyInTopic + string(rune(topicID))
+	key := fmt.Sprintf("%s%d", PostsKeyInTopic, topicID)
 	c.posts.Remove(key)
 }
 
 func (c *Cache) InvalidatePostsByUser(userID uint) {
-	key := PostsKeyByUser + string(rune(userID))
+	key := fmt.Sprintf("%s%d", PostsKeyByUser, userID)
 	c.posts.Remove(key)
 }
 
 func (c *Cache) InvalidatePostsInCategory(categoryID uint) {
-	key := PostsKeyInCategory + string(rune(categoryID))
+	key := fmt.Sprintf("%s%d", PostsKeyInCategory, categoryID)
 	c.posts.Remove(key)
 }
 
