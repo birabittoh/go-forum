@@ -656,9 +656,24 @@ func (h *Handler) ProfileView(c *gin.Context) {
 		user.BannedUntil = &t
 	}
 
+	var latestPosts []models.Post
+	if err := h.db.
+		Preload("Topic").
+		Where("author_id = ?", user.ID).
+		Order("created_at DESC").
+		Limit(10).
+		Find(&latestPosts).Error; err != nil {
+		log.Printf("Failed to fetch latest posts for user %s: %v\n", user.Username, err)
+	}
+
+	for i := range latestPosts {
+		latestPosts[i].Content = h.renderMarkdown(latestPosts[i].Content)
+	}
+
 	data := map[string]any{
 		"title":       fmt.Sprintf("%s's Profile", user.Username),
 		"profileUser": user,
+		"latestPosts": latestPosts,
 		"user":        h.getCurrentUser(c),
 		"config":      h.config,
 	}
