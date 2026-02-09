@@ -6,6 +6,7 @@ import (
 	"goforum/internal/config"
 	"goforum/internal/models"
 	"log"
+	"time"
 
 	"github.com/glebarez/sqlite"
 	"gorm.io/driver/postgres"
@@ -62,7 +63,16 @@ func Initialize(cfg *config.Config) (*gorm.DB, error) {
 	}
 
 	// Check for ReadySet connection
-	sqlDB, _ := db.DB()
+	sqlDB, err := db.DB()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get database instance: %w", err)
+	}
+
+	// Set connection pool settings
+	sqlDB.SetMaxIdleConns(10)
+	sqlDB.SetMaxOpenConns(100)
+	sqlDB.SetConnMaxLifetime(time.Hour)
+
 	_, err = sqlDB.Exec("SHOW READYSET VERSION")
 	if err != nil {
 		log.Printf("⚠ Not connected to ReadySet")

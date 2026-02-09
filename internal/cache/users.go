@@ -6,8 +6,8 @@ import (
 )
 
 func updateUserCache(c *Cache, user *models.User) {
-	c.usernameToID[strings.ToLower(user.Username)] = user.ID
-	c.emailToID[strings.ToLower(user.Email)] = user.ID
+	c.usernameToID.Add(strings.ToLower(user.Username), user.ID)
+	c.emailToID.Add(strings.ToLower(user.Email), user.ID)
 	c.users.Add(user.ID, user)
 }
 
@@ -38,7 +38,7 @@ func (c *Cache) GetUserByName(username string) (user models.User, ok bool) {
 func (c *Cache) GetUserByUsername(username string) (user models.User, ok bool) {
 	name := strings.ToLower(username)
 
-	id, exists := c.usernameToID[name]
+	id, exists := c.usernameToID.Get(name)
 	if exists {
 		return c.GetUserByID(id)
 	}
@@ -48,7 +48,6 @@ func (c *Cache) GetUserByUsername(username string) (user models.User, ok bool) {
 		return
 	}
 
-	c.usernameToID[name] = user.ID
 	updateUserCache(c, &user)
 	return user, true
 }
@@ -56,7 +55,7 @@ func (c *Cache) GetUserByUsername(username string) (user models.User, ok bool) {
 func (c *Cache) GetUserByEmail(email string) (user models.User, ok bool) {
 	mail := strings.ToLower(email)
 
-	id, exists := c.emailToID[mail]
+	id, exists := c.emailToID.Get(mail)
 	if exists {
 		return c.GetUserByID(id)
 	}
@@ -66,7 +65,6 @@ func (c *Cache) GetUserByEmail(email string) (user models.User, ok bool) {
 		return
 	}
 
-	c.emailToID[mail] = user.ID
 	updateUserCache(c, &user)
 	return user, true
 }
@@ -108,8 +106,8 @@ func (c *Cache) DeleteUser(user *models.User) error {
 	}
 
 	c.users.Remove(user.ID)
-	delete(c.usernameToID, strings.ToLower(user.Username))
-	delete(c.emailToID, strings.ToLower(user.Email))
+	c.usernameToID.Remove(strings.ToLower(user.Username))
+	c.emailToID.Remove(strings.ToLower(user.Email))
 
 	return nil
 }
