@@ -17,6 +17,9 @@
                     <a href="/" class="logo">{{.config.SiteName}}</a>
                     <div class="breadcrumb">{{ .config.SiteMotto }}</div>
                 </div>
+                <form action="/search" method="GET" class="search-form">
+                    <input type="text" name="q" placeholder="Search..." required value="{{.query}}">
+                </form>
                 <nav class="nav">
                     {{if .user}}
                         {{if or (.user.CanModerate) (.user.IsAdmin)}}

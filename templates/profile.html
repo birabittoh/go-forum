@@ -85,6 +85,27 @@
             </div>
         </div>
         {{end}}
+
+        <div class="mt-30">
+            <h3 class="section-name">Latest Posts</h3>
+            {{if .latestPosts}}
+                {{range .latestPosts}}
+                <div class="post mb-20">
+                    <div class="post-content">
+                        <div class="post-container mb-10">
+                            <div>In topic: <a href="/topic/{{.TopicID}}">{{.Topic.Title}}</a></div>
+                            <div>{{.CreatedAt.Format "Jan 02, 2006 15:04"}}</div>
+                        </div>
+                        <div class="post-body">
+                            {{.Content | safeHTML}}
+                        </div>
+                    </div>
+                </div>
+                {{end}}
+            {{else}}
+                <p class="generic-subtitle">This user hasn't posted anything yet.</p>
+            {{end}}
+        </div>
     </div>
 </div>
 {{end}}

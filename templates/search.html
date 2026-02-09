@@ -1,0 +1,92 @@
+{{define "content"}}
+<div class="content-wrapper">
+    <div class="content-header">
+        <h1>Search Results</h1>
+        <div class="breadcrumb">Searching for: "{{.query}}"</div>
+    </div>
+
+    <div class="content-body">
+        <div class="section">
+            <h2 class="section-name">Users</h2>
+            {{if .users}}
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Motto</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{range .users}}
+                        <tr>
+                            <td><a href="/profile/{{.Username}}">{{.Username}}</a></td>
+                            <td class="generic-subtitle">{{.Motto}}</td>
+                        </tr>
+                        {{end}}
+                    </tbody>
+                </table>
+            {{else}}
+                <p class="generic-subtitle">No users found matching your query.</p>
+            {{end}}
+        </div>
+
+        <div class="section">
+            <h2 class="section-name">Topics</h2>
+            {{if .topics}}
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Topic</th>
+                            <th>Category</th>
+                            <th>Author</th>
+                            <th class="count-column">Replies</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{range .topics}}
+                        <tr>
+                            <td><a href="/topic/{{.ID}}">{{.Title}}</a></td>
+                            <td><a href="/category/{{.CategoryID}}">{{.Category.Name}}</a></td>
+                            <td><a href="/profile/{{.Author.Username}}">{{.Author.Username}}</a></td>
+                            <td class="count-column">{{.RepliesCount}}</td>
+                        </tr>
+                        {{end}}
+                    </tbody>
+                </table>
+            {{else}}
+                <p class="generic-subtitle">No topics found matching your query.</p>
+            {{end}}
+        </div>
+
+        <div class="section">
+            <h2 class="section-name">Posts</h2>
+            {{if .posts}}
+                {{range .posts}}
+                <div class="post mb-20">
+                    <div class="post-author">
+                        {{if .Author.ProfilePicURL}}
+                            <img src="/assets/{{.Author.ProfilePicURL}}" alt="{{.Author.Username}}" class="avatar">
+                        {{else}}
+                            <div class="no-avatar">?</div>
+                        {{end}}
+                        <div class="username"><a href="/profile/{{.Author.Username}}">{{.Author.Username}}</a></div>
+                        <div class="user-type user-{{.Author.UserType.String}}">{{.Author.UserType.String}}</div>
+                    </div>
+                    <div class="post-content">
+                        <div class="post-container mb-10">
+                            <div>In topic: <a href="/topic/{{.TopicID}}">{{.Topic.Title}}</a></div>
+                            <div>{{.CreatedAt.Format "Jan 02, 2006 15:04"}}</div>
+                        </div>
+                        <div class="post-body">
+                            {{.Content | safeHTML}}
+                        </div>
+                    </div>
+                </div>
+                {{end}}
+            {{else}}
+                <p class="generic-subtitle">No posts found matching your query.</p>
+            {{end}}
+        </div>
+    </div>
+</div>
+{{end}}

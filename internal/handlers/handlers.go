@@ -121,6 +121,47 @@ func (h *Handler) Home(c *gin.Context) {
 	renderTemplate(c, data, C.HomePath)
 }
 
+func (h *Handler) Search(c *gin.Context) {
+	query := c.Query("q")
+	if query == "" {
+		data := map[string]any{
+			"title":  "Search",
+			"query":  "",
+			"user":   h.getCurrentUser(c),
+			"config": h.config,
+		}
+		renderTemplate(c, data, C.SearchPath)
+		return
+	}
+
+	searchQuery := "%" + query + "%"
+
+	var users []models.User
+	h.db.Where("username LIKE ?", searchQuery).Limit(20).Find(&users)
+
+	var topics []models.Topic
+	h.db.Preload("Category").Preload("Author").Where("title LIKE ?", searchQuery).Limit(20).Find(&topics)
+
+	var posts []models.Post
+	h.db.Preload("Topic").Preload("Author").Where("content LIKE ?", searchQuery).Limit(20).Find(&posts)
+
+	// Render markdown for posts
+	for i := range posts {
+		posts[i].Content = h.renderMarkdown(posts[i].Content)
+	}
+
+	data := map[string]any{
+		"title":  "Search Results",
+		"query":  query,
+		"users":  users,
+		"topics": topics,
+		"posts":  posts,
+		"user":   h.getCurrentUser(c),
+		"config": h.config,
+	}
+	renderTemplate(c, data, C.SearchPath)
+}
+
 /**
  * Password reset handlers
  */
@@ -615,9 +656,24 @@ func (h *Handler) ProfileView(c *gin.Context) {
 		user.BannedUntil = &t
 	}
 
+	var latestPosts []models.Post
+	if err := h.db.
+		Preload("Topic").
+		Where("author_id = ?", user.ID).
+		Order("created_at DESC").
+		Limit(10).
+		Find(&latestPosts).Error; err != nil {
+		log.Printf("Failed to fetch latest posts for user %s: %v\n", user.Username, err)
+	}
+
+	for i := range latestPosts {
+		latestPosts[i].Content = h.renderMarkdown(latestPosts[i].Content)
+	}
+
 	data := map[string]any{
 		"title":       fmt.Sprintf("%s's Profile", user.Username),
 		"profileUser": user,
+		"latestPosts": latestPosts,
 		"user":        h.getCurrentUser(c),
 		"config":      h.config,
 	}
