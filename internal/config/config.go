@@ -46,6 +46,10 @@ type Config struct {
 	MaxSignatureLength int
 	TopicPageSize      int
 
+	// Rate limiting
+	RateLimitRequests float64
+	RateLimitBurst    int
+
 	// Set automatically
 	ReadySetEnabled bool
 	LocalTitles     bool
@@ -81,6 +85,8 @@ func Load() *Config {
 		MaxMottoLength:     getEnvInt("MAX_MOTTO_LENGTH", 255),
 		MaxSignatureLength: getEnvInt("MAX_SIGNATURE_LENGTH", 500),
 		TopicPageSize:      getEnvInt("TOPIC_PAGE_SIZE", 10),
+		RateLimitRequests:  getEnvFloat64("RATE_LIMIT_REQUESTS", 5.0),
+		RateLimitBurst:     getEnvInt("RATE_LIMIT_BURST", 10),
 	}
 }
 
@@ -104,6 +110,20 @@ func getEnvInt(key string, defaultValue int) int {
 	}
 
 	return intValue
+}
+
+func getEnvFloat64(key string, defaultValue float64) float64 {
+	value := os.Getenv(key)
+	if value == "" {
+		return defaultValue
+	}
+
+	floatValue, err := strconv.ParseFloat(value, 64)
+	if err != nil {
+		return defaultValue
+	}
+
+	return floatValue
 }
 
 func (c *Config) GetDB() (string, bool) {

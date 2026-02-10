@@ -81,7 +81,7 @@ func main() {
 	r.Use(middleware.Auth(authService))
 
 	// Setup routes
-	setupRoutes(r, h)
+	setupRoutes(r, h, cfg)
 
 	log.Printf("Starting forum server on %s\n", cfg.Address)
 	if err := r.Run(cfg.Address); err != nil {
@@ -89,7 +89,10 @@ func main() {
 	}
 }
 
-func setupRoutes(r *gin.Engine, h *handlers.Handler) {
+func setupRoutes(r *gin.Engine, h *handlers.Handler, cfg *config.Config) {
+	// Rate limiter for non-public routes
+	limiter := middleware.RateLimit(cfg)
+
 	// Public routes
 	r.GET("/", h.Home)
 	r.GET("/search", h.Search)
@@ -104,6 +107,7 @@ func setupRoutes(r *gin.Engine, h *handlers.Handler) {
 
 	// Auth routes
 	auth := r.Group("/auth")
+	auth.Use(limiter)
 	{
 		auth.GET("/login", h.LoginForm)
 		auth.POST("/login", h.Login)
@@ -120,7 +124,7 @@ func setupRoutes(r *gin.Engine, h *handlers.Handler) {
 
 	// Protected routes
 	protected := r.Group("/")
-	protected.Use(middleware.RequireAuth())
+	protected.Use(limiter, middleware.RequireAuth())
 	{
 		// User routes
 		protected.GET("/profile/edit", h.ProfileEdit)
@@ -142,7 +146,7 @@ func setupRoutes(r *gin.Engine, h *handlers.Handler) {
 
 	// Admin/Moderator routes
 	moderation := r.Group("/admin")
-	moderation.Use(middleware.RequireAuth(), middleware.RequireModerator())
+	moderation.Use(limiter, middleware.RequireAuth(), middleware.RequireModerator())
 	{
 		moderation.GET("/", h.AdminPanel)
 		moderation.GET("/backup", h.Backup)
@@ -166,7 +170,7 @@ func setupRoutes(r *gin.Engine, h *handlers.Handler) {
 
 	// Admin-only routes
 	admin := r.Group("/admin")
-	admin.Use(middleware.RequireAuth(), middleware.RequireAdmin())
+	admin.Use(limiter, middleware.RequireAuth(), middleware.RequireAdmin())
 	{
 		admin.GET("/settings", h.AdminSettingsForm)
 		admin.POST("/settings", h.AdminSettingsUpdate)

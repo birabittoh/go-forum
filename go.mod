@@ -14,6 +14,7 @@ require (
 	github.com/yuin/goldmark-emoji v1.0.6
 	golang.org/x/crypto v0.43.0
 	golang.org/x/text v0.30.0
+	golang.org/x/time v0.14.0
 	gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df
 	gorm.io/driver/postgres v1.6.0
 	gorm.io/gorm v1.31.0
