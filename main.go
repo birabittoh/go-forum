@@ -78,6 +78,7 @@ func main() {
 	})
 
 	// Apply global middleware
+	r.Use(middleware.RateLimit(cfg))
 	r.Use(middleware.Auth(authService))
 
 	// Setup routes
